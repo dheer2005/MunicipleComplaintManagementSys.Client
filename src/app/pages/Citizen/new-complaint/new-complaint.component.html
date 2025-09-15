@@ -1,0 +1,330 @@
+<div class="container-fluid py-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh;">
+  <div class="row justify-content-center">
+    <div class="col-12 col-lg-10 col-xl-8">
+      
+      <!-- Header -->
+      <div class="text-center mb-4">
+        <h2 class="text-white fw-bold">
+          <i class="fas fa-file-alt me-2"></i>
+          Create New Complaint
+        </h2>
+        <p class="text-white-50">Submit your complaint with detailed information</p>
+      </div>
+
+      <!-- Progress Steps -->
+      <div class="card shadow-lg border-0 mb-4" style="border-radius: 20px;">
+        <div class="card-body p-4">
+          <div class="row text-center">
+            <div class="col-3" *ngFor="let step of [1,2,3,4]; let i = index">
+              <div class="step-item" 
+                   [class.active]="currentStep >= step"
+                   [class.completed]="currentStep > step"
+                   (click)="goToStep(step)"
+                   style="cursor: pointer;">
+                <div class="step-circle mx-auto mb-2"
+                     [ngClass]="{'bg-primary text-white': currentStep >= step, 'bg-light text-muted': currentStep < step}">
+                  <i class="fas" 
+                     [ngClass]="{
+                       'fa-edit': step === 1,
+                       'fa-tags': step === 2, 
+                       'fa-map-marker-alt': step === 3,
+                       'fa-paperclip': step === 4
+                     }"></i>
+                </div>
+                <small class="fw-medium" [ngClass]="{'text-primary': currentStep >= step, 'text-muted': currentStep < step}">
+                  {{ step === 1 ? 'Description' : step === 2 ? 'Category' : step === 3 ? 'Location' : 'Attachments' }}
+                </small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Form Card -->
+      <div class="card shadow-lg border-0" style="border-radius: 20px;">
+        <div class="card-body p-4">
+          
+          <form #complaintForm="ngForm" (ngSubmit)="onSubmit(complaintForm)" enctype="multipart/form-data">
+            
+            <!-- Step 1: Description -->
+            <div *ngIf="currentStep === 1" class="fade-in">
+              <div class="text-center mb-4">
+                <i class="fas fa-edit fa-3x text-primary mb-3"></i>
+                <h4 class="fw-bold text-dark">Describe Your Complaint</h4>
+                <p class="text-muted">Provide a detailed description of your issue</p>
+              </div>
+
+              <div class="mb-4">
+                <label for="description" class="form-label fw-semibold">
+                  <i class="fas fa-align-left me-2 text-primary"></i>
+                  Description <span class="text-danger">*</span>
+                </label>
+                <textarea 
+                  id="description" 
+                  name="description" 
+                  class="form-control form-control-lg" 
+                  rows="6" 
+                  [(ngModel)]="complaint.description" 
+                  required 
+                  placeholder="Describe your complaint in detail...">
+                </textarea>
+                <div *ngIf="complaintForm.submitted && !complaint.description" class="text-danger small mt-2">
+                  <i class="fas fa-exclamation-triangle me-1"></i>Description is required.
+                </div>
+              </div>
+
+              <div class="d-flex justify-content-end">
+                <button type="button" 
+                        class="btn btn-primary btn-lg px-4" 
+                        [disabled]="!complaint.description"
+                        (click)="nextStep()">
+                  Next <i class="fas fa-arrow-right ms-2"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Step 2: Category Selection -->
+            <div *ngIf="currentStep === 2" class="fade-in">
+              <div class="text-center mb-4">
+                <i class="fas fa-tags fa-3x text-primary mb-3"></i>
+                <h4 class="fw-bold text-dark">Select Category</h4>
+                <p class="text-muted">Choose the appropriate department and category</p>
+              </div>
+
+              <div class="row g-4 mb-4">
+                <div class="col-md-4">
+                  <label for="departmentId" class="form-label fw-semibold">
+                    <i class="fas fa-building me-2 text-primary"></i>
+                    Department <span class="text-danger">*</span>
+                  </label>
+                  <select id="departmentId" 
+                          name="departmentId" 
+                          class="form-select form-select-lg" 
+                          [(ngModel)]="complaint.departmentId" 
+                          (change)="onDepartmentChange()" 
+                          required>
+                    <option selected disabled value="">--Select Department--</option>
+                    <option *ngFor="let dept of departments" [value]="dept.departmentId">
+                      {{ dept.departmentName }}
+                    </option>
+                  </select>
+                  <div *ngIf="complaintForm.submitted && !complaint.departmentId" class="text-danger small mt-2">
+                    <i class="fas fa-exclamation-triangle me-1"></i>Please select a department.
+                  </div>
+                </div>
+
+                <div class="col-md-4">
+                  <label for="categoryId" class="form-label fw-semibold">
+                    <i class="fas fa-list me-2 text-primary"></i>
+                    Category <span class="text-danger">*</span>
+                  </label>
+                  <select id="categoryId" 
+                          name="categoryId" 
+                          class="form-select form-select-lg" 
+                          [disabled]="!complaint.departmentId" 
+                          [(ngModel)]="complaint.categoryId" 
+                          (change)="onCategoryChange()" 
+                          required>
+                    <option selected disabled value="">--Select Category--</option>
+                    <option *ngFor="let cat of categories" [value]="cat.categoryId">
+                      {{ cat.categoryName }}
+                    </option>
+                  </select>
+                  <div *ngIf="complaintForm.submitted && !complaint.categoryId" class="text-danger small mt-2">
+                    <i class="fas fa-exclamation-triangle me-1"></i>Please select a category.
+                  </div>
+                </div>
+
+                <div class="col-md-4">
+                  <label for="subCategoryId" class="form-label fw-semibold">
+                    <i class="fas fa-sitemap me-2 text-primary"></i>
+                    Sub-Category <span class="text-danger">*</span>
+                  </label>
+                  <select id="subCategoryId" 
+                          name="subCategoryId" 
+                          [disabled]="!complaint.categoryId"
+                          class="form-select form-select-lg" 
+                          [(ngModel)]="complaint.subCategoryId" 
+                          required>
+                    <option selected disabled value="">--Select Sub-Category--</option>
+                    <option *ngFor="let sub of subCategories" [value]="sub.subCategoryId">
+                      {{ sub.subCategoryName }}
+                    </option>
+                  </select>
+                  <div *ngIf="complaintForm.submitted && !complaint.subCategoryId" class="text-danger small mt-2">
+                    <i class="fas fa-exclamation-triangle me-1"></i>Please select a sub-category.
+                  </div>
+                </div>
+              </div>
+
+              <div class="d-flex justify-content-between">
+                <button type="button" class="btn btn-outline-secondary btn-lg px-4" (click)="previousStep()">
+                  <i class="fas fa-arrow-left me-2"></i>Previous
+                </button>
+                <button type="button" 
+                        class="btn btn-primary btn-lg px-4" 
+                        [disabled]="!(complaint.departmentId && complaint.categoryId && complaint.subCategoryId)"
+                        (click)="nextStep()">
+                  Next <i class="fas fa-arrow-right ms-2"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Step 3: Location -->
+            <div *ngIf="currentStep === 3" class="fade-in">
+              <div class="text-center mb-4">
+                <i class="fas fa-map-marker-alt fa-3x text-primary mb-3"></i>
+                <h4 class="fw-bold text-dark">Set Location</h4>
+                <p class="text-muted">Specify the location of your complaint (Optional)</p>
+              </div>
+
+              <div class="mb-4">
+                <label for="addressText" class="form-label fw-semibold">
+                  <i class="fas fa-home me-2 text-primary"></i>
+                  Address
+                </label>
+                <input id="addressText" 
+                       name="addressText" 
+                       class="form-control form-control-lg" 
+                       [(ngModel)]="complaint.addressText" 
+                       placeholder="Enter your address">
+              </div>
+
+              <!-- Location Buttons -->
+              <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                  <button type="button" 
+                          class="btn btn-outline-primary btn-lg w-100" 
+                          (click)="toggleMap()"
+                          [disabled]="isLoadingLocation">
+                    <i class="fas fa-map me-2"></i>
+                    {{ showMap ? 'Hide Map' : 'Set Location on Map' }}
+                  </button>
+                </div>
+                <div class="col-md-6">
+                  <button type="button" 
+                          class="btn btn-outline-success btn-lg w-100" 
+                          (click)="useCurrentLocation()"
+                          [disabled]="isLoadingLocation">
+                    <i class="fas fa-crosshairs me-2" 
+                       [class.fa-spin]="isLoadingLocation"></i>
+                    {{ isLoadingLocation ? 'Detecting...' : 'Use My Location' }}
+                  </button>
+                </div>
+              </div>
+
+              <!-- Location Info -->
+              <div *ngIf="complaint.latitude && complaint.longitude" class="alert alert-success">
+                <i class="fas fa-check-circle me-2"></i>
+                <strong>Location Set:</strong> 
+                Latitude: {{ complaint.latitude | number:'1.6-6' }}, 
+                Longitude: {{ complaint.longitude | number:'1.6-6' }}
+              </div>
+
+              <!-- Error Display -->
+              <div *ngIf="locationError" class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                {{ locationError }}
+              </div>
+
+              <!-- Map Section -->
+              <div *ngIf="showMap" class="map-container mb-4">
+                <div class="card shadow-sm">
+                  <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                      <i class="fas fa-map me-2"></i>
+                      Select Location on Map
+                    </h5>
+                    <small>Click on the map or drag the marker to set location</small>
+                  </div>
+                  <div class="card-body p-0">
+                    <div #mapContainer 
+                         id="mapContainer" 
+                         style="height: 400px; width: 100%;">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="d-flex justify-content-between">
+                <button type="button" class="btn btn-outline-secondary btn-lg px-4" (click)="previousStep()">
+                  <i class="fas fa-arrow-left me-2"></i>Previous
+                </button>
+                <button type="button" class="btn btn-primary btn-lg px-4" (click)="nextStep()">
+                  Next <i class="fas fa-arrow-right ms-2"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Step 4: Attachments -->
+            <div *ngIf="currentStep === 4" class="fade-in">
+              <div class="text-center mb-4">
+                <i class="fas fa-paperclip fa-3x text-primary mb-3"></i>
+                <h4 class="fw-bold text-dark">Add Attachments</h4>
+                <p class="text-muted">Upload images related to your complaint (Optional)</p>
+              </div>
+
+              <div class="mb-4">
+                <label for="attachments" class="form-label fw-semibold">
+                  <i class="fas fa-camera me-2 text-primary"></i>
+                  Upload Images
+                </label>
+                <input type="file"
+                       id="attachments"
+                       class="form-control form-control-lg"
+                       (change)="onFileSelected($event)"
+                       multiple
+                       accept="image/*"
+                       #fileInput>
+                <div class="form-text">
+                  <i class="fas fa-info-circle me-1"></i>
+                  Maximum file size: 5MB per image. Supported formats: JPG, PNG, GIF
+                </div>
+              </div>
+
+              <!-- Image Previews -->
+              <div *ngIf="previewImages.length > 0" class="mb-4">
+                <h6 class="fw-semibold mb-3">
+                  <i class="fas fa-images me-2"></i>
+                  Selected Images ({{ previewImages.length }})
+                </h6>
+                <div class="row g-3">
+                  <div *ngFor="let img of previewImages; let i = index" class="col-6 col-md-4 col-lg-3">
+                    <div class="position-relative">
+                      <img [src]="img" 
+                           class="img-fluid rounded shadow-sm" 
+                           style="height: 120px; width: 100%; object-fit: cover;">
+                      <button type="button"
+                              class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1"
+                              (click)="removeImage(i)"
+                              style="padding: 4px 8px;">
+                        <i class="fas fa-times"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="d-flex justify-content-between">
+                <button type="button" class="btn btn-outline-secondary btn-lg px-4" (click)="previousStep()">
+                  <i class="fas fa-arrow-left me-2"></i>Previous
+                </button>
+                
+                <!-- Submit Button -->
+                <button type="submit" 
+                        class="btn btn-success btn-lg px-5" 
+                        [disabled]="isSubmitting || complaintForm.invalid">
+                  <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
+                  <i *ngIf="!isSubmitting" class="fas fa-paper-plane me-2"></i>
+                  {{ isSubmitting ? 'Submitting...' : 'Submit Complaint' }}
+                </button>
+              </div>
+            </div>
+
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

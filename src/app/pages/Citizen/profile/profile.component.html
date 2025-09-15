@@ -1,0 +1,358 @@
+<div class="container-fluid py-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh;">
+  <div class="row justify-content-center">
+    <div class="col-12 col-xl-10">
+      
+      <!-- Header -->
+      <div class="text-center mb-4">
+        <h2 class="text-white fw-bold">
+          <i class="fas fa-user-circle me-2"></i>
+          User Profile
+        </h2>
+        <p class="text-white-50">Manage your account information and view your activity</p>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="text-center py-5">
+        <div class="spinner-border text-white" style="width: 3rem; height: 3rem;"></div>
+        <p class="text-white mt-3">Loading profile information...</p>
+      </div>
+
+      <!-- Profile Content -->
+      <div *ngIf="!isLoading && userProfile" class="fade-in">
+        
+        <!-- Main Profile Card -->
+        <div class="card shadow-lg border-0 mb-4" style="border-radius: 20px;">
+          <div class="card-header bg-transparent border-0 p-4">
+            <div class="row align-items-center">
+              <div class="col-auto">
+                <div class="profile-avatar">
+                  <i class="fas {{getRoleInfo().icon}} fa-3x text-{{getRoleInfo().color}}"></i>
+                </div>
+              </div>
+              <div class="col">
+                <div class="d-flex justify-content-between align-items-start flex-wrap">
+                  <div>
+                    <h3 class="fw-bold mb-1" *ngIf="!isEditing">{{ userProfile.fullName }}</h3>
+                    <input *ngIf="isEditing" 
+                           class="form-control form-control-lg mb-2" 
+                           [(ngModel)]="editForm.fullName"
+                           placeholder="Full Name">
+                    
+                    <div class="d-flex align-items-center flex-wrap gap-3">
+                      <span class="badge bg-{{getRoleInfo().color}} px-3 py-2">
+                        <i class="fas {{getRoleInfo().icon}} me-2"></i>
+                        {{ getRoleInfo().name }}
+                      </span>
+                      
+                      <span class="badge {{getStatusBadge().class}} px-3 py-2">
+                        <i class="fas {{getStatusBadge().icon}} me-2"></i>
+                        {{ getStatusBadge().text }}
+                      </span>
+
+                      <span *ngIf="isWorker()" class="badge {{getWorkerAvailabilityBadge().class}} px-3 py-2">
+                        <i class="fas {{getWorkerAvailabilityBadge().icon}} me-2"></i>
+                        {{ getWorkerAvailabilityBadge().text }}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div class="profile-actions">
+                    <button *ngIf="!isEditing" 
+                            class="btn btn-outline-primary me-2" 
+                            (click)="refreshProfile()">
+                      <i class="fas fa-sync-alt me-2"></i>
+                      Refresh
+                    </button>
+                    <button *ngIf="!isEditing" 
+                            class="btn btn-primary" 
+                            (click)="toggleEdit()">
+                      <i class="fas fa-edit me-2"></i>
+                      Edit Profile
+                    </button>
+                    <div *ngIf="isEditing" class="btn-group">
+                      <button class="btn btn-success" (click)="saveProfile()">
+                        <i class="fas fa-save me-2"></i>
+                        Save
+                      </button>
+                      <button class="btn btn-outline-secondary" (click)="toggleEdit()">
+                        <i class="fas fa-times me-2"></i>
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-body p-4">
+            <div class="row">
+              
+              <!-- Personal Information -->
+              <div class="col-md-6 mb-4">
+                <h5 class="fw-bold text-primary mb-3">
+                  <i class="fas fa-info-circle me-2"></i>
+                  Personal Information
+                </h5>
+                
+                <div class="info-item">
+                  <label class="fw-semibold text-muted">Email Address</label>
+                  <div *ngIf="!isEditing" class="info-value">
+                    <i class="fas fa-envelope me-2 text-primary"></i>
+                    {{ userProfile.email }}
+                  </div>
+                  <input *ngIf="isEditing" 
+                         type="email" 
+                         class="form-control" 
+                         [(ngModel)]="editForm.email"
+                         placeholder="Email Address">
+                </div>
+
+                <div class="info-item">
+                  <label class="fw-semibold text-muted">Phone Number</label>
+                  <div *ngIf="!isEditing" class="info-value">
+                    <i class="fas fa-phone me-2 text-success"></i>
+                    {{ userProfile.phone }}
+                  </div>
+                  <input *ngIf="isEditing" 
+                         type="tel" 
+                         class="form-control" 
+                         [(ngModel)]="editForm.phone"
+                         placeholder="Phone Number">
+                </div>
+
+                <div class="info-item">
+                  <label class="fw-semibold text-muted">User ID</label>
+                  <div class="info-value">
+                    <i class="fas fa-id-card me-2 text-info"></i>
+                    <span class="font-monospace small">{{ userProfile.userId }}</span>
+                  </div>
+                </div>
+
+                <div class="info-item">
+                  <label class="fw-semibold text-muted">Member Since</label>
+                  <div class="info-value">
+                    <i class="fas fa-calendar me-2 text-warning"></i>
+                    {{ userProfile.createdAt | date:'fullDate' }}
+                    <small class="text-muted ms-2">({{ getAccountAge() }})</small>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Department Information (Workers & Officials) -->
+              <div class="col-md-6 mb-4" *ngIf="isWorker() || isOfficial()">
+                <h5 class="fw-bold text-primary mb-3">
+                  <i class="fas fa-building me-2"></i>
+                  Department Information
+                </h5>
+
+                <div class="info-item" *ngIf="isWorker() && userProfile.workerDepartmentName">
+                  <label class="fw-semibold text-muted">Worker Department</label>
+                  <div class="info-value">
+                    <i class="fas fa-hard-hat me-2 text-success"></i>
+                    {{ userProfile.workerDepartmentName }}
+                  </div>
+                </div>
+
+                <div class="info-item" *ngIf="isOfficial() && userProfile.officialDepartmentName">
+                  <label class="fw-semibold text-muted">Official Department</label>
+                  <div class="info-value">
+                    <i class="fas fa-user-tie me-2 text-primary"></i>
+                    {{ userProfile.officialDepartmentName }}
+                  </div>
+                </div>
+
+                <div class="info-item" *ngIf="!userProfile.workerDepartmentName && !userProfile.officialDepartmentName">
+                  <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    No department assigned
+                  </div>
+                </div>
+              </div>
+
+              <!-- Activity & Statistics -->
+              <div class="col-12" *ngIf="hasStats()">
+                <h5 class="fw-bold text-primary mb-3">
+                  <i class="fas fa-chart-bar me-2"></i>
+                  Activity & Statistics
+                </h5>
+
+                <div class="row g-3">
+                  <!-- Total Complaints -->
+                  <div class="col-6 col-md-3">
+                    <div class="stat-card">
+                      <div class="stat-icon bg-primary">
+                        <i class="fas fa-file-alt"></i>
+                      </div>
+                      <div class="stat-content">
+                        <h4 class="stat-number">{{ userProfile.totalComplaints || 0 }}</h4>
+                        <p class="stat-label">Total Complaints</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Pending Complaints -->
+                  <div class="col-6 col-md-3">
+                    <div class="stat-card">
+                      <div class="stat-icon bg-warning">
+                        <i class="fas fa-clock"></i>
+                      </div>
+                      <div class="stat-content">
+                        <h4 class="stat-number">{{ userProfile.pendingComplaints || 0 }}</h4>
+                        <p class="stat-label">Pending</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Resolved Complaints -->
+                  <div class="col-6 col-md-3">
+                    <div class="stat-card">
+                      <div class="stat-icon bg-success">
+                        <i class="fas fa-check-circle"></i>
+                      </div>
+                      <div class="stat-content">
+                        <h4 class="stat-number">{{ userProfile.resolvedComplaints || 0 }}</h4>
+                        <p class="stat-label">Resolved</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Closed Complaints -->
+                  <div class="col-6 col-md-3">
+                    <div class="stat-card">
+                      <div class="stat-icon bg-dark">
+                        <i class="fas fa-archive"></i>
+                      </div>
+                      <div class="stat-content">
+                        <h4 class="stat-number">{{ userProfile.closedComplaints || 0 }}</h4>
+                        <p class="stat-label">Closed</p>
+                      </div>
+                    </div>
+                  </div>
+
+
+                  <!-- Total Feedbacks -->
+                  <div class="col-6 col-md-3" *ngIf="userProfile.totalFeedbacks > 0 && userProfile.isWorkerAvailable">
+                    <div class="stat-card">
+                      <div class="stat-icon bg-secondary">
+                        <i class="fas fa-comment"></i>
+                      </div>
+                      <div class="stat-content">
+                        <h4 class="stat-number">{{ userProfile.totalFeedbacks }}</h4>
+                        <p class="stat-label">Feedbacks</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Average Rating -->
+                  <div class="col-12 col-md-6" *ngIf="userProfile.averageRating && userProfile.isWorkerAvailable" >
+                    <div class="stat-card rating-card">
+                      <div class="d-flex align-items-center">
+                        <div class="stat-icon bg-warning me-3">
+                          <i class="fas fa-star"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                          <h4 class="stat-number mb-1">{{ userProfile.averageRating | number:'1.1-1' }}/5.0</h4>
+                          <div class="rating-stars mb-2">
+                            <i *ngFor="let star of getAverageRatingStars(); let i = index"
+                               class="fas fa-star"
+                               [class.text-warning]="star >= 0.5"
+                               [class.text-muted]="star < 0.5"></i>
+                          </div>
+                          <p class="stat-label mb-0">Average Rating</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- No Activity Message -->
+              <div class="col-12" *ngIf="!hasStats() && isCitizen()">
+                <div class="text-center py-4">
+                  <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                  <h5 class="text-muted">No Activity Yet</h5>
+                  <p class="text-muted">Start by submitting your first complaint to see statistics here.</p>
+                  <a routerLink="/new-complaint" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>
+                    Create First Complaint
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions Card -->
+        <div class="card shadow-lg border-0" style="border-radius: 20px;">
+          <div class="card-body p-4">
+            <h5 class="fw-bold text-primary mb-3">
+              <i class="fas fa-bolt me-2"></i>
+              Quick Actions
+            </h5>
+            
+            <div class="row g-3">
+              <div class="col-6 col-md-3" *ngIf="isCitizen()">
+                <a routerLink="/citizen/complaint/new" class="quick-action-btn">
+                  <i class="fas fa-plus-circle"></i>
+                  <span>New Complaint</span>
+                </a>
+              </div>
+              
+              <div class="col-6 col-md-3" *ngIf="isCitizen()">
+                <a routerLink="/citizen/complaints/my" class="quick-action-btn">
+                  <i class="fas fa-list"></i>
+                  <span>My Complaints</span>
+                </a>
+              </div>
+              
+              <div class="col-6 col-md-3" *ngIf="isWorker()">
+                <a routerLink="/assigned-complaints" class="quick-action-btn">
+                  <i class="fas fa-tasks"></i>
+                  <span>Assigned Work</span>
+                </a>
+              </div>
+              
+              <div class="col-6 col-md-3" *ngIf="isOfficial()">
+                <a routerLink="/department-complaints" class="quick-action-btn">
+                  <i class="fas fa-building"></i>
+                  <span>Department</span>
+                </a>
+              </div>
+              
+              <div class="col-6 col-md-3">
+                <a routerLink="/settings" class="quick-action-btn">
+                  <i class="fas fa-cog"></i>
+                  <span>Settings</span>
+                </a>
+              </div>
+              
+              <div class="col-6 col-md-3">
+                <a routerLink="/help" class="quick-action-btn">
+                  <i class="fas fa-question-circle"></i>
+                  <span>Help & Support</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Error State -->
+      <div *ngIf="!isLoading && !userProfile" class="text-center py-5">
+        <div class="card shadow-lg border-0" style="border-radius: 20px;">
+          <div class="card-body p-5">
+            <i class="fas fa-exclamation-triangle fa-5x text-warning mb-4"></i>
+            <h4 class="text-muted">Failed to Load Profile</h4>
+            <p class="text-muted mb-4">We couldn't retrieve your profile information. Please try again.</p>
+            <button class="btn btn-primary btn-lg" (click)="loadUserProfile()">
+              <i class="fas fa-sync-alt me-2"></i>
+              Retry
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

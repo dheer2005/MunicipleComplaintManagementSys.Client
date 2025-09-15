@@ -1,0 +1,396 @@
+<div class="container-fluid py-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; border-radius: 10px;">
+  <div class="row justify-content-center">
+    <div class="col-12">
+      
+      <!-- Header -->
+      <div class="text-center mb-4">
+        <h2 class="text-white fw-bold">
+          <i class="fas fa-clipboard-list me-2"></i>
+          My Complaints
+        </h2>
+        <p class="text-white-50">Track and manage your submitted complaints</p>
+      </div>
+
+      <!-- Status Filter Pills -->
+      <div class="card shadow-lg border-0 mb-4" style="border-radius: 20px;">
+        <div class="card-body p-4">
+          <div class="d-flex flex-wrap gap-2 justify-content-center">
+            <button 
+              *ngFor="let status of statusOptions" 
+              type="button"
+              class="btn btn-outline-primary filter-pill"
+              [class.active]="selectedStatus === status.value"
+              (click)="onStatusFilter(status.value)">
+              <i class="fas {{status.icon}} me-2"></i>
+              {{ status.label }}
+              <span *ngIf="status.value !== 'All'" class="badge bg-light text-dark ms-2">
+                {{ getComplaintsCountByStatus(status.value) }}
+              </span>
+              <span *ngIf="status.value === 'All'" 
+                    class="badge bg-light text-dark ms-2">
+                {{ complaints.length }}
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="text-center py-5">
+        <div class="spinner-border text-white" style="width: 3rem; height: 3rem;"></div>
+        <p class="text-white mt-3">Loading your complaints...</p>
+      </div>
+
+      <!-- No Complaints -->
+      <div *ngIf="!isLoading && filteredComplaints.length === 0" class="text-center py-5">
+        <div class="card shadow-lg border-0" style="border-radius: 20px;">
+          <div class="card-body p-5">
+            <i class="fas fa-inbox fa-5x text-muted mb-4"></i>
+            <h4 class="text-muted">No complaints found</h4>
+            <p class="text-muted">
+              {{ selectedStatus === 'All' ? 'You haven\'t submitted any complaints yet.' : 'No complaints with ' + selectedStatus + ' status.' }}
+            </p>
+            <a routerLink="/citizen/complaint/new" class="btn btn-primary btn-lg">
+              <i class="fas fa-plus me-2"></i>
+              Create New Complaint
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Complaints List -->
+      <div *ngIf="!isLoading && filteredComplaints.length > 0" class="row">
+        <div *ngFor="let complaint of filteredComplaints" class="col-12 col-lg-6 col-xl-4 mb-4">
+          <div class="card shadow-lg border-0 h-100 complaint-card" style="border-radius: 20px;">
+            <div class="card-header bg-transparent border-0 p-4">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <h6 class="fw-bold text-primary mb-1">{{ complaint.ticketNo }}</h6>
+                  <small class="text-muted">
+                    <i class="fas fa-clock me-1"></i>
+                    {{ getTimeAgo(complaint.createdAt) }}
+                  </small>
+                </div>
+                <span [ngClass]="getStatusBadgeClass(complaint.currentStatus)" class="px-3 py-2">
+                  <i class="fas {{complaint.statusInfo.icon}} me-1"></i>
+                  {{ complaint.statusInfo.label }}
+                </span>
+              </div>
+            </div>
+
+            <div class="card-body p-4 pt-0">
+              <!-- Progress Bar -->
+              <div class="progress mb-3" style="height: 6px;">
+                <div class="progress-bar bg-primary" 
+                     [style.width.%]="getProgressPercentage(complaint.currentStatus, complaint)">
+                </div>
+              </div>
+              
+
+              <!-- Department & Category -->
+              <div class="mb-3">
+                <div class="d-flex align-items-center mb-2">
+                  <i class="fas fa-building text-primary me-2"></i>
+                  <strong class="text-dark">{{ complaint.departmentName }}</strong>
+                </div>
+                <div class="d-flex align-items-center text-muted small">
+                  <i class="fas fa-tags me-2"></i>
+                  {{ complaint.categoryName }} - {{ complaint.subCategoryName }}
+                </div>
+              </div>
+
+              <!-- Description -->
+              <p class="text-muted mb-3" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                {{ complaint.description }}
+              </p>
+
+              <!-- Location -->
+              <div *ngIf="complaint.addressText" class="mb-3">
+                <div class="d-flex align-items-center text-muted small">
+                  <i class="fas fa-map-marker-alt text-danger me-2"></i>
+                  <span class="text-truncate">{{ complaint.addressText }}</span>
+                </div>
+              </div>
+
+              <!-- Assigned Worker -->
+              <div *ngIf="complaint.assignedWorkerName" class="mb-3">
+                <div class="d-flex align-items-center text-success small">
+                  <i class="fas fa-user-tie me-2"></i>
+                  Assigned to: <strong class="ms-1">{{ complaint.assignedWorkerName }}</strong>
+                </div>
+              </div>
+
+              <!-- SLA Due Date -->
+              <div *ngIf="complaint.slaDueAt" class="mb-3">
+                <div class="d-flex align-items-center text-warning small">
+                  <i class="fas fa-hourglass-half me-2"></i>
+                  Due: {{ complaint.slaDueAt | date:'short' }}
+                </div>
+              </div>
+
+              <!-- Feedback Display -->
+              <div *ngIf="complaint.feedback" class="mb-3">
+                <div class="bg-light rounded p-3">
+                  <div class="d-flex align-items-center mb-2">
+                    <i class="fas fa-star text-warning me-1"></i>
+                    <strong class="me-2">{{ complaint.feedback.rating }}/5</strong>
+                    <span class="badge bg-success" *ngIf=" complaint.feedback.isSatisfied === true">Satisfied</span>
+                    <span class="badge bg-warning" *ngIf="complaint.feedback.isSatisfied === false">Not Satisfied</span>
+                  </div>
+                  <small class="text-muted">{{ complaint.feedback.comments }}</small>
+                </div>
+              </div>
+
+              <!-- Attachments -->
+              <div *ngIf="complaint.attachments && complaint.attachments.length > 0" class="mb-3">
+                <small class="text-muted d-block mb-2">
+                  <i class="fas fa-paperclip me-1"></i>
+                  {{ complaint.attachments.length }} attachment(s)
+                </small>
+                <div class="d-flex flex-wrap gap-1">
+                  <img *ngFor="let attachment of complaint.attachments.slice(0, 3)" 
+                       [src]="attachment.imageUrl" 
+                       class="rounded"
+                       style="width: 40px; height: 40px; object-fit: cover;">
+                  <div *ngIf="complaint.attachments.length > 3" 
+                       class="d-flex align-items-center justify-content-center rounded bg-light"
+                       style="width: 40px; height: 40px;">
+                    <small class="text-muted">+{{ complaint.attachments.length - 3 }}</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="card-footer bg-transparent border-0 p-4">
+              <div class="d-flex gap-2 flex-wrap">
+                <button class="btn btn-outline-primary btn-sm flex-fill" 
+                        (click)="viewComplaintDetails(complaint)">
+                  <i class="fas fa-eye me-1"></i>
+                  View Details
+                </button>
+
+                <button *ngIf="canProvideFeedback(complaint)" 
+                        class="btn btn-success btn-sm flex-fill"
+                        (click)="openFeedbackModal(complaint)">
+                  <i class="fas fa-thumbs-up me-1"></i>
+                  Feedback
+                </button>
+
+                <button *ngIf="canReopenComplaint(complaint)" 
+                        class="btn btn-warning btn-sm flex-fill"
+                        (click)="reopenComplaint(complaint.complaintId)">
+                  <i class="fas fa-redo me-1"></i>
+                  Reopen
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Feedback Modal -->
+<div class="modal fade" [class.show]="showFeedbackModal" [style.display]="showFeedbackModal ? 'block' : 'none'"
+     tabindex="-1" *ngIf="showFeedbackModal">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius: 20px; border: none;">
+      <div class="modal-header bg-primary text-white" style="border-radius: 20px 20px 0 0;">
+        <h5 class="modal-title">
+          <i class="fas fa-star me-2"></i>
+          Provide Feedback
+        </h5>
+        <button type="button" class="btn-close btn-close-white" (click)="closeFeedbackModal()"></button>
+      </div>
+      
+      <div class="modal-body p-4">
+        <div class="mb-4">
+          <h6 class="fw-bold">Ticket: {{ selectedComplaintForFeedback?.ticketNo }}</h6>
+          <p class="text-muted small">{{ selectedComplaintForFeedback?.description }}</p>
+        </div>
+
+        <!-- Satisfaction Check -->
+        <div class="mb-4">
+          <label class="form-label fw-semibold">
+            <i class="fas fa-question-circle me-2 text-primary"></i>
+            Are you satisfied with the resolution?
+          </label>
+          <div class="btn-group d-block" role="group">
+            <input type="radio" class="btn-check" name="satisfaction" id="satisfied" 
+                   [(ngModel)]="feedbackData.isSatisfied" [value]="true">
+            <label class="btn btn-outline-success me-2" for="satisfied">
+              <i class="fas fa-thumbs-up me-1"></i>
+              Yes, Satisfied
+            </label>
+
+            <input type="radio" class="btn-check" name="satisfaction" id="notSatisfied" 
+                   [(ngModel)]="feedbackData.isSatisfied" [value]="false">
+            <label class="btn btn-outline-danger" for="notSatisfied">
+              <i class="fas fa-thumbs-down me-1"></i>
+              No, Not Satisfied
+            </label>
+          </div>
+          <small class="form-text text-muted">
+            *If not satisfied, the complaint will be reopened automatically
+          </small>
+        </div>
+
+        <!-- Rating -->
+        <div class="mb-4">
+          <label class="form-label fw-semibold">
+            <i class="fas fa-star me-2 text-warning"></i>
+            Rate the service (1-5 stars)
+          </label>
+          <div class="rating-container">
+            <button *ngFor="let star of [1,2,3,4,5]" 
+                    type="button"
+                    class="btn p-1"
+                    [class.text-warning]="star <= feedbackData.rating"
+                    [class.text-muted]="star > feedbackData.rating"
+                    (click)="setRating(star)">
+              <i class="fas fa-star fa-2x"></i>
+            </button>
+          </div>
+          <small class="form-text text-muted">Current rating: {{ feedbackData.rating }}/5</small>
+        </div>
+
+        <!-- Comments -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold">
+            <i class="fas fa-comment me-2 text-primary"></i>
+            Additional Comments
+          </label>
+          <textarea class="form-control" 
+                    rows="4" 
+                    [(ngModel)]="feedbackData.comments"
+                    placeholder="Share your experience or suggestions for improvement...">
+          </textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer border-0 p-4">
+        <button type="button" class="btn btn-outline-secondary" (click)="closeFeedbackModal()">
+          Cancel
+        </button>
+        <button type="button" class="btn btn-primary" (click)="submitFeedback()">
+          <i class="fas fa-paper-plane me-2"></i>
+          Submit Feedback
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Complaint Details Modal -->
+<div class="modal fade" 
+     [class.show]="showComplaintDetailsModal" 
+     [style.display]="showComplaintDetailsModal ? 'block' : 'none'"
+     tabindex="-1" 
+     *ngIf="showComplaintDetailsModal">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content" style="border-radius: 20px; border: none;">
+      
+      <!-- Header -->
+      <div class="modal-header bg-primary text-white" style="border-radius: 20px 20px 0 0;">
+        <h5 class="modal-title">
+          <i class="fas fa-eye me-2"></i>
+          Complaint Details
+        </h5>
+        <button type="button" class="btn-close btn-close-white" (click)="closeComplaintDetailsModal()"></button>
+      </div>
+
+      <!-- Body -->
+      <div class="modal-body p-4" *ngIf="selectedComplaintForDetails">
+        <h6 class="fw-bold text-primary mb-3">Ticket No: {{ selectedComplaintForDetails.ticketNo }}</h6>
+
+        <!-- Complaint Status Stepper -->
+        <div class="complaint-stepper mb-4">
+          <div class="step-container d-flex justify-content-between position-relative">
+            <!-- Background line -->
+            <div class="line-background" 
+                [style.left.%]="statusSteps.length > 1 ? (100 / statusSteps.length) / 2 : 0"
+                [style.right.%]="statusSteps.length > 1 ? (100 / statusSteps.length) / 2 : 0"
+                [style.display]="statusSteps.length > 1 ? 'block' : 'none'">
+            </div>
+            
+            <!-- Progress line -->
+            <div class="line-progress" 
+                [style.left.%]="statusSteps.length > 1 ? (100 / statusSteps.length) / 2 : 0"
+                [style.width.%]="progressWidth"
+                [style.display]="statusSteps.length > 1 ? 'block' : 'none'">
+            </div>
+            
+            <div *ngFor="let step of statusSteps; let i = index" class="step text-center flex-fill">
+              <!-- Circle -->
+              <div class="circle" 
+                  [class.active]="i === activeStepIndex" 
+                  [class.completed]="i <= activeStepIndex"
+                  [ngClass]="{'bg-warning text-dark': step === ComplaintStatus.Reopened}">
+                <i *ngIf="i < activeStepIndex" class="fas fa-check"></i>
+                <i *ngIf="i === activeStepIndex && step === ComplaintStatus.Reopened" class="fas fa-redo"></i>
+                <i *ngIf="i === activeStepIndex && step === ComplaintStatus.Rejected" class="fas fa-ban"></i>
+                <i *ngIf="i === activeStepIndex && step === ComplaintStatus.Resolved" class="fas fa-check-circle"></i>
+                <i *ngIf="i === activeStepIndex && step === ComplaintStatus.Closed" class="fas fa-times-circle"></i>
+                <i *ngIf="i === activeStepIndex && step === ComplaintStatus.InProgress" class="fas fa-spinner"></i>
+                <i *ngIf="i === activeStepIndex && step === ComplaintStatus.Assigned" class="fas fa-user-check"></i>
+                <i *ngIf="i === activeStepIndex && step === ComplaintStatus.Pending" class="fas fa-clock"></i>
+                <span *ngIf="i > activeStepIndex">{{ i + 1 }}</span>
+              </div>
+              
+              <!-- Label -->
+              <div class="label mt-2 small fw-bold" 
+                  [class.active-label]="i === activeStepIndex">
+                {{ step }}
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <p><strong>Status:</strong> {{ selectedComplaintForDetails.statusInfo.label }}</p>
+        <p><strong>Department:</strong> {{ selectedComplaintForDetails.departmentName }}</p>
+        <p><strong>Category:</strong> {{ selectedComplaintForDetails.categoryName }} - {{ selectedComplaintForDetails.subCategoryName }}</p>
+        <p><strong>Description:</strong> {{ selectedComplaintForDetails.description }}</p>
+        
+        <p *ngIf="selectedComplaintForDetails.addressText">
+          <strong>Location:</strong> {{ selectedComplaintForDetails.addressText }}
+        </p>
+
+        <p *ngIf="selectedComplaintForDetails.assignedWorkerName">
+          <strong>Assigned Worker:</strong> {{ selectedComplaintForDetails.assignedWorkerName }}
+        </p>
+
+        <p *ngIf="selectedComplaintForDetails.slaDueAt">
+          <strong>Due Date:</strong> {{ selectedComplaintForDetails.slaDueAt | date:'short' }}
+        </p>
+
+        <!-- Attachments -->
+        <div *ngIf="selectedComplaintForDetails.attachments?.length > 0" class="mt-3">
+          <strong>Attachments:</strong>
+          <div class="d-flex flex-wrap gap-2 mt-2 attachment-images">
+            <img *ngFor="let att of selectedComplaintForDetails.attachments" 
+                 [src]="att.imageUrl" 
+                 class="rounded" 
+                 style="width: 80px; height: 80px; object-fit: cover;">
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="modal-footer border-0 p-4">
+        <button type="button" class="btn btn-outline-secondary" (click)="closeComplaintDetailsModal()">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Backdrop -->
+<div class="modal-backdrop fade" [class.show]="showComplaintDetailsModal" *ngIf="showComplaintDetailsModal"></div>
+
+
+<!-- Modal Backdrop -->
+<div class="modal-backdrop fade" [class.show]="showFeedbackModal" *ngIf="showFeedbackModal"></div>

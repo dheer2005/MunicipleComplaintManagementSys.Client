@@ -1,0 +1,427 @@
+<div class="assign-complaints-container">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-title">
+      <h2>Assign Complaints to Workers</h2>
+      <p class="subtitle">Efficiently manage and assign unassigned complaints to available workers</p>
+    </div>
+    <div class="header-actions">
+      <!-- <button class="btn btn-outline" (click)="exportAssignments()" [disabled]="!selectedDepartmentId">
+        <i class="fas fa-download"></i> Export
+      </button> -->
+    </div>
+  </div>
+
+  <!-- Department Selection -->
+  <div class="department-selection" *ngIf="!selectedDepartmentId">
+    <h3>Select Department</h3>
+    <div class="departments-grid">
+      <div class="department-card" 
+           *ngFor="let dept of departments" 
+           (click)="selectDepartment(dept.departmentId)">
+        <div class="department-header">
+          <h4>{{ dept.departmentName }}</h4>
+          <span class="pending-badge" *ngIf="dept.pendingComplaints > 0">
+            {{ dept.pendingComplaints }} Pending
+          </span>
+        </div>
+        <div class="department-stats">
+          <div class="stat-row">
+            <span class="stat-label">Total Complaints:</span>
+            <span class="stat-value">{{ dept.totalComplaints }}</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Assigned:</span>
+            <span class="stat-value">{{ dept.assignedComplaints }}</span>
+          </div>
+          <div class="stat-row" *ngIf="dept.overdueComplaints > 0">
+            <span class="stat-label overdue">Overdue:</span>
+            <span class="stat-value overdue">{{ dept.overdueComplaints }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Assignment Interface -->
+  <div class="assignment-interface" *ngIf="selectedDepartmentId && !loading">
+    <!-- Department Header -->
+    <div class="department-header-info">
+      <div class="dept-info">
+        <button class="btn btn-secondary " (click)="selectedDepartmentId = null">
+          <i class="fas fa-arrow-left"></i> Back to Departments
+        </button>
+        <h3>{{ selectedDepartment?.departmentName }}</h3>
+      </div>
+      <div class="quick-stats">
+        <div class="quick-stat">
+          <span class="stat-number">{{ totalUnassigned }}</span>
+          <span class="stat-label text-white">Unassigned</span>
+        </div>
+        <div class="quick-stat overdue" *ngIf="overdueUnassigned > 0">
+          <span class="stat-number">{{ overdueUnassigned }}</span>
+          <span class="stat-label text-white">Overdue</span>
+        </div>
+        <div class="quick-stat high-priority" *ngIf="highPriorityUnassigned > 0">
+          <span class="stat-number">{{ highPriorityUnassigned }}</span>
+          <span class="stat-label text-white">High Priority</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Assignment Tools -->
+    <div class="assignment-tools">
+      <div class="tool-section">
+        <h4>Assignment Mode</h4>
+        <div class="mode-buttons">
+          <button class="btn mode-btn" 
+                  [class.active]="assignmentMode === 'individual'"
+                  (click)="assignmentMode = 'individual'">
+            <i class="fas fa-user"></i> Individual
+          </button>
+          <button class="btn mode-btn" 
+                  [class.active]="assignmentMode === 'bulk'"
+                  (click)="assignmentMode = 'bulk'">
+            <i class="fas fa-users"></i> Bulk
+          </button>
+          <button class="btn mode-btn" 
+                  [class.active]="assignmentMode === 'auto'"
+                  (click)="assignmentMode = 'auto'">
+            <i class="fas fa-magic"></i> Auto
+          </button>
+        </div>
+      </div>
+    
+
+      <!-- Auto Assignment Options -->
+       <div class="tool-section" *ngIf="assignmentMode === 'auto'">
+        <h4>Auto Assignment Criteria</h4>
+        <select [(ngModel)]="autoAssignmentCriteria" class="form-select">
+          <option value="workload">Based on Workload</option>
+          <option value="random">Random Assignment</option>
+          <option value="roundrobin">Round Robin</option>
+        </select>
+        <button class="btn btn-success" 
+                (click)="autoAssignComplaints()" 
+                [disabled]="assigningComplaint || filteredComplaints.length === 0">
+          <i class="fas fa-magic"></i> Auto Assign All
+        </button>
+    </div>
+      <!-- Bulk Assignment Tools -->
+
+      <div class="tool-section" *ngIf="assignmentMode === 'bulk'">
+        <h4>Bulk Assignment</h4>
+        <div class="bulk-tools">
+          <button class="btn btn-sm btn-outline" (click)="selectAllComplaints(true)">
+            Select All
+          </button>
+          <button class="btn btn-sm btn-outline" (click)="selectAllComplaints(false)">
+            Clear All
+          </button>
+          <button class="btn btn-primary" 
+                   
+                  [disabled]="selectedComplaints.length === 0">
+            <i class="fas fa-users"></i> Assign Selected ({{ selectedComplaints.length }})
+          </button>
+        </div>
+      </div>
+    </div>
+       
+
+    <!-- Split View: Complaints and Workers -->
+    <div class="split-view">
+      <!-- Complaints Section -->
+      <div class="complaints-section">
+        <div class="section-header">
+          <h4>Unassigned Complaints ({{ filteredComplaints.length }})</h4>
+          
+          <!-- Filters -->
+          <div class="filters">
+            <select [(ngModel)]="priorityFilter" class="filter-select">
+              <option value="All">All Priority</option>
+              <option value="High">High Priority</option>
+              <option value="Medium">Medium Priority</option>
+              <option value="Low">Low Priority</option>
+            </select>
+            
+            <input type="text" 
+                   [(ngModel)]="searchTerm" 
+                   placeholder="Search complaints..." 
+                   class="search-input">
+          </div>
+        </div>
+
+        
+        <!-- Complaints List -->
+        <div class="complaints-list">
+          <div class="complaint-item" 
+          *ngFor="let complaint of paginatedComplaints"
+          [class.selected]="complaint.selected">
+          
+            <!-- Selection checkbox for bulk mode -->
+            <div class="complaint-checkbox" *ngIf="assignmentMode === 'bulk'">
+              <input type="checkbox" 
+                      [checked]="complaint.selected"
+                      (change)="toggleComplaintSelection(complaint.complaintId)">
+            </div>
+
+            <div class="complaint-content">
+              <div class="complaint-header">
+                <span class="ticket-no">{{ complaint.ticketNo }}</span>
+                <div class="complaint-badges">
+                  <span class="priority-badge" [class]="getPriorityClass(complaint.priority!)">
+                    {{ complaint.priority }}
+                  </span>
+                  <span class="overdue-badge" *ngIf="complaint.isOverdue">
+                    <i class="fas fa-clock"></i> Overdue
+                  </span>
+                </div>
+              </div>
+
+              <div class="complaint-details">
+                <div class="detail-row">
+                  <strong>Citizen:</strong> {{ complaint.citizenName }}
+                </div>
+                <div class="detail-row">
+                  <strong>Category:</strong> {{ complaint.categoryName }} 
+                  <span *ngIf="complaint.subCategoryName"> - {{ complaint.subCategoryName }}</span>
+                </div>
+                <div class="detail-row">
+                  <strong>Description:</strong> 
+                  <span class="description">{{ complaint.description }}</span>
+                </div>
+                <div class="detail-row">
+                  <strong>Created:</strong> {{ complaint.createdAt | date:'short' }}
+                  <span class="days-ago">({{ complaint.daysSinceCreated }} days ago)</span>
+                </div>
+                <div class="detail-row" [class.overdue]="complaint.isOverdue">
+                  <strong>SLA Due:</strong> {{ complaint.slaDueAt | date:'short' }}
+                </div>
+              </div>
+
+              <div class="complaint-actions">
+                <button class="btn btn-sm btn-primary" 
+                        (click)="viewComplaintDetails(complaint.complaintId)">
+                  <i class="fas fa-eye"></i> View
+                </button>
+                <button class="btn btn-sm btn-success" 
+                        *ngIf="assignmentMode === 'individual'"
+                        (click)="openAssignModal(complaint.complaintId)">
+                  <i class="fas fa-user-plus"></i> Assign
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- No complaints message -->
+          <div class="no-data" *ngIf="filteredComplaints.length === 0">
+            <i class="fas fa-inbox"></i>
+            <p>No unassigned complaints found</p>
+          </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination" *ngIf="totalPages > 1">
+          <button class="btn btn-sm" 
+                  (click)="changePage(currentPage - 1)" 
+                  [disabled]="currentPage === 1">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          
+          <span class="page-info">
+            Page {{ currentPage }} of {{ totalPages }}
+          </span>
+          
+          <button class="btn btn-sm" 
+                  (click)="changePage(currentPage + 1)" 
+                  [disabled]="currentPage === totalPages">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Workers Section -->
+      <div class="workers-section">
+        <div class="section-header">
+          <h4>Available Workers ({{ availableWorkers.length }})</h4>
+        </div>
+
+        <div class="workers-list">
+          <div class="worker-card" 
+               *ngFor="let worker of availableWorkers"
+               (click)="openWorkerDetails(worker)">
+            <div class="worker-header">
+              <div class="worker-info">
+                <h5>{{ worker.fullName }}</h5>
+                <span class="availability-status" [class]="getAvailabilityClass(worker.availabilityStatus!)">
+                  {{ worker.availabilityStatus }}
+                </span>
+              </div>
+              <div class="worker-stats">
+                <span class="assignment-count">{{ worker.currentAssignments }}</span>
+                <span class="assignment-label">assignments</span>
+              </div>
+            </div>
+
+            <div class="worker-workload">
+              <div class="workload-bar">
+                <div class="workload-fill" 
+                     [style.width.%]="worker.workloadPercentage"
+                     [class]="getAvailabilityClass(worker.availabilityStatus!)"></div>
+              </div>
+              <span class="workload-text">{{ worker.workloadPercentage }}% capacity</span>
+            </div>
+
+            <div class="worker-actions" *ngIf="assignmentMode === 'individual' && selectedComplaintId">
+              <button class="btn btn-sm btn-success" 
+                      (click)="assignComplaint(selectedComplaintId, worker.workerId); $event.stopPropagation()"
+                      [disabled]="assigningComplaint || worker.availabilityStatus === 'Overloaded'">
+                <i class="fas fa-plus"></i> Assign
+              </button>
+            </div>
+          </div>
+
+          <!-- No workers message -->
+          <div class="no-data" *ngIf="availableWorkers.length === 0">
+            <i class="fas fa-user-slash"></i>
+            <p>No available workers found</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading Spinner -->
+  <div class="loading-spinner" *ngIf="loading">
+    <i class="fas fa-spinner fa-spin"></i>
+    <span>Loading...</span>
+  </div>
+
+  <!-- Individual Assignment Modal -->
+  <div class="modal-overlay" *ngIf="selectedComplaintId && assignmentMode === 'individual'" (click)="closeAssignModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h4>Assign Complaint</h4>
+        <button class="close-btn" (click)="closeAssignModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="modal-body">
+        <div class="complaint-summary">
+          <h5>Complaint Details</h5>
+          <div class="summary-item" *ngFor="let complaint of unassignedComplaints">
+            <div *ngIf="complaint.complaintId === selectedComplaintId">
+              <p><strong>Ticket:</strong> {{ complaint.ticketNo }}</p>
+              <p><strong>Citizen:</strong> {{ complaint.citizenName }}</p>
+              <p><strong>Category:</strong> {{ complaint.categoryName }}</p>
+              <p><strong>Priority:</strong> 
+                <span class="priority-badge" [class]="getPriorityClass(complaint.priority!)">
+                  {{ complaint.priority }}
+                </span>
+              </p>
+              <p><strong>Description:</strong> {{ complaint.description }}</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="worker-selection">
+          <h5>Select Worker</h5>
+          <div class="worker-options">
+            <div class="worker-option" 
+                 *ngFor="let worker of availableWorkers"
+                 [class.selected]="selectedWorkerId === worker.workerId"
+                 [class.overloaded]="worker.availabilityStatus === 'Overloaded'"
+                 (click)="selectedWorkerId = worker.workerId">
+              <div class="worker-option-header">
+                <span class="worker-name">{{ worker.fullName }}</span>
+                <span class="availability-badge" [class]="getAvailabilityClass(worker.availabilityStatus!)">
+                  {{ worker.availabilityStatus }}
+                </span>
+              </div>
+              <div class="worker-option-details">
+                <span>Current assignments: {{ worker.currentAssignments }}</span>
+                <div class="workload-mini-bar">
+                  <div class="workload-mini-fill" 
+                       [style.width.%]="worker.workloadPercentage"
+                       [class]="getAvailabilityClass(worker.availabilityStatus!)"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeAssignModal()">Cancel</button>
+        <button class="btn btn-primary" 
+                (click)="assignComplaint(selectedComplaintId!, selectedWorkerId!)" 
+                [disabled]="!selectedWorkerId || assigningComplaint">
+          <i class="fas fa-spinner fa-spin" *ngIf="assigningComplaint"></i>
+          {{ assigningComplaint ? 'Assigning...' : 'Assign Complaint' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Worker Details Modal -->
+  <div class="modal-overlay" *ngIf="showWorkerDetailsModal" (click)="closeWorkerDetailsModal()">
+    <div class="modal-content worker-details-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h4>Worker Details</h4>
+        <button class="close-btn" (click)="closeWorkerDetailsModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="modal-body" *ngIf="selectedWorkerDetails">
+        <div class="worker-profile">
+          <div class="worker-avatar">
+            <i class="fas fa-user-circle"></i>
+          </div>
+          <div class="worker-info-detailed">
+            <h5>{{ selectedWorkerDetails.fullName }}</h5>
+            <p class="worker-status">
+              <span class="availability-badge" [class]="getAvailabilityClass(selectedWorkerDetails.availabilityStatus!)">
+                {{ selectedWorkerDetails.availabilityStatus }}
+              </span>
+            </p>
+          </div>
+        </div>
+        
+        <div class="worker-stats-detailed">
+          <div class="stat-card">
+            <div class="stat-number">{{ selectedWorkerDetails.currentAssignments }}</div>
+            <div class="stat-label">Current Assignments</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">{{ selectedWorkerDetails.workloadPercentage }}%</div>
+            <div class="stat-label">Workload</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">{{ 10 - selectedWorkerDetails.currentAssignments }}</div>
+            <div class="stat-label">Available Capacity</div>
+          </div>
+        </div>
+        
+        <div class="workload-visualization">
+          <h6>Workload Distribution</h6>
+          <div class="workload-bar-large">
+            <div class="workload-fill-large" 
+                 [style.width.%]="selectedWorkerDetails.workloadPercentage"
+                 [class]="getAvailabilityClass(selectedWorkerDetails.availabilityStatus!)"></div>
+          </div>
+          <div class="workload-labels">
+            <span>0%</span>
+            <span>50%</span>
+            <span>100%</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeWorkerDetailsModal()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>

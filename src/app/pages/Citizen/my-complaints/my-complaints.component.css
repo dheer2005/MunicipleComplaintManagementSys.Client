@@ -1,0 +1,566 @@
+/* My Complaints Component Styles */
+
+/* Filter Pills */
+.filter-pill {
+  border-radius: 50px !important;
+  padding: 8px 20px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  border: 2px solid #667eea;
+  color: #667eea;
+  background: transparent;
+}
+
+.filter-pill:hover {
+  background: #667eea;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+.filter-pill.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-color: transparent;
+  transform: scale(1.05);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+/* Complaint Cards */
+.complaint-card {
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.complaint-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Status Badges */
+.badge {
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: 50px;
+  font-size: 0.8rem;
+  letter-spacing: 0.5px;
+}
+
+.bg-warning {
+  background: linear-gradient(135deg, #f6ad55 0%, #ed8936 100%) !important;
+}
+
+.bg-info {
+  background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%) !important;
+}
+
+.bg-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+.bg-success {
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%) !important;
+}
+
+.bg-danger {
+  background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%) !important;
+}
+
+.bg-dark {
+  background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%) !important;
+}
+
+.bg-secondary {
+  background: linear-gradient(135deg, #a0aec0 0%, #718096 100%) !important;
+}
+
+/* Progress Bar */
+.progress {
+  background-color: rgba(102, 126, 234, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  transition: width 0.6s ease;
+  border-radius: 10px;
+}
+
+/* Card Headers */
+.card-header {
+  background: transparent !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Action Buttons */
+.btn-outline-primary {
+  border: 2px solid #667eea;
+  color: #667eea;
+  background: transparent;
+  border-radius: 10px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-outline-primary:hover {
+  background: #667eea;
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-success:hover {
+  background: linear-gradient(135deg, #38a169 0%, #2f855a 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(72, 187, 120, 0.3);
+}
+
+.btn-warning {
+  background: linear-gradient(135deg, #f6ad55 0%, #ed8936 100%);
+  border: none;
+  color: white;
+  border-radius: 10px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-warning:hover {
+  background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(237, 137, 54, 0.3);
+}
+
+/* Card Footer */
+.card-footer {
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  background: transparent !important;
+}
+
+/* Modal Enhancements */
+.modal-content {
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(10px);
+}
+
+.modal-header.bg-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+/* Rating Stars */
+.rating-container {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.rating-container .btn {
+  border: none;
+  background: transparent;
+  transition: all 0.2s ease;
+}
+
+.rating-container .btn:hover {
+  transform: scale(1.2);
+}
+
+.rating-container .btn:focus {
+  box-shadow: none;
+}
+
+/* Feedback Form */
+.btn-check:checked + .btn-outline-success {
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  border-color: transparent;
+  color: white;
+}
+
+.btn-check:checked + .btn-outline-danger {
+  background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+  border-color: transparent;
+  color: white;
+}
+
+/* Attachment Images */
+.attachment-images img {
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.attachment-images img:hover {
+  transform: scale(1.1);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+
+
+
+.text-truncate-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Loading Animation */
+.spinner-border {
+  animation: spinner-border 0.75s linear infinite;
+}
+
+@keyframes spinner-border {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Empty State */
+.empty-state {
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.empty-state i {
+  opacity: 0.3;
+  margin-bottom: 20px;
+}
+
+/* Custom Scrollbar for Modal */
+.modal-body {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 10px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .container-fluid {
+    padding: 1rem;
+  }
+  
+  .filter-pill {
+    padding: 6px 16px;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .complaint-card {
+    margin-bottom: 1rem;
+  }
+  
+  .card-body {
+    padding: 1.5rem;
+  }
+  
+  .btn-sm {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+  
+  .modal-dialog {
+    margin: 1rem;
+    max-width: none;
+  }
+  
+  .rating-container .btn i {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .text-center h2 {
+    font-size: 1.5rem;
+  }
+  
+  .filter-pill .badge {
+    display: none;
+  }
+  
+  .card-footer .btn {
+    font-size: 0.8rem;
+    padding: 6px 12px;
+  }
+  
+  .d-flex.gap-2 {
+    flex-direction: column;
+  }
+  
+  .d-flex.gap-2 .btn {
+    margin-bottom: 0.5rem;
+  }
+}
+
+/* Animation Classes */
+.fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Status-specific styling */
+.status-pending {
+  border-left: 4px solid #f6ad55;
+}
+
+.status-resolved {
+  border-left: 4px solid #48bb78;
+}
+
+.status-rejected {
+  border-left: 4px solid #f56565;
+}
+
+.status-in-progress {
+  border-left: 4px solid #4299e1;
+}
+
+/* Hover effects for interactive elements */
+.complaint-card .btn:hover {
+  transform: translateY(-1px);
+}
+
+.complaint-card img:hover {
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+/* Badge animations */
+.badge {
+  transition: all 0.3s ease;
+}
+
+.complaint-card:hover .badge {
+  transform: scale(1.05);
+}
+
+/* Form enhancements */
+.form-control:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.form-check-input:checked {
+  background-color: #667eea;
+  border-color: #667eea;
+}
+
+/* Tooltip-like elements */
+.complaint-info {
+  position: relative;
+}
+
+.complaint-info:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  z-index: 1000;
+}
+
+/* Background patterns */
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #667eea, #764ba2, #667eea);
+  border-radius: 20px 20px 0 0;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.complaint-card:hover::before {
+  opacity: 1;
+}
+
+.text-primary i {
+  color: #667eea !important;
+}
+
+.text-success i {
+  color: #48bb78 !important;
+}
+
+.text-warning i {
+  color: #f6ad55 !important;
+}
+
+.text-danger i {
+  color: #f56565 !important;
+}
+
+.text-info i {
+  color: #4299e1 !important;
+}
+
+
+.complaint-stepper .step-container {
+  margin: 20px 0;
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.complaint-stepper .step {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 3;
+}
+
+.line-background {
+  position: absolute;
+  top: 18px;
+  height: 2px;
+  background: #ccc;
+  z-index: 1;
+  left: calc(50% / var(--total-steps));
+  right: calc(50% / var(--total-steps));
+}
+
+/* Progress line - shows completion progress */
+.line-progress {
+  position: absolute;
+  top: 18px;
+  height: 2px;
+  background: #007bff;
+  z-index: 2;
+  left: calc(50% / var(--total-steps));
+  width: 0;
+  transition: width 0.8s ease;
+  transform-origin: left center;
+}
+
+.complaint-stepper .circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  position: relative;
+  z-index: 3;
+  transition: all 0.4s ease;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.complaint-stepper .circle.active {
+  border-color: #007bff;
+  background: #007bff;
+  color: white;
+  transform: scale(1.1);
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+}
+
+.complaint-stepper .circle.completed {
+  background: #28a745;
+  border-color: #28a745;
+  color: white;
+}
+
+/* Special styling for reopened status */
+.complaint-stepper .circle.bg-warning {
+  background: #ffc107 !important;
+  border-color: #ffc107 !important;
+  color: #212529 !important;
+}
+
+.complaint-stepper .label {
+  margin-top: 8px;
+  color: #777;
+  font-size: 12px;
+  text-align: center;
+  max-width: 80px;
+  word-wrap: break-word;
+  line-height: 1.2;
+}
+
+.complaint-stepper .label.active-label {
+  color: #007bff;
+  font-weight: bold;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .complaint-stepper .step-container {
+    margin: 15px 0;
+  }
+  
+  .complaint-stepper .circle {
+    width: 30px;
+    height: 30px;
+    font-size: 12px;
+  }
+  
+  .line-background,
+  .line-progress {
+    top: 15px;
+  }
+  
+  .complaint-stepper .label {
+    font-size: 10px;
+    max-width: 60px;
+    margin-top: 5px;
+  }
+}

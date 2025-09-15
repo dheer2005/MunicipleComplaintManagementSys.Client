@@ -1,0 +1,241 @@
+<div class="complaint-departments-container">
+  <!-- Header -->
+  <div class="header">
+    <h2>Department Complaint Management</h2>
+    <div class="header-actions">
+      <button class="btn btn-outline-secondary" (click)="refreshData()">
+        <i class="fas fa-refresh"></i> Refresh
+      </button>
+      <!-- <button class="btn btn-primary" (click)="exportToCSV()">
+        <i class="fas fa-download"></i> Export
+      </button> -->
+    </div>
+  </div>
+
+  <!-- Loading Spinner -->
+  <div class="loading-spinner" *ngIf="loading">
+    <i class="fas fa-spinner fa-spin"></i>
+    <span>Loading...</span>
+  </div>
+
+  <!-- Departments Overview -->
+  <div class="departments-section" *ngIf="!loading">
+    <h3>Departments Overview</h3>
+    <div class="departments-grid">
+      <div class="department-card" 
+           *ngFor="let dept of departments" 
+           [class.selected]="selectedDepartment?.departmentId === dept.departmentId"
+           (click)="selectDepartment(dept)">
+        <div class="department-header">
+          <h4>{{ dept.departmentName }}</h4>
+          <span class="total-complaints">{{ dept.totalComplaints }} Total</span>
+        </div>
+        <div class="department-stats">
+          <div class="stat-item pending">
+            <span class="count">{{ dept.pendingComplaints }}</span>
+            <span class="label">Pending</span>
+          </div>
+          <div class="stat-item assigned">
+            <span class="count">{{ dept.assignedComplaints }}</span>
+            <span class="label">Assigned</span>
+          </div>
+          <div class="stat-item resolved">
+            <span class="count">{{ dept.resolvedComplaints }}</span>
+            <span class="label">Resolved</span>
+          </div>
+          <div class="stat-item overdue" *ngIf="dept.overdueComplaints > 0">
+            <span class="count">{{ dept.overdueComplaints }}</span>
+            <span class="label">Overdue</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Department Complaints Details -->
+  <div class="complaints-section" *ngIf="selectedDepartment && !loading">
+    <div class="complaints-header">
+      <h3>{{ selectedDepartment.departmentName }} - Complaints</h3>
+      <button class="btn btn-outline" (click)="selectedDepartment = null">
+        <i class="fas fa-arrow-left"></i> Back to Overview
+      </button>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-section">
+      <div class="filter-group">
+        <label for="statusFilter">Status:</label>
+        <select id="statusFilter" [(ngModel)]="statusFilter" class="filter-select">
+          <option value="All">All Status</option>
+          <option value="Pending">Pending</option>
+          <option value="Assigned">Assigned</option>
+          <option value="InProgress">In Progress</option>
+          <option value="Resolved">Resolved</option>
+          <option value="Reopened">Reopened</option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label for="priorityFilter">Priority:</label>
+        <select id="priorityFilter" [(ngModel)]="priorityFilter" class="filter-select">
+          <option value="All">All Priority</option>
+          <option value="High">High (Overdue)</option>
+          <option value="Normal">Normal</option>
+        </select>
+      </div>
+      
+      <div class="filter-group search-group">
+        <label for="searchTerm">Search:</label>
+        <input 
+          id="searchTerm" 
+          type="text" 
+          [(ngModel)]="searchTerm" 
+          placeholder="Search by ticket, citizen, or description..."
+          class="search-input">
+      </div>
+    </div>
+
+    <!-- Complaints Table -->
+    <div class="table-container">
+      <table class="complaints-table">
+        <thead>
+          <tr>
+            <th>Ticket No</th>
+            <th>Citizen</th>
+            <th>Category</th>
+            <th>Description</th>
+            <th>Status</th>
+            <th>Created</th>
+            <th>SLA Due</th>
+            <th>Assigned Worker</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let complaint of paginatedComplaints">
+            <td>
+              <span class="ticket-no">{{ complaint.ticketNo }}</span>
+              <span class="priority-indicator" 
+                    [class]="getPriorityClass(complaint.isOverdue)"
+                    *ngIf="complaint.isOverdue">
+                <i class="fas fa-exclamation-triangle"></i>
+              </span>
+            </td>
+            <td>{{ complaint.citizenName }}</td>
+            <td>
+              <div class="category-info">
+                <div class="category">{{ complaint.categoryName }}</div>
+                <div class="subcategory">{{ complaint.subCategoryName }}</div>
+              </div>
+            </td>
+            <td class="description-cell">
+              <span class="description-text" [title]="complaint.description">
+                {{ complaint.description.length > 50 ? complaint.description.substring(0, 50) + '...' : complaint.description }}
+              </span>
+            </td>
+            <td>
+              <span class="status-badge" [class]="getStatusClass(complaint.currentStatus)">
+                {{ complaint.currentStatus }}
+              </span>
+            </td>
+            <td>{{ complaint.createdAt | date:'short' }}</td>
+            <td [class.overdue]="complaint.isOverdue">
+              {{ complaint.slaDueAt | date:'short' }}
+            </td>
+            <td>
+              <span *ngIf="complaint.assignedWorkerName; else notAssigned">
+                {{ complaint.assignedWorkerName }}
+              </span>
+              <ng-template #notAssigned>
+                <span class="not-assigned">Not Assigned</span>
+              </ng-template>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn btn-sm btn-primary" 
+                        (click)="viewComplaintDetails(complaint.complaintId)">
+                  <i class="fas fa-eye"></i>
+                </button>
+                <button class="btn btn-sm btn-success" 
+                        (click)="openAssignModal(complaint.complaintId)"
+                        *ngIf="complaint.currentStatus === 'Pending'">
+                  <i class="fas fa-user-plus"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <!-- No data message -->
+      <div class="no-data" *ngIf="filteredComplaints.length === 0">
+        <i class="fas fa-inbox"></i>
+        <p>No complaints found matching your criteria.</p>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button class="btn btn-sm" 
+              (click)="changePage(currentPage - 1)" 
+              [disabled]="currentPage === 1">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      
+      <span class="page-info">
+        Page {{ currentPage }} of {{ totalPages }}
+      </span>
+      
+      <button class="btn btn-sm" 
+              (click)="changePage(currentPage + 1)" 
+              [disabled]="currentPage === totalPages">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Assignment Modal -->
+  <div class="modal-overlay" *ngIf="showAssignModal" (click)="closeAssignModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h4>Assign Complaint to Worker</h4>
+        <button class="close-btn" (click)="closeAssignModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="workerSelect">Select Worker:</label>
+          <select id="workerSelect" [(ngModel)]="selectedWorkerId" class="form-select">
+            <option value="">-- Select a Worker --</option>
+            <option *ngFor="let worker of availableWorkers" 
+                    [value]="worker.workerId">
+              {{ worker.fullName }} ({{ worker.currentAssignments }} assignments)
+            </option>
+          </select>
+        </div>
+        
+        <div class="workers-list">
+          <h5>Available Workers:</h5>
+          <div class="worker-item" *ngFor="let worker of availableWorkers">
+            <span class="worker-name">{{ worker.fullName }}</span>
+            <span class="worker-load">Current: {{ worker.currentAssignments }} assignments</span>
+            <span class="worker-status" [class.active]="worker.isActive">
+              {{ worker.isActive ? 'Active' : 'Inactive' }}
+            </span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeAssignModal()">Cancel</button>
+        <button class="btn btn-primary" 
+                (click)="assignComplaint()" 
+                [disabled]="!selectedWorkerId">
+          Assign Complaint
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
