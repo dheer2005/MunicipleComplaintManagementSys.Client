@@ -169,6 +169,19 @@
                   <i class="fas fa-eye me-1"></i>
                   View Details
                 </button>
+                <button *ngIf="canEditComplaint(complaint)" 
+                        class="btn btn-outline-info btn-sm flex-fill"
+                        (click)="editComplaint(complaint)">
+                  <i class="fas fa-trash me-1"></i>
+                  Edit Complaint
+                </button>
+
+                <button *ngIf="canDeleteComplaint(complaint)" 
+                        class="btn btn-outline-danger btn-sm flex-fill"
+                        (click)="deleteComplaint(complaint.complaintId)">
+                  <i class="fas fa-trash me-1"></i>
+                  Delete Complaint
+                </button>
 
                 <button *ngIf="canProvideFeedback(complaint)" 
                         class="btn btn-success btn-sm flex-fill"
@@ -189,6 +202,236 @@
         </div>
       </div>
 
+    </div>
+  </div>
+</div>
+
+
+<!-- edit Complaint Details Modal -->
+<div class="modal fade" 
+[class.show]="showEditComplaintDetailsModal" 
+[style.display]="showEditComplaintDetailsModal ? 'block' : 'none'"
+tabindex="-1" 
+*ngIf="showEditComplaintDetailsModal">
+<div class="modal-dialog modal-lg modal-dialog-centered">
+  <div class="modal-content" style="border-radius: 20px; border: none;">
+    
+    <!-- Header -->
+    <div class="modal-header bg-primary text-white" style="border-radius: 20px 20px 0 0;">
+      <h5 class="modal-title">
+        <i class="fas fa-eye me-2"></i>
+        Edit Complaint Details
+      </h5>
+      <button type="button" class="btn-close btn-close-white" (click)="closeEditComplaintModal()"></button>
+    </div>
+    
+    <!-- Body -->
+    <div class="modal-body p-4" *ngIf="selectedComplaintForEdit">
+      <h6 class="fw-bold text-primary mb-3">Ticket No: {{ selectedComplaintForEdit.ticketNo }}</h6>
+      
+      <p><strong>Status:</strong> {{ selectedComplaintForEdit.statusInfo.label }}</p>
+      
+      <div class="row g-4 mb-4">
+        <div class="col-md-4">
+          <label for="departmentId" class="form-label fw-semibold">
+            <i class="fas fa-building me-2 text-primary"></i>
+            Department <span class="text-danger">*</span>
+          </label>
+          <select id="departmentId" 
+                  name="departmentId" 
+                  class="form-select form-select-lg" 
+                  [(ngModel)]="selectedComplaintForEdit.departmentId" 
+                  (change)="onDepartmentChangeForEdit()" 
+                  required>
+            <option selected disabled value="">--Select Department--</option>
+            <option *ngFor="let dept of departments" [value]="dept.departmentId">
+              {{ dept.departmentName }}
+            </option>
+          </select>
+          <div *ngIf="selectedComplaintForEdit.submitted && !selectedComplaintForEdit.departmentId" class="text-danger small mt-2">
+            <i class="fas fa-exclamation-triangle me-1"></i>Please select a department.
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <label for="categoryId" class="form-label fw-semibold">
+            <i class="fas fa-list me-2 text-primary"></i>
+            Category <span class="text-danger">*</span>
+          </label>
+          <select id="categoryId" 
+                  name="categoryId" 
+                  class="form-select form-select-lg" 
+                  [disabled]="!selectedComplaintForEdit.departmentId" 
+                  [(ngModel)]="selectedComplaintForEdit.categoryId" 
+                  (change)="onCategoryChangeForEdit()" 
+                  required>
+            <option selected disabled value="">--Select Category--</option>
+            <option *ngFor="let cat of categories" [value]="cat.categoryId">
+              {{ cat.categoryName }}
+            </option>
+          </select>
+          <div *ngIf="selectedComplaintForEdit.submitted && !selectedComplaintForEdit.categoryId" class="text-danger small mt-2">
+            <i class="fas fa-exclamation-triangle me-1"></i>Please select a category.
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <label for="subCategoryId" class="form-label fw-semibold">
+            <i class="fas fa-sitemap me-2 text-primary"></i>
+            Sub-Category <span class="text-danger">*</span>
+          </label>
+          <select id="subCategoryId" 
+                  name="subCategoryId" 
+                  [disabled]="!selectedComplaintForEdit.categoryId"
+                  class="form-select form-select-lg" 
+                  [(ngModel)]="selectedComplaintForEdit.subCategoryId" 
+                  required>
+            <option selected disabled value="">--Select Sub-Category--</option>
+            <option *ngFor="let sub of subCategories" [value]="sub.subCategoryId">
+              {{ sub.subCategoryName }}
+            </option>
+          </select>
+          <div *ngIf="selectedComplaintForEdit.submitted && !selectedComplaintForEdit.subCategoryId" class="text-danger small mt-2">
+            <i class="fas fa-exclamation-triangle me-1"></i>Please select a sub-category.
+          </div>
+        </div>
+      </div>
+      <p><strong>Description:</strong> {{ selectedComplaintForEdit.description }}</p>
+      
+      <p *ngIf="selectedComplaintForEdit.addressText">
+        <strong>Location:</strong> {{ selectedComplaintForEdit.addressText }}
+        </p>
+
+        <p *ngIf="selectedComplaintForEdit.assignedWorkerName">
+          <strong>Assigned Worker:</strong> {{ selectedComplaintForEdit.assignedWorkerName }}
+        </p>
+
+        <p *ngIf="selectedComplaintForEdit.slaDueAt">
+          <strong>Due Date:</strong> {{ selectedComplaintForEdit.slaDueAt | date:'short' }}
+        </p>
+        
+        <!-- Attachments -->
+        <div *ngIf="selectedComplaintForEdit.attachments?.length > 0" class="mt-3">
+          <strong>Attachments:</strong>
+          <div class="d-flex flex-wrap gap-2 mt-2 attachment-images">
+            <img *ngFor="let att of selectedComplaintForEdit.attachments" 
+                 [src]="att.imageUrl" 
+                 class="rounded" 
+                 style="width: 80px; height: 80px; object-fit: cover;">
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="modal-footer border-0 p-4">
+        <button type="button" class="btn btn-outline-secondary" (click)="closeEditComplaintModal()">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- view complaint details modal -->
+<div class="modal fade" 
+     [class.show]="showComplaintDetailsModal" 
+     [style.display]="showComplaintDetailsModal ? 'block' : 'none'"
+     tabindex="-1" 
+     *ngIf="showComplaintDetailsModal">
+     <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content" style="border-radius: 20px; border: none;">
+      
+      <!-- Header -->
+      <div class="modal-header bg-primary text-white" style="border-radius: 20px 20px 0 0;">
+        <h5 class="modal-title">
+          <i class="fas fa-eye me-2"></i>
+          Complaint Details
+        </h5>
+        <button type="button" class="btn-close btn-close-white" (click)="closeComplaintDetailsModal()"></button>
+      </div>
+
+      <!-- Body -->
+      <div class="modal-body p-4" *ngIf="selectedComplaintForDetails">
+        <h6 class="fw-bold text-primary mb-3">Ticket No: {{ selectedComplaintForDetails.ticketNo }}</h6>
+        
+        <!-- Complaint Status Stepper -->
+        <div class="complaint-stepper mb-4">
+          <div class="step-container d-flex justify-content-between position-relative">
+            <!-- Background line -->
+            <div class="line-background" 
+                [style.left.%]="statusSteps.length > 1 ? (100 / statusSteps.length) / 2 : 0"
+                [style.right.%]="statusSteps.length > 1 ? (100 / statusSteps.length) / 2 : 0"
+                [style.display]="statusSteps.length > 1 ? 'block' : 'none'">
+            </div>
+            
+            <!-- Progress line -->
+            <div class="line-progress" 
+                [style.left.%]="statusSteps.length > 1 ? (100 / statusSteps.length) / 2 : 0"
+                [style.width.%]="progressWidth"
+                [style.display]="statusSteps.length > 1 ? 'block' : 'none'">
+            </div>
+            
+            <div *ngFor="let step of statusSteps; let i = index" class="step text-center flex-fill">
+              <!-- Circle -->
+              <div class="circle" 
+              [class.active]="i === activeStepIndex" 
+              [class.completed]="i <= activeStepIndex"
+              [ngClass]="{'bg-warning text-dark': step === ComplaintStatus.Reopened}">
+              <i *ngIf="i < activeStepIndex" class="fas fa-check"></i>
+                <i *ngIf="i === activeStepIndex && step === ComplaintStatus.Reopened" class="fas fa-redo"></i>
+                <i *ngIf="i === activeStepIndex && step === ComplaintStatus.Rejected" class="fas fa-ban"></i>
+                <i *ngIf="i === activeStepIndex && step === ComplaintStatus.Resolved" class="fas fa-check-circle"></i>
+                <i *ngIf="i === activeStepIndex && step === ComplaintStatus.Closed" class="fas fa-times-circle"></i>
+                <i *ngIf="i === activeStepIndex && step === ComplaintStatus.InProgress" class="fas fa-spinner"></i>
+                <i *ngIf="i === activeStepIndex && step === ComplaintStatus.Assigned" class="fas fa-user-check"></i>
+                <i *ngIf="i === activeStepIndex && step === ComplaintStatus.Pending" class="fas fa-clock"></i>
+                <span *ngIf="i > activeStepIndex">{{ i + 1 }}</span>
+              </div>
+              
+              <!-- Label -->
+              <div class="label mt-2 small fw-bold" 
+              [class.active-label]="i === activeStepIndex">
+              {{ step }}
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <p><strong>Status:</strong> {{ selectedComplaintForDetails.statusInfo.label }}</p>
+      <p><strong>Department:</strong> {{ selectedComplaintForDetails.departmentName }}</p>
+      <p><strong>Category:</strong> {{ selectedComplaintForDetails.categoryName }} - {{ selectedComplaintForDetails.subCategoryName }}</p>
+      <p><strong>Description:</strong> {{ selectedComplaintForDetails.description }}</p>
+      
+        <p *ngIf="selectedComplaintForDetails.addressText">
+          <strong>Location:</strong> {{ selectedComplaintForDetails.addressText }}
+        </p>
+
+        <p *ngIf="selectedComplaintForDetails.assignedWorkerName">
+          <strong>Assigned Worker:</strong> {{ selectedComplaintForDetails.assignedWorkerName }}
+        </p>
+
+        <p *ngIf="selectedComplaintForDetails.slaDueAt">
+          <strong>Due Date:</strong> {{ selectedComplaintForDetails.slaDueAt | date:'short' }}
+        </p>
+        
+        <!-- Attachments -->
+        <div *ngIf="selectedComplaintForDetails.attachments?.length > 0" class="mt-3">
+          <strong>Attachments:</strong>
+          <div class="d-flex flex-wrap gap-2 mt-2 attachment-images">
+            <img *ngFor="let att of selectedComplaintForDetails.attachments" 
+            [src]="att.imageUrl" 
+            class="rounded" 
+            style="width: 80px; height: 80px; object-fit: cover;">
+          </div>
+        </div>
+      </div>
+      
+      <!-- Footer -->
+      <div class="modal-footer border-0 p-4">
+        <button type="button" class="btn btn-outline-secondary" (click)="closeComplaintDetailsModal()">
+          Close
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -283,114 +526,13 @@
     </div>
   </div>
 </div>
-
-<!-- Complaint Details Modal -->
-<div class="modal fade" 
-     [class.show]="showComplaintDetailsModal" 
-     [style.display]="showComplaintDetailsModal ? 'block' : 'none'"
-     tabindex="-1" 
-     *ngIf="showComplaintDetailsModal">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content" style="border-radius: 20px; border: none;">
-      
-      <!-- Header -->
-      <div class="modal-header bg-primary text-white" style="border-radius: 20px 20px 0 0;">
-        <h5 class="modal-title">
-          <i class="fas fa-eye me-2"></i>
-          Complaint Details
-        </h5>
-        <button type="button" class="btn-close btn-close-white" (click)="closeComplaintDetailsModal()"></button>
-      </div>
-
-      <!-- Body -->
-      <div class="modal-body p-4" *ngIf="selectedComplaintForDetails">
-        <h6 class="fw-bold text-primary mb-3">Ticket No: {{ selectedComplaintForDetails.ticketNo }}</h6>
-
-        <!-- Complaint Status Stepper -->
-        <div class="complaint-stepper mb-4">
-          <div class="step-container d-flex justify-content-between position-relative">
-            <!-- Background line -->
-            <div class="line-background" 
-                [style.left.%]="statusSteps.length > 1 ? (100 / statusSteps.length) / 2 : 0"
-                [style.right.%]="statusSteps.length > 1 ? (100 / statusSteps.length) / 2 : 0"
-                [style.display]="statusSteps.length > 1 ? 'block' : 'none'">
-            </div>
-            
-            <!-- Progress line -->
-            <div class="line-progress" 
-                [style.left.%]="statusSteps.length > 1 ? (100 / statusSteps.length) / 2 : 0"
-                [style.width.%]="progressWidth"
-                [style.display]="statusSteps.length > 1 ? 'block' : 'none'">
-            </div>
-            
-            <div *ngFor="let step of statusSteps; let i = index" class="step text-center flex-fill">
-              <!-- Circle -->
-              <div class="circle" 
-                  [class.active]="i === activeStepIndex" 
-                  [class.completed]="i <= activeStepIndex"
-                  [ngClass]="{'bg-warning text-dark': step === ComplaintStatus.Reopened}">
-                <i *ngIf="i < activeStepIndex" class="fas fa-check"></i>
-                <i *ngIf="i === activeStepIndex && step === ComplaintStatus.Reopened" class="fas fa-redo"></i>
-                <i *ngIf="i === activeStepIndex && step === ComplaintStatus.Rejected" class="fas fa-ban"></i>
-                <i *ngIf="i === activeStepIndex && step === ComplaintStatus.Resolved" class="fas fa-check-circle"></i>
-                <i *ngIf="i === activeStepIndex && step === ComplaintStatus.Closed" class="fas fa-times-circle"></i>
-                <i *ngIf="i === activeStepIndex && step === ComplaintStatus.InProgress" class="fas fa-spinner"></i>
-                <i *ngIf="i === activeStepIndex && step === ComplaintStatus.Assigned" class="fas fa-user-check"></i>
-                <i *ngIf="i === activeStepIndex && step === ComplaintStatus.Pending" class="fas fa-clock"></i>
-                <span *ngIf="i > activeStepIndex">{{ i + 1 }}</span>
-              </div>
-              
-              <!-- Label -->
-              <div class="label mt-2 small fw-bold" 
-                  [class.active-label]="i === activeStepIndex">
-                {{ step }}
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <p><strong>Status:</strong> {{ selectedComplaintForDetails.statusInfo.label }}</p>
-        <p><strong>Department:</strong> {{ selectedComplaintForDetails.departmentName }}</p>
-        <p><strong>Category:</strong> {{ selectedComplaintForDetails.categoryName }} - {{ selectedComplaintForDetails.subCategoryName }}</p>
-        <p><strong>Description:</strong> {{ selectedComplaintForDetails.description }}</p>
-        
-        <p *ngIf="selectedComplaintForDetails.addressText">
-          <strong>Location:</strong> {{ selectedComplaintForDetails.addressText }}
-        </p>
-
-        <p *ngIf="selectedComplaintForDetails.assignedWorkerName">
-          <strong>Assigned Worker:</strong> {{ selectedComplaintForDetails.assignedWorkerName }}
-        </p>
-
-        <p *ngIf="selectedComplaintForDetails.slaDueAt">
-          <strong>Due Date:</strong> {{ selectedComplaintForDetails.slaDueAt | date:'short' }}
-        </p>
-
-        <!-- Attachments -->
-        <div *ngIf="selectedComplaintForDetails.attachments?.length > 0" class="mt-3">
-          <strong>Attachments:</strong>
-          <div class="d-flex flex-wrap gap-2 mt-2 attachment-images">
-            <img *ngFor="let att of selectedComplaintForDetails.attachments" 
-                 [src]="att.imageUrl" 
-                 class="rounded" 
-                 style="width: 80px; height: 80px; object-fit: cover;">
-          </div>
-        </div>
-      </div>
-
-      <!-- Footer -->
-      <div class="modal-footer border-0 p-4">
-        <button type="button" class="btn btn-outline-secondary" (click)="closeComplaintDetailsModal()">
-          Close
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <!-- Modal Backdrop -->
 <div class="modal-backdrop fade" [class.show]="showComplaintDetailsModal" *ngIf="showComplaintDetailsModal"></div>
 
+<!-- Modal Backdrop for view component details -->
+<div class="modal-backdrop fade" [class.show]="showComplaintDetailsModal" *ngIf="showComplaintDetailsModal"></div>
 
-<!-- Modal Backdrop -->
+
+<!-- Modal Backdrop for show feedback modal-->
 <div class="modal-backdrop fade" [class.show]="showFeedbackModal" *ngIf="showFeedbackModal"></div>
+

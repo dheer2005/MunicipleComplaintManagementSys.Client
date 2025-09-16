@@ -131,7 +131,10 @@ export class ComplaintDepartmentsComponent implements OnInit {
     }
 
     try {
-      this.OfficialSvc.assignComplaint(this.selectedComplaintId, this.selectedWorkerId.toString()).subscribe(); 
+      this.OfficialSvc.assignComplaint(this.selectedComplaintId, this.selectedWorkerId.toString()).subscribe((res)=>{
+        console.log("assignComplaint:", res);
+        this.loadDepartments();
+      }); 
       
       // Refresh the complaints list
       if (this.selectedDepartment) {

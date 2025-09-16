@@ -1,1 +1,434 @@
-<p>update-task works!</p>
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="update-header" *ngIf="taskDetails && !loading">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <button class="btn btn-light btn-sm action-btn" (click)="goBack()">
+                        <i class="fas fa-arrow-left"></i> Back to Tasks
+                    </button>
+                    <h2 class="mb-0">Update Task - {{ taskDetails.ticketNo }}</h2>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>Citizen:</strong> {{ taskDetails.citizenName }}</p>
+                        <p class="mb-0"><strong>Category:</strong> {{ taskDetails.categoryName }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="status-badge bg-white text-dark">
+                                <i [ngClass]="getStatusConfig(taskDetails.currentStatus).icon"></i>
+                                {{ getStatusConfig(taskDetails.currentStatus).label }}
+                            </span>
+                            <span class="status-badge" [ngClass]="'bg-' + getStatusConfig(taskDetails.currentStatus).color + ' text-white'">
+                                <i [ngClass]="getPriorityIcon(taskDetails.priority)"></i>
+                                {{ taskDetails.priority }} Priority
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 text-end">
+                <div class="progress-circle bg-white text-primary">
+                    {{ latestCompletion }}%
+                </div>
+                <small class="d-block mt-2">
+                    Due: {{ taskDetails.slaDueAt | date:'short' }}
+                    <span [ngClass]="getDaysUntilDue() < 0 ? 'text-danger' : getDaysUntilDue() <= 2 ? 'text-warning' : 'text-light'">
+                        ({{ getDaysUntilDue() >= 0 ? getDaysUntilDue() + ' days left' : 'Overdue by ' +     getAbs(getDaysUntilDue()) + ' days' }})
+                    </span>
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div *ngIf="loading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-3">Loading task details...</p>
+    </div>
+
+    <div *ngIf="!loading && taskDetails">
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card task-card">
+                    <ul class="nav nav-tabs nav-fill" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" [class.active]="activeTab === 'details'" 
+                                    (click)="activeTab = 'details'">
+                                <i class="fas fa-info-circle"></i> Task Details
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" [class.active]="activeTab === 'update'" 
+                                    (click)="activeTab = 'update'">
+                                <i class="fas fa-edit"></i> Update Status
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" [class.active]="activeTab === 'history'" 
+                                    (click)="activeTab = 'history'">
+                                <i class="fas fa-history"></i> Work History
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <!-- Task Details Tab -->
+                        <div *ngIf="activeTab === 'details'">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <h5>Description</h5>
+                                    <p class="text-muted mb-4">{{ taskDetails.description }}</p>
+                                    
+                                    <div class="row mb-3">
+                                        <div class="col-6">
+                                            <strong>Created:</strong> {{ taskDetails.createdAt | date:'medium' }}
+                                        </div>
+                                        <div class="col-6">
+                                            <strong>Assigned:</strong> {{ taskDetails.updatedAt | date:'medium' }}
+                                        </div>
+                                    </div>
+                                    
+                                    <div *ngIf="taskDetails.addressText" class="mb-3">
+                                        <strong>Location:</strong>
+                                        <p class="text-muted mb-0">{{ taskDetails.addressText }}</p>
+                                        <button class="btn btn-outline-info btn-sm mt-2" (click)="viewOnMap()" 
+                                                [disabled]="!taskDetails.latitude || !taskDetails.longitude">
+                                            <i class="fas fa-map-marker-alt"></i> View on Map
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <h6>Original Attachments</h6>
+
+                                    <div *ngIf="taskDetails.attachments.length > 0" 
+                                        style="max-height: 250px; overflow-y: auto;" 
+                                        class="mb-2">
+
+                                        <div class="d-flex flex-wrap gap-2">
+                                            <div *ngFor="let attachment of taskDetails.attachments" 
+                                                class="attachment-box">
+                                                <img [src]="attachment.imageUrl" 
+                                                    class="attachment-preview" 
+                                                    alt="Attachment" 
+                                                    (click)="openAttachment(attachment.imageUrl)">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <p *ngIf="taskDetails.attachments.length === 0" class="text-muted">
+                                        No attachments
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div *ngIf="activeTab === 'update'">
+                            <ng-container *ngIf="taskDetails.currentStatus === 'Closed' || taskDetails.currentStatus === 'Resolved'; else updateFormBlock">
+                                <div class="alert alert-info text-center my-4">
+                                    <i class="fas fa-lock"></i> 
+                                    This task has been <strong>{{ taskDetails.currentStatus }}</strong>.  
+                                    Further updates are not allowed.
+                                </div>
+                            </ng-container>
+                            
+                            <ng-template #updateFormBlock>
+                                <form (ngSubmit)="submitUpdate()">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-4">
+                                            <label class="form-label">Status <span class="text-danger">*</span></label>
+                                            <select class="form-select" [(ngModel)]="updateForm.status" 
+                                                    (ngModelChange)="onStatusChange()" name="status" required>
+                                                <option value="">Select Status</option>
+                                                <option *ngFor="let status of availableStatuses" [value]="status.value">
+                                                    {{ status.label }}
+                                                </option>
+                                            </select>
+                                            <div class="text-danger small" *ngIf="formErrors.status">{{ formErrors.status }}</div>
+                                        </div>
+                                        
+                                        <div class="col-md-6 mb-4">
+                                            <label class="form-label">Completion Percentage</label>
+                                            <div class="d-flex align-items-center gap-3">
+                                                <input type="range" class="completion-slider flex-grow-1" 
+                                                    min="{{ minCompletionPercentage }}" 
+                                                    max="100" 
+                                                    step="5"
+                                                    [(ngModel)]="updateForm.completionPercentage" 
+                                                    (ngModelChange)="onCompletionPercentageChange()"
+                                                    name="completionPercentage">
+                                                <span class="badge bg-primary">{{ updateForm.completionPercentage }}%</span>
+                                            </div>
+                                            
+                                            <!-- Show minimum threshold indicator -->
+                                            <div class="mt-2" *ngIf="minCompletionPercentage > 0">
+                                                <small class="text-info">
+                                                    <i class="fas fa-info-circle"></i>
+                                                    Minimum: {{ minCompletionPercentage }}% (cannot decrease from current progress)
+                                                </small>
+                                            </div>
+                                            
+                                            <div class="text-danger small" *ngIf="formErrors.completionPercentage">{{ formErrors.completionPercentage }}</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-12 mb-4">
+                                            <div class="form-floating">
+                                                <textarea class="form-control" id="notes" style="height: 120px"
+                                                        [(ngModel)]="updateForm.notes" name="notes" required
+                                                        placeholder="Enter your work notes and progress details"></textarea>
+                                                <label for="notes">Work Notes & Progress Details <span class="text-danger">*</span></label>
+                                            </div>
+                                            <div class="text-danger small" *ngIf="formErrors.notes">{{ formErrors.notes }}</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row" *ngIf="updateForm.status === 'InProgress' || updateForm.status === 'OnHold'">
+                                        <div class="col-md-6 mb-4">
+                                            <div class="form-floating">
+                                                <input type="date" class="form-control" id="estimatedCompletion"
+                                                       [(ngModel)]="updateForm.estimatedCompletionDate" name="estimatedCompletionDate">
+                                                <label for="estimatedCompletion">Estimated Completion Date</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-12 mb-4">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" 
+                                                       [(ngModel)]="updateForm.requiresAdditionalResources" name="requiresAdditionalResources">
+                                                <label class="form-check-label">
+                                                    This task requires additional resources
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row" *ngIf="updateForm.requiresAdditionalResources">
+                                        <div class="col-12 mb-4">
+                                            <div class="form-floating">
+                                                <textarea class="form-control" id="additionalResources" style="height: 80px"
+                                                          [(ngModel)]="updateForm.additionalResourcesNeeded" name="additionalResourcesNeeded"
+                                                          placeholder="Specify what additional resources are needed"></textarea>
+                                                <label for="additionalResources">Additional Resources Needed</label>
+                                            </div>
+                                            <div class="text-danger small" *ngIf="formErrors.additionalResourcesNeeded">{{ formErrors.additionalResourcesNeeded }}</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- File Upload Section -->
+                                    <div class="row">
+                                        <div class="col-12 mb-4">
+                                            <label class="form-label">Attach Progress Photos/Documents (Optional)</label>
+                                            <div class="file-preview">
+                                                <input type="file" class="d-none" #fileInput multiple accept="image/*,.pdf,.doc,.docx"
+                                                       (change)="onFilesSelected($event)">
+                                                <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                                                <p class="text-muted mb-2">Click to upload files or drag and drop</p>
+                                                <button type="button" class="btn btn-outline-primary" (click)="fileInput.click()">
+                                                    <i class="fas fa-plus"></i> Add Files
+                                                </button>
+                                                <small class="d-block text-muted mt-2">Maximum 5 files, 10MB each</small>
+                                            </div>
+                                            
+                                            <!-- Selected Files Preview -->
+                                            <div *ngIf="selectedFiles.length > 0" class="mt-3">
+                                                <h6>Selected Files:</h6>
+                                                <div *ngFor="let file of selectedFiles; let i = index" class="file-item">
+                                                    <div class="d-flex align-items-center">
+                                                        <i class="fas" [ngClass]="isImageFile(file) ? 'fa-image text-success' : 'fa-file text-primary'"></i>
+                                                        <div class="ms-3">
+                                                            <div class="fw-bold">{{ file.name }}</div>
+                                                            <small class="text-muted">{{ getFileSize(file) }}</small>
+                                                        </div>
+                                                    </div>
+                                                    <button type="button" class="btn btn-outline-danger btn-sm" (click)="removeFile(i)">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Upload Progress -->
+                                            <div *ngIf="uploadProgress > 0" class="mt-3">
+                                                <div class="progress">
+                                                    <div class="progress-bar" [style.width.%]="uploadProgress">{{ uploadProgress }}%</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Submit Button -->
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <div class="d-flex justify-content-end gap-3">
+                                                <button type="button" class="btn btn-outline-secondary action-btn" (click)="resetForm()">
+                                                    <i class="fas fa-undo"></i> Reset Form
+                                                </button>
+                                                <button type="submit" class="btn btn-success action-btn" [disabled]="saving || taskDetails.currentStatus === 'Closed'">
+                                                    <span *ngIf="saving" class="spinner-border spinner-border-sm me-2"></span>
+                                                    <i class="fas fa-save" *ngIf="!saving"></i>
+                                                    {{ saving ? 'Updating...' : 'Update Task' }}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+
+                            </ng-template>
+                        </div>
+
+                        <!-- Work History Tab -->
+                        <div *ngIf="activeTab === 'history'">
+                            <h5 class="mb-4">Work Progress History</h5>
+                            <div *ngFor="let entry of workHistory; let i = index" class="work-history-item">
+                                <div class="row align-items-center">
+                                    <div class="col-md-8">
+                                        <div class="d-flex align-items-center gap-3 mb-2">
+                                            <span class="badge" [ngClass]="'bg-' + getStatusConfig(entry.status).color">
+                                                <i [ngClass]="getStatusConfig(entry.status).icon"></i>
+                                                {{ entry.status }}
+                                            </span>
+                                            <span class="badge bg-secondary">{{ entry.completionPercentage }}% Complete</span>
+                                            <small class="text-muted">{{ entry.updatedAt | date:'medium' }}</small>
+                                        </div>
+                                        <p class="mb-0">{{ entry.notes }}</p>
+                                    </div>
+                                    <div class="col-md-4 text-end">
+                                        <div class="progress-circle bg-light" style="width: 60px; height: 60px; font-size: 0.9rem;">
+                                            {{ entry.completionPercentage }}%
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div *ngIf="workHistory.length === 0" class="text-center py-4">
+                                <i class="fas fa-history fa-3x text-muted mb-3"></i>
+                                <p class="text-muted">No work history available yet.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions & Information -->
+            <div class="col-lg-4">
+                <!-- Quick Actions -->
+                <div class="card task-card mb-4">
+                    <div class="card-header bg-white border-0">
+                        <h6 class="mb-0"><i class="fas fa-bolt text-primary"></i> Quick Actions</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-outline-info" (click)="viewOnMap()" 
+                                    [disabled]="!taskDetails.latitude || !taskDetails.longitude">
+                                <i class="fas fa-map-marker-alt"></i> View Location on Map
+                            </button>
+                            <button class="btn btn-outline-warning" (click)="activeTab = 'history'">
+                                <i class="fas fa-history"></i> View Work History
+                            </button>
+                            <button class="btn btn-outline-secondary" (click)="goBack()">
+                                <i class="fas fa-arrow-left"></i> Back to My Tasks
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Task Information -->
+                <div class="card task-card mb-4">
+                    <div class="card-header bg-white border-0">
+                        <h6 class="mb-0"><i class="fas fa-info-circle text-info"></i> Task Information</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <small class="text-muted d-block">Priority</small>
+                                <span [ngClass]="getPriorityClass(taskDetails.priority)">
+                                    <i [ngClass]="getPriorityIcon(taskDetails.priority)"></i>
+                                    {{ taskDetails.priority }}
+                                </span>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted d-block">Current Status</small>
+                                <span class="badge" [ngClass]="'bg-' + getStatusConfig(taskDetails.currentStatus).color">
+                                    {{ getStatusConfig(taskDetails.currentStatus).label }}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <small class="text-muted d-block">Days Since Assigned</small>
+                                <strong>{{ daysSinceAssigned == 0? 'Today' : daysSinceAssigned | number:'1.0-0' }}</strong>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted d-block">Time Until Due</small>
+                                <strong [ngClass]="getDaysUntilDue() < 0 ? 'text-danger' : getDaysUntilDue() <= 2 ? 'text-warning' : ''">
+                                    {{ getDaysUntilDue() >= 0 ? getDaysUntilDue() + ' days' : 'Overdue' }}
+                                </strong>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <small class="text-muted d-block">Category</small>
+                            <strong>{{ taskDetails.categoryName }}</strong>
+                            <div *ngIf="taskDetails.subCategoryName">
+                                <small class="text-muted">{{ taskDetails.subCategoryName }}</small>
+                            </div>
+                        </div>
+                        
+                        <div *ngIf="taskDetails.addressText">
+                            <small class="text-muted d-block">Location</small>
+                            <p class="mb-0">{{ taskDetails.addressText }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress Tracker -->
+                <div class="card task-card">
+                    <div class="card-header bg-white border-0">
+                        <h6 class="mb-0"><i class="fas fa-chart-line text-success"></i> Progress Tracker</h6>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="progress-circle mx-auto mb-3" 
+                             [ngStyle]="{'background-color': latestCompletion === 100 ? '#28a745' : 
+                                                            latestCompletion >= 75 ? '#17a2b8' : 
+                                                            latestCompletion >= 50 ? '#ffc107' : '#6c757d',
+                                         'color': 'white'}">
+                            {{ latestCompletion }}%
+                        </div>
+                        
+                        <div class="progress mb-3" style="height: 10px;">
+                            <div class="progress-bar" [style.width.%]="latestCompletion"
+                                 [ngClass]="latestCompletion === 100 ? 'bg-success' : 
+                                           latestCompletion >= 75 ? 'bg-info' : 
+                                           latestCompletion >= 50 ? 'bg-warning' : 'bg-secondary'"></div>
+                        </div>
+                        
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <small class="text-muted d-block">Started</small>
+                                <i class="fas fa-check-circle" 
+                                   [ngClass]="latestCompletion > 0 ? 'text-success' : 'text-muted'"></i>
+                            </div>
+                            <div class="col-4">
+                                <small class="text-muted d-block">In Progress</small>
+                                <i class="fas fa-cog" 
+                                   [ngClass]="latestCompletion > 0 && latestCompletion < 100 ? 'text-info fa-spin' : 'text-muted'"></i>
+                            </div>
+                            <div class="col-4">
+                                <small class="text-muted d-block">Completed</small>
+                                <i class="fas fa-trophy" 
+                                   [ngClass]="latestCompletion === 100 ? 'text-warning' : 'text-muted'"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>

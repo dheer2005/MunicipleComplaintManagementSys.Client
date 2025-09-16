@@ -30,5 +30,14 @@ export class ComplaintService {
     return this.http.put<any>(`${this.apiUrl}/update-status/${complaintId}`, { status });
   }
 
+
+  deleteComplaint(complaintId: string){
+    return this.http.delete<any>(`${this.apiUrl}/delete-complaint/${complaintId}`);
+  }
+
+  editComplaint(complaint: any){
+    return this.http.put<any>(`${this.apiUrl}/edit-complaint`, complaint);
+  }
+
   
 }

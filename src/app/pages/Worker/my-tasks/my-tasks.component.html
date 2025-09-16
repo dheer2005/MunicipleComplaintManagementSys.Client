@@ -1,1 +1,412 @@
-<p>my-tasks works!</p>
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="tasks-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h2 class="mb-2">My Assigned Tasks</h2>
+                <p class="mb-0">Manage and update your assigned complaints</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <div class="btn-group me-2">
+                    <button class="btn btn-light view-toggle" 
+                            [class.active]="viewMode === 'list'"
+                            (click)="viewMode = 'list'">
+                        <i class="fas fa-list"></i>
+                    </button>
+                    <button class="btn btn-light view-toggle" 
+                            [class.active]="viewMode === 'card'"
+                            (click)="viewMode = 'card'">
+                        <i class="fas fa-th-large"></i>
+                    </button>
+                </div>
+                <button class="btn btn-light action-btn" (click)="refreshTasks()">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div *ngIf="loading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-3">Loading your tasks...</p>
+    </div>
+
+    <div *ngIf="!loading">
+        <!-- Statistics Cards -->
+        <div class="row mb-4">
+            <div class="col-md-2 col-sm-4 mb-3">
+                <div class="card stats-card text-center">
+                    <div class="card-body py-3">
+                        <h4 class="text-primary mb-1">{{ taskStats.totalAssigned }}</h4>
+                        <small class="text-muted">Total Tasks</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2 col-sm-4 mb-3">
+                <div class="card stats-card text-center">
+                    <div class="card-body py-3">
+                        <h4 class="text-warning mb-1">{{ taskStats.pending }}</h4>
+                        <small class="text-muted">Pending</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2 col-sm-4 mb-3">
+                <div class="card stats-card text-center">
+                    <div class="card-body py-3">
+                        <h4 class="text-info mb-1">{{ taskStats.inProgress }}</h4>
+                        <small class="text-muted">In Progress</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2 col-sm-4 mb-3">
+                <div class="card stats-card text-center">
+                    <div class="card-body py-3">
+                        <h4 class="text-success mb-1">{{ taskStats.resolved }}</h4>
+                        <small class="text-muted">Resolved</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2 col-sm-4 mb-3">
+                <div class="card stats-card text-center">
+                    <div class="card-body py-3">
+                        <h4 class="text-danger mb-1">{{ taskStats.overdue }}</h4>
+                        <small class="text-muted">Overdue</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2 col-sm-4 mb-3">
+                <div class="card stats-card text-center">
+                    <div class="card-body py-3">
+                        <h4 class="text-secondary mb-1">{{ ((taskStats.resolved / taskStats.totalAssigned) * 100).toFixed(0) }}%</h4>
+                        <small class="text-muted">Completion</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="card filter-card mb-4">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-3 mb-3 mb-md-0">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            <input type="text" class="form-control" placeholder="Search tasks..."
+                                   [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange()">
+                        </div>
+                    </div>
+                    <div class="col-md-2 mb-3 mb-md-0">
+                        <select class="form-select" [(ngModel)]="statusFilter" (ngModelChange)="onFilterChange()">
+                            <option value="All">All Status</option>
+                            <option value="Pending">Pending</option>
+                            <option value="InProgress">In Progress</option>
+                            <option value="Resolved">Resolved</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 mb-3 mb-md-0">
+                        <select class="form-select" [(ngModel)]="priorityFilter" (ngModelChange)="onFilterChange()">
+                            <option value="All">All Priority</option>
+                            <option value="High">High</option>
+                            <option value="Medium">Medium</option>
+                            <option value="Low">Low</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 mb-3 mb-md-0">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" 
+                                   [(ngModel)]="overdueFilter" (ngModelChange)="onFilterChange()">
+                            <label class="form-check-label">
+                                Overdue Only
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="btn-group w-100">
+                            <button class="btn btn-outline-primary action-btn" (click)="exportTasks()">
+                                <i class="fas fa-download"></i> Export
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tasks Display -->
+        <div class="row mb-3">
+            <div class="col-6">
+                <h5>Showing {{ filteredTasks.length }} of {{ taskStats.totalAssigned }} tasks</h5>
+            </div>
+            <div class="col-6 text-end">
+                <div class="btn-group">
+                    <button class="btn btn-sm btn-outline-secondary" (click)="onSortChange('priority')">
+                        Priority <i class="fas" [ngClass]="sortBy === 'priority' && sortOrder === 'asc' ? 'fa-sort-up' : 'fa-sort-down'"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" (click)="onSortChange('dueDate')">
+                        Due Date <i class="fas" [ngClass]="sortBy === 'dueDate' && sortOrder === 'asc' ? 'fa-sort-up' : 'fa-sort-down'"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" (click)="onSortChange('assignedAt')">
+                        Assigned <i class="fas" [ngClass]="sortBy === 'assignedAt' && sortOrder === 'asc' ? 'fa-sort-up' : 'fa-sort-down'"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- List View -->
+        <div *ngIf="viewMode === 'list'" class="card">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="text-center">Ticket #</th>
+                            <th class="text-center">Description</th>
+                            <th class="text-center">Citizen</th>
+                            <th class="text-center">Priority</th>
+                            <th class="text-center">Status</th>
+                            <th class="text-center">Due Date</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let task of paginatedTasks" 
+                            [ngClass]="{'table-danger': task.isOverdue}">
+                            <td class="text-center">
+                                <strong>{{ task.ticketNo }}</strong>
+                                <div *ngIf="task.isOverdue" class="text-danger small">
+                                    <i class="fas fa-exclamation-triangle"></i> Overdue
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <div class="text-truncate" style="max-width: 200px;" [title]="task.description">
+                                    {{ task.description }}
+                                </div>
+                                <small class="text-muted">{{ task.categoryName }}</small>
+                            </td>
+                            <td class="text-center">{{ task.citizenName }}</td>
+                            <td>
+                                <span class="badge text-black" [ngClass]="getPriorityClass(task.priority)">
+                                    <i [ngClass]="getPriorityIcon(task.priority)"></i>
+                                    {{ task.priority }}
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge text-black" [ngClass]="getStatusClass(task.currentStatus)">
+                                    <i [ngClass]="getStatusIcon(task.currentStatus)"></i>
+                                    {{ task.currentStatus }}
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <div [ngClass]="task.isOverdue ? 'text-danger' : task.daysUntilDue <= 2 ? 'text-warning' : ''">
+                                    {{ task.slaDueAt | date:'short' }}
+                                </div>
+                                <small class="text-muted">
+                                    {{ task.daysUntilDue >= 0 ? task.daysUntilDue + ' days left' : 'Overdue by ' + getAbs(task.daysUntilDue) + ' days' }}
+                                </small>
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-primary" (click)="viewTaskDetails(task)" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-outline-success" (click)="updateTaskStatus(task)" title="Update Status">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-outline-info" (click)="viewOnMap(task)" title="View Location" 
+                                            [disabled]="!task.latitude || !task.longitude">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Card View -->
+        <div *ngIf="viewMode === 'card'" class="row">
+            <div class="col-lg-4 col-md-6 mb-4" *ngFor="let task of paginatedTasks">
+                <div class="card task-card" 
+                     [ngClass]="'task-priority-' + task.priority.toLowerCase()"
+                     [class.overdue-task]="task.isOverdue">
+                    <div class="card-header bg-white border-0 pb-2">
+                        <div class="row align-items-center">
+                            <div class="col-8">
+                                <h6 class="mb-0">{{ task.ticketNo }}</h6>
+                                <small class="text-muted">{{ task.categoryName }}</small>
+                            </div>
+                            <div class="col-4 text-end">
+                                <span class="badge text-black" [ngClass]="getPriorityClass(task.priority)">
+                                    {{ task.priority }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">{{ task.description | slice:0:100 }}{{ task.description.length > 100 ? '...' : '' }}</p>
+                        
+                        <div class="mb-3">
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Citizen</small>
+                                    <strong>{{ task.citizenName }}</strong>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Status</small>
+                                    <span class="badge text-black" [ngClass]="getStatusClass(task.currentStatus)">
+                                        {{ task.currentStatus }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3" *ngIf="task.isOverdue">
+                            <div class="alert alert-danger py-2 mb-0">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <small>Overdue by {{ getAbs(task.daysUntilDue) }} days</small>
+                            </div>
+                        </div>
+                        
+                        <div class="row text-center mb-3">
+                            <div class="col-6">
+                                <small class="text-muted d-block">Due Date</small>
+                                <small [ngClass]="task.isOverdue ? 'text-danger' : task.daysUntilDue <= 2 ? 'text-warning' : 'text-muted'">
+                                    {{ task.slaDueAt | date:'short' }}
+                                </small>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted d-block">Assigned</small>
+                                <small class="text-muted">{{ task.daysSinceAssigned }} days ago</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white border-0 pt-0">
+                        <div class="btn-group w-100">
+                            <button class="btn btn-outline-primary btn-sm" (click)="viewTaskDetails(task)">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                            <button class="btn btn-outline-success btn-sm" (click)="updateTaskStatus(task)">
+                                <i class="fas fa-edit"></i> Update
+                            </button>
+                            <button class="btn btn-outline-info btn-sm" (click)="viewOnMap(task)" 
+                                    [disabled]="!task.latitude || !task.longitude">
+                                <i class="fas fa-map-marker-alt"></i> Map
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- No Tasks Message -->
+        <div *ngIf="filteredTasks.length === 0" class="text-center py-5">
+            <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+            <h4 class="text-muted">No tasks found</h4>
+            <p class="text-muted">{{ allTasks.length === 0 ? 'No tasks have been assigned to you yet.' : 'Try adjusting your filters to see more results.' }}</p>
+        </div>
+
+        <!-- Pagination -->
+        <div *ngIf="filteredTasks.length > itemsPerPage" class="row mt-4">
+            <div class="col-12">
+                <nav aria-label="Tasks pagination">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item" [ngClass]="{'disabled': currentPage === 1}">
+                            <a class="page-link" (click)="changePage(currentPage - 1)">Previous</a>
+                        </li>
+                        <li class="page-item" *ngFor="let page of pageNumbers" 
+                            [ngClass]="{'active': page === currentPage}">
+                            <a class="page-link" (click)="changePage(page)">{{ page }}</a>
+                        </li>
+                        <li class="page-item" [ngClass]="{'disabled': currentPage === totalPages}">
+                            <a class="page-link" (click)="changePage(currentPage + 1)">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Task Details Modal -->
+<div class="modal fade" id="taskDetailsModal" tabindex="-1" *ngIf="showTaskDetails && selectedTask">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Task Details - {{ selectedTask.ticketNo }}</h5>
+                <button type="button" class="btn-close" (click)="closeTaskDetails()"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h6>Description</h6>
+                        <p>{{ selectedTask.description }}</p>
+                        
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <strong>Citizen:</strong> {{ selectedTask.citizenName }}
+                            </div>
+                            <div class="col-6">
+                                <strong>Category:</strong> {{ selectedTask.categoryName }}
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <strong>Priority:</strong>
+                                <span class="badge ms-2" [ngClass]="getPriorityClass(selectedTask.priority)">
+                                    {{ selectedTask.priority }}
+                                </span>
+                            </div>
+                            <div class="col-6">
+                                <strong>Status:</strong>
+                                <span class="badge ms-2" [ngClass]="getStatusClass(selectedTask.currentStatus)">
+                                    {{ selectedTask.currentStatus }}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <strong>Assigned:</strong> {{ selectedTask.assignedAt | date:'medium' }}
+                            </div>
+                            <div class="col-6">
+                                <strong>Due:</strong> 
+                                <span [ngClass]="selectedTask.isOverdue ? 'text-danger' : 'text-muted'">
+                                    {{ selectedTask.slaDueAt | date:'medium' }}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div *ngIf="selectedTask.addressText" class="mb-3">
+                            <strong>Location:</strong>
+                            <p class="text-muted">{{ selectedTask.addressText }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <h6>Attachments</h6>
+                        <div *ngIf="selectedTask.attachments.length > 0">
+                            <div *ngFor="let attachment of selectedTask.attachments" class="mb-2">
+                                <img [src]="attachment.imageUrl" class="attachment-preview w-100" 
+                                     alt="Attachment" (click)="openAttachment(attachment.imageUrl)">
+                            </div>
+                        </div>
+                        <p *ngIf="selectedTask.attachments.length === 0" class="text-muted">No attachments</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" (click)="closeTaskDetails()">Close</button>
+                <button type="button" class="btn btn-success" (click)="updateTaskStatus(selectedTask)">
+                    <i class="fas fa-edit"></i> Update Status
+                </button>
+                <button type="button" class="btn btn-info" (click)="viewOnMap(selectedTask)" 
+                        [disabled]="!selectedTask.latitude || !selectedTask.longitude">
+                    <i class="fas fa-map-marker-alt"></i> View on Map
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

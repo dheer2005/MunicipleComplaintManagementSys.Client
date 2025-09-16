@@ -27,7 +27,7 @@ const routes: Routes = [
   { path: 'citizen/profile', component: ProfileComponent,canActivate: [AuthGuard] },
   { path: 'worker/dashboard', component: WorkerDashboardComponent, canActivate: [AuthGuard] },
   { path: 'worker/tasks', component: MyTasksComponent, canActivate: [AuthGuard]},
-  { path: 'worker/tasks/update', component: UpdateTaskComponent, canActivate: [AuthGuard]},
+  { path: 'worker/update-task/:complaintId', component: UpdateTaskComponent, canActivate: [AuthGuard]},
   { path: 'official/dashboard', component: OfficialDashboardComponent, canActivate: [AuthGuard] },
   { path: 'official/complaints/department', component: ComplaintDepartmentsComponent, canActivate: [AuthGuard] },
   { path: 'official/complaints/assign', component: AssignComplaintsComponent, canActivate: [AuthGuard] },

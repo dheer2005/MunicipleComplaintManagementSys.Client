@@ -134,7 +134,6 @@ export class NewComplaintComponent implements OnInit, AfterViewInit {
     this.locationError = '';
 
     if (this.showMap) {
-      // Use setTimeout to ensure DOM is rendered
       setTimeout(() => {
         this.initializeMap();
       }, 100);
@@ -151,7 +150,7 @@ export class NewComplaintComponent implements OnInit, AfterViewInit {
       }
 
       // Default location (you can change this to your city's coordinates)
-      const defaultLat = 26.9124; // Jaipur coordinates
+      const defaultLat = 26.9124;
       const defaultLng = 75.7873;
 
       this.map = L.map('mapContainer', {

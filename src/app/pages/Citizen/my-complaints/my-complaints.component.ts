@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { ComplaintService } from '../../services/complaint.service';
 import { ToastrService } from 'ngx-toastr';
 import { AuthService } from '../../services/auth.service';
+import { Router } from '@angular/router';
+import { DepartmentService } from '../../services/department.service';
 
 export enum ComplaintStatus {
   Pending = 'Pending',
@@ -43,7 +45,9 @@ export class MyComplaintsComponent implements OnInit {
   showFeedbackModal = false;
   selectedComplaintForFeedback: any = null;
   selectedComplaintForDetails: any = null;
+  selectedComplaintForEdit: any = null;
   showComplaintDetailsModal: boolean = false;
+  showEditComplaintDetailsModal: boolean = false;
   statusSteps: string[] = [];
   activeStepIndex = 0;
   progressWidth: number = 0;
@@ -54,17 +58,56 @@ export class MyComplaintsComponent implements OnInit {
     isSatisfied: true
   };
 
+  departments: any[] = [];
+  categories: any[] = [];
+  subCategories: any[] = [];
+
   constructor(
     private complaintService: ComplaintService,
     private authSvc: AuthService,
+    private departmentSvc: DepartmentService,
+    private router: Router,
     private toastr: ToastrService
   ) { }
 
   ngOnInit(): void {
     this.loadComplaints();
+    this.loadDepartments();
     if (this.selectedComplaintForDetails) {
       this.setStatusFlow(this.selectedComplaintForDetails.statusInfo.value, this.selectedComplaintForDetails.isReopened);
     }
+  }
+  onDepartmentChangeForEdit(){
+    const deptId = this.selectedComplaintForEdit.departmentId;
+    this.selectedComplaintForEdit.categoryId = '';
+    this.selectedComplaintForEdit.subCategoryId = '';
+    this.subCategories = [];
+    this.categories = [];
+    if (deptId) {
+      this.departmentSvc.getAllCategoriesbyDepartment(deptId).subscribe({
+        next: (res) => this.categories = res,
+        error: (err) => this.toastr.error('Failed to load categories')
+      });
+    }
+  }
+
+  onCategoryChangeForEdit(){
+    const catId = this.selectedComplaintForEdit.categoryId;
+    this.selectedComplaintForEdit.subCategoryId = '';
+    this.subCategories = [];
+    if (catId) {
+      this.departmentSvc.getAllSubCategoriesbyCategory(catId).subscribe({
+        next: (res) => this.subCategories = res,
+        error: (err) => this.toastr.error('Failed to load sub-categories')
+      });
+    }
+  }
+
+  loadDepartments() {
+    this.departmentSvc.getAllDepartments().subscribe({
+      next: (res) => this.departments = res,
+      error: (err) => this.toastr.error('Failed to load departments')
+    });
   }
 
   
@@ -162,6 +205,14 @@ export class MyComplaintsComponent implements OnInit {
     return complaint.currentStatus === ComplaintStatus.Resolved;
   }
 
+  canDeleteComplaint(complaint:any): boolean{
+    return complaint.currentStatus === ComplaintStatus.Pending;
+  }
+
+  canEditComplaint(complaint: any): boolean{
+    return complaint.currentStatus === ComplaintStatus.Pending;
+  }
+
   openFeedbackModal(complaint: any) {
     this.selectedComplaintForFeedback = complaint;
     this.feedbackData = {
@@ -223,7 +274,31 @@ export class MyComplaintsComponent implements OnInit {
         this.toastr.error('Failed to reopen complaint');
       }
     });
+  }
 
+  deleteComplaint(complaintId: string){
+    this.complaintService.deleteComplaint(complaintId).subscribe({
+      next: (response) => {
+        this.toastr.success('Complaint has been deleted');
+        this.loadComplaints();
+      },
+      error: (error) => {
+        this.toastr.error('Failed to delete complaint');
+      }
+    })
+  }
+
+  editComplaint(complaint: any){
+    this.showEditComplaintDetailsModal = true;
+    this.selectedComplaintForEdit = complaint;
+    console.log("edit complaint modal:", this.selectedComplaintForEdit);
+    // this.complaintService.editComplaint(complaint).subscribe
+    // this.router.navigate(['/citizen/complaint/edit', complaint.complaintId]);
+  }
+
+  closeEditComplaintModal(){
+    this.showEditComplaintDetailsModal = false;
+    this.selectedComplaintForEdit = null;
   }
 
   animateStepper(targetIndex: number) {
