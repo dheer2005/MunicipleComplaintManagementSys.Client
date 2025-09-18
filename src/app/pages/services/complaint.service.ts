@@ -35,9 +35,12 @@ export class ComplaintService {
     return this.http.delete<any>(`${this.apiUrl}/delete-complaint/${complaintId}`);
   }
 
-  editComplaint(complaint: any){
-    return this.http.put<any>(`${this.apiUrl}/edit-complaint`, complaint);
+  editComplaint(complaintId: string, complaint: any){
+    return this.http.put<any>(`${this.apiUrl}/edit-complaint/${complaintId}`, complaint);
   }
 
+  deleteComplaintAttachment(complaintId: string, attachmentId: number){
+    return this.http.delete(`${this.apiUrl}/delete-complaint-attachments/${complaintId}/${attachmentId}`);
+  }
   
 }

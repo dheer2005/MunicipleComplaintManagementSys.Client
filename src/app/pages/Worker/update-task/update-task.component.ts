@@ -149,7 +149,6 @@ export class UpdateTaskComponent implements OnInit {
 
   fetchTaskDetails() {
     this.workerService.getComplaintDetails(this.taskId!).subscribe((res:any)=>{
-      console.log("task details",res);
       this.taskDetails = res;
       const daysUntilDue = this.calculateDaysUntilDue(res.slaDueAt);
       const isOverdue = daysUntilDue < 0;
@@ -173,7 +172,6 @@ export class UpdateTaskComponent implements OnInit {
         isOverdue: isOverdue
       } as TaskDetails;
 
-      console.log('task details with priority', this.taskDetails);
     });
   }
 
@@ -185,13 +183,14 @@ export class UpdateTaskComponent implements OnInit {
 
   loadWorkHistory(){
     this.workerService.getWorkHistory(this.taskId!).subscribe((res:any)=>{
-      console.log("work history data:",res);
       this.workHistory = res.map((item: any) => ({
         ...item,
         updatedAt: new Date(item.updatedAt),
         estimatedCompletionDate: item.estimatedCompletionDate ? new Date(item.estimatedCompletionDate) : null
-      }));
+      }))
+      .sort((a: any, b: any) => new Date(b.completionPercentage).getTime() - new Date(a.completionPercentage).getTime());
 
+      // console.log(this.workHistory);
       // Initialize form with last update data
       // this.initializeFormWithLastUpdate();
     });
@@ -200,43 +199,14 @@ export class UpdateTaskComponent implements OnInit {
 
   get latestCompletion(): number {
     if (this.workHistory.length > 0) {
-      const lastUpdate = this.workHistory[this.workHistory.length - 1];
+      const lastUpdate = this.workHistory[0];
+      this.updateForm = lastUpdate;
       return lastUpdate.completionPercentage;
     }
     return 0;
   }
-  // initializeFormWithLastUpdate(): void {
-  //   if (this.taskDetails) {
-  //     // Set default values
-  //     this.updateForm.status = this.taskDetails.currentStatus;
-  //     this.updateForm.notes = '';
-  //     this.updateForm.completionPercentage = 0;
-  //     this.updateForm.estimatedCompletionDate = null;
-  //     this.updateForm.requiresAdditionalResources = false;
-  //     this.updateForm.additionalResourcesNeeded = '';
-      
-  //     if (this.workHistory.length > 0) {
-  //       const sortedHistory = this.workHistory.sort((a, b) => 
-  //         new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-  //       );
-        
-  //       const lastUpdate = sortedHistory[0];
-  //       this.updateForm.status = lastUpdate.status;
-  //       this.updateForm.completionPercentage = lastUpdate.completionPercentage;
-  //       this.updateForm.estimatedCompletionDate = lastUpdate.estimatedCompletionDate || null;
-  //       this.updateForm.requiresAdditionalResources = lastUpdate.requiresAdditionalResources || false;
-  //       this.updateForm.additionalResourcesNeeded = lastUpdate.additionalResourcesNeeded || '';
-        
-  //       this.minCompletionPercentage = lastUpdate.completionPercentage;
-        
-  //       this.updateForm.notes = '';
-  //     } else {
-  //       this.minCompletionPercentage = 0;
-  //     }
-  //   }
-  // }
 
-  // Fixed submitUpdate method
+
   submitUpdate(){
     if (!this.validateForm()) {
       return;
@@ -246,20 +216,17 @@ export class UpdateTaskComponent implements OnInit {
     
     const formData = new FormData();
 
-    // Ensure workerId is not null
     if (!this.workerId) {
       this.toastrService.error('Worker ID not found');
       this.saving = false;
       return;
     }
 
-    // Append form data with proper formatting
     formData.append("updatedByUserId", this.workerId);
     formData.append("status", this.updateForm.status);
     formData.append("notes", this.updateForm.notes || '');
     formData.append("completionPercentage", this.updateForm.completionPercentage.toString());
     
-    // Handle date properly - convert to ISO string if exists
     if (this.updateForm.estimatedCompletionDate) {
       const dateValue = new Date(this.updateForm.estimatedCompletionDate);
       formData.append("estimatedCompletionDate", dateValue.toISOString());
@@ -270,19 +237,9 @@ export class UpdateTaskComponent implements OnInit {
       formData.append("additionalResourcesNeeded", this.updateForm.additionalResourcesNeeded);
     }
     
-    // Add files
     this.selectedFiles.forEach((file, index) => {
       formData.append("attachments", file);
     });
-
-    console.log("Form data being sent:");
-    console.log("Task ID:", this.taskId);
-    console.log("Worker ID:", this.workerId);
-    console.log("Status:", this.updateForm.status);
-    console.log("Notes:", this.updateForm.notes);
-    console.log("Completion:", this.updateForm.completionPercentage);
-    console.log("Files count:", this.selectedFiles.length);
-    console.log("Estimated Completion Date:", this.updateForm.requiresAdditionalResources);
 
 
     // Make the API call
@@ -291,17 +248,12 @@ export class UpdateTaskComponent implements OnInit {
         console.log("API Response:", res);
         this.toastrService.success('Task updated successfully');
         
-        // Update the minimum completion percentage for next update
-        this.minCompletionPercentage = this.updateForm.completionPercentage;
-        
         // Refresh data
         this.loadTaskDetails();
         this.resetForm();
       },
       error: (err: any) => {
-        console.error("API Error:", err);
         
-        // More specific error messages
         if (err.status === 404) {
           this.saving = false;
           this.toastrService.error('Task not found');
@@ -347,7 +299,6 @@ export class UpdateTaskComponent implements OnInit {
       isValid = false;
     }
 
-    // Require notes for updates
     if (!this.updateForm.notes.trim()) {
       this.formErrors.notes = 'Work notes are required to document progress';
       isValid = false;
@@ -368,7 +319,6 @@ export class UpdateTaskComponent implements OnInit {
     this.uploadProgress = 0;
   }
 
-  // File handling
   onFilesSelected(event: any): void {
     const files = Array.from(event.target.files) as File[];
     this.selectedFiles = [...this.selectedFiles, ...files.slice(0, 5 - this.selectedFiles.length)];
@@ -382,13 +332,11 @@ export class UpdateTaskComponent implements OnInit {
     this.selectedFiles.splice(index, 1);
   }
 
-  // Status change handling
   onStatusChange(): void {
     if (this.updateForm.status === 'Resolved') {
       this.updateForm.completionPercentage = 100;
     }
     
-    // Clear related fields when status changes
     if (this.updateForm.status !== 'OnHold') {
       this.updateForm.requiresAdditionalResources = false;
       this.updateForm.additionalResourcesNeeded = '';
@@ -397,13 +345,11 @@ export class UpdateTaskComponent implements OnInit {
 
   // Method to handle completion percentage change
   onCompletionPercentageChange(): void {
-    // Ensure completion percentage doesn't go below minimum
     if (this.updateForm.completionPercentage < this.minCompletionPercentage) {
       this.updateForm.completionPercentage = this.minCompletionPercentage;
       this.toastrService.warning(`Cannot decrease completion below ${this.minCompletionPercentage}%`);
     }
     
-    // Auto-update status based on completion percentage
     if (this.updateForm.completionPercentage === 100 && this.updateForm.status !== 'Resolved') {
       this.updateForm.status = 'Resolved';
     } else if (this.updateForm.completionPercentage > 0 && this.updateForm.completionPercentage < 100 && this.updateForm.status === 'Pending') {
@@ -411,9 +357,7 @@ export class UpdateTaskComponent implements OnInit {
     }
   }
 
-  // UI methods
   resetForm(): void {
-    // Don't reset status and completion percentage - keep current values
     this.updateForm.notes = '';
     this.updateForm.estimatedCompletionDate = null;
     this.updateForm.requiresAdditionalResources = false;
@@ -436,10 +380,9 @@ export class UpdateTaskComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/worker/my-tasks']);
+    this.router.navigate(['/worker/tasks']);
   }
 
-  // Utility methods
   getStatusConfig(status: string) {
     return this.availableStatuses.find(s => s.value === status) || this.availableStatuses[0];
   }
@@ -481,7 +424,6 @@ export class UpdateTaskComponent implements OnInit {
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   }
 
-  // Helper method for mock delay
   private delay(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
   }

@@ -101,7 +101,7 @@
 
               <!-- Description -->
               <p class="text-muted mb-3" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
-                {{ complaint.description }}
+                <strong>Description: </strong>{{ complaint.description }}
               </p>
 
               <!-- Location -->
@@ -121,7 +121,7 @@
               </div>
 
               <!-- SLA Due Date -->
-              <div *ngIf="complaint.slaDueAt" class="mb-3">
+              <div *ngIf="complaint.slaDueAt && complaint.currentStatus != ComplaintStatus.Closed" class="mb-3">
                 <div class="d-flex align-items-center text-warning small">
                   <i class="fas fa-hourglass-half me-2"></i>
                   Due: {{ complaint.slaDueAt | date:'short' }}
@@ -130,6 +130,7 @@
 
               <!-- Feedback Display -->
               <div *ngIf="complaint.feedback" class="mb-3">
+                <strong>Feedback:</strong>
                 <div class="bg-light rounded p-3">
                   <div class="d-flex align-items-center mb-2">
                     <i class="fas fa-star text-warning me-1"></i>
@@ -137,25 +138,47 @@
                     <span class="badge bg-success" *ngIf=" complaint.feedback.isSatisfied === true">Satisfied</span>
                     <span class="badge bg-warning" *ngIf="complaint.feedback.isSatisfied === false">Not Satisfied</span>
                   </div>
-                  <small class="text-muted">{{ complaint.feedback.comments }}</small>
+                  <small class="text-muted"> <span class="text-muted fw-semibold">Comment:</span> {{ complaint.feedback.comments }}</small>
                 </div>
               </div>
 
-              <!-- Attachments -->
-              <div *ngIf="complaint.attachments && complaint.attachments.length > 0" class="mb-3">
+              <!--Citizen Attachments -->
+              <div *ngIf="complaint.citizenAttachments?.length > 0" class="mb-3">
                 <small class="text-muted d-block mb-2">
                   <i class="fas fa-paperclip me-1"></i>
-                  {{ complaint.attachments.length }} attachment(s)
+                  {{ complaint.citizenAttachments.length }} citizen attachment(s)
                 </small>
                 <div class="d-flex flex-wrap gap-1">
-                  <img *ngFor="let attachment of complaint.attachments.slice(0, 3)" 
+                  <img *ngFor="let attachment of complaint.citizenAttachments.slice(0, 3)" 
                        [src]="attachment.imageUrl" 
                        class="rounded"
-                       style="width: 40px; height: 40px; object-fit: cover;">
-                  <div *ngIf="complaint.attachments.length > 3" 
+                       (click)="openAttachment(attachment.imageUrl)"
+                       style="width: 100px; height: 80px; object-fit: cover;">
+                  <div *ngIf="complaint.citizenAttachments.length > 3"
                        class="d-flex align-items-center justify-content-center rounded bg-light"
-                       style="width: 40px; height: 40px;">
-                    <small class="text-muted">+{{ complaint.attachments.length - 3 }}</small>
+                       style="width: 100px; height: 80px;">
+                    <small class="text-muted">+{{ complaint.citizenAttachments.length - 3 }}</small>
+                  </div>
+                </div>
+              </div>
+
+              <!--worker Attachments -->
+              <div *ngIf="complaint.workerAttachments?.length > 0" class="mb-3">
+                <small class="text-muted d-block mb-2">
+                  <i class="fas fa-paperclip me-1"></i>
+                  {{ complaint.workerAttachments.length }} worker attachment(s)
+                </small>
+                <div class="d-flex flex-wrap gap-1">
+                  
+                  <img *ngFor="let attachment of complaint.workerAttachments.slice(0, 3)" 
+                       [src]="attachment.imageUrl" 
+                       class="rounded"
+                       (click)="openAttachment(attachment.imageUrl)"
+                       style="width: 100px; height: 80px; object-fit: cover;">
+                  <div *ngIf="complaint.workerAttachments.length > 3"
+                       class="d-flex align-items-center justify-content-center rounded bg-light"
+                       style="width: 100px; height: 80px;">
+                    <small class="text-muted">+{{ complaint.workerAttachments.length - 3 }}</small>
                   </div>
                 </div>
               </div>
@@ -172,7 +195,7 @@
                 <button *ngIf="canEditComplaint(complaint)" 
                         class="btn btn-outline-info btn-sm flex-fill"
                         (click)="editComplaint(complaint)">
-                  <i class="fas fa-trash me-1"></i>
+                  <i class="fas fa-edit me-1"></i>
                   Edit Complaint
                 </button>
 
@@ -208,129 +231,384 @@
 
 
 <!-- edit Complaint Details Modal -->
-<div class="modal fade" 
-[class.show]="showEditComplaintDetailsModal" 
-[style.display]="showEditComplaintDetailsModal ? 'block' : 'none'"
-tabindex="-1" 
-*ngIf="showEditComplaintDetailsModal">
-<div class="modal-dialog modal-lg modal-dialog-centered">
-  <div class="modal-content" style="border-radius: 20px; border: none;">
-    
-    <!-- Header -->
-    <div class="modal-header bg-primary text-white" style="border-radius: 20px 20px 0 0;">
-      <h5 class="modal-title">
-        <i class="fas fa-eye me-2"></i>
-        Edit Complaint Details
-      </h5>
-      <button type="button" class="btn-close btn-close-white" (click)="closeEditComplaintModal()"></button>
-    </div>
-    
-    <!-- Body -->
-    <div class="modal-body p-4" *ngIf="selectedComplaintForEdit">
-      <h6 class="fw-bold text-primary mb-3">Ticket No: {{ selectedComplaintForEdit.ticketNo }}</h6>
+<div class="modal fade" [class.show]="showEditComplaintDetailsModal" [style.display]="showEditComplaintDetailsModal ? 'block' : 'none'" tabindex="-1" *ngIf="showEditComplaintDetailsModal">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content" style="border-radius: 20px; border: none; overflow: hidden;">
       
-      <p><strong>Status:</strong> {{ selectedComplaintForEdit.statusInfo.label }}</p>
-      
-      <div class="row g-4 mb-4">
-        <div class="col-md-4">
-          <label for="departmentId" class="form-label fw-semibold">
-            <i class="fas fa-building me-2 text-primary"></i>
-            Department <span class="text-danger">*</span>
-          </label>
-          <select id="departmentId" 
-                  name="departmentId" 
-                  class="form-select form-select-lg" 
-                  [(ngModel)]="selectedComplaintForEdit.departmentId" 
-                  (change)="onDepartmentChangeForEdit()" 
-                  required>
-            <option selected disabled value="">--Select Department--</option>
-            <option *ngFor="let dept of departments" [value]="dept.departmentId">
-              {{ dept.departmentName }}
-            </option>
-          </select>
-          <div *ngIf="selectedComplaintForEdit.submitted && !selectedComplaintForEdit.departmentId" class="text-danger small mt-2">
-            <i class="fas fa-exclamation-triangle me-1"></i>Please select a department.
-          </div>
-        </div>
-
-        <div class="col-md-4">
-          <label for="categoryId" class="form-label fw-semibold">
-            <i class="fas fa-list me-2 text-primary"></i>
-            Category <span class="text-danger">*</span>
-          </label>
-          <select id="categoryId" 
-                  name="categoryId" 
-                  class="form-select form-select-lg" 
-                  [disabled]="!selectedComplaintForEdit.departmentId" 
-                  [(ngModel)]="selectedComplaintForEdit.categoryId" 
-                  (change)="onCategoryChangeForEdit()" 
-                  required>
-            <option selected disabled value="">--Select Category--</option>
-            <option *ngFor="let cat of categories" [value]="cat.categoryId">
-              {{ cat.categoryName }}
-            </option>
-          </select>
-          <div *ngIf="selectedComplaintForEdit.submitted && !selectedComplaintForEdit.categoryId" class="text-danger small mt-2">
-            <i class="fas fa-exclamation-triangle me-1"></i>Please select a category.
-          </div>
-        </div>
-
-        <div class="col-md-4">
-          <label for="subCategoryId" class="form-label fw-semibold">
-            <i class="fas fa-sitemap me-2 text-primary"></i>
-            Sub-Category <span class="text-danger">*</span>
-          </label>
-          <select id="subCategoryId" 
-                  name="subCategoryId" 
-                  [disabled]="!selectedComplaintForEdit.categoryId"
-                  class="form-select form-select-lg" 
-                  [(ngModel)]="selectedComplaintForEdit.subCategoryId" 
-                  required>
-            <option selected disabled value="">--Select Sub-Category--</option>
-            <option *ngFor="let sub of subCategories" [value]="sub.subCategoryId">
-              {{ sub.subCategoryName }}
-            </option>
-          </select>
-          <div *ngIf="selectedComplaintForEdit.submitted && !selectedComplaintForEdit.subCategoryId" class="text-danger small mt-2">
-            <i class="fas fa-exclamation-triangle me-1"></i>Please select a sub-category.
-          </div>
-        </div>
+      <!-- Header -->
+      <div class="modal-header bg-primary text-white" style="border-radius: 20px 20px 0 0;">
+        <h5 class="modal-title">
+          <i class="fas fa-edit me-2"></i>
+          Edit Complaint Details
+        </h5>
+        <button type="button" class="btn-close btn-close-white" (click)="closeEditComplaintModal()"></button>
       </div>
-      <p><strong>Description:</strong> {{ selectedComplaintForEdit.description }}</p>
       
-      <p *ngIf="selectedComplaintForEdit.addressText">
-        <strong>Location:</strong> {{ selectedComplaintForEdit.addressText }}
-        </p>
-
-        <p *ngIf="selectedComplaintForEdit.assignedWorkerName">
-          <strong>Assigned Worker:</strong> {{ selectedComplaintForEdit.assignedWorkerName }}
-        </p>
-
-        <p *ngIf="selectedComplaintForEdit.slaDueAt">
-          <strong>Due Date:</strong> {{ selectedComplaintForEdit.slaDueAt | date:'short' }}
-        </p>
+      <!-- Body with sliding panels -->
+      <div class="modal-body p-0" *ngIf="selectedComplaintForEdit" style="position: relative; min-height: 500px;">
         
-        <!-- Attachments -->
-        <div *ngIf="selectedComplaintForEdit.attachments?.length > 0" class="mt-3">
-          <strong>Attachments:</strong>
-          <div class="d-flex flex-wrap gap-2 mt-2 attachment-images">
-            <img *ngFor="let att of selectedComplaintForEdit.attachments" 
-                 [src]="att.imageUrl" 
-                 class="rounded" 
-                 style="width: 80px; height: 80px; object-fit: cover;">
+        <!-- Main Content Panel -->
+        <div class="main-panel" 
+            [class.slide-left]="showLocationPanel"
+            style="padding: 2rem; transition: transform 0.3s ease-in-out; width: 100%; position: absolute; top: 0; left: 0; height: 100%; background: white; z-index: 1;">
+          
+          <h6 class="fw-bold text-primary mb-3">Ticket No: {{ selectedComplaintForEdit.ticketNo }}</h6>
+          
+          <!-- <p><strong>Status:</strong> {{ selectedComplaintForEdit.statusInfo.label }}</p> -->
+           <div class="mb-4">
+            <label class="form-label fw-semibold">
+              <i class="fas fa-comment me-2 text-primary"></i>
+              Status:
+            </label>
+            <input type="text" disabled="" class="form-control form-control-lg" [(ngModel)]="selectedComplaintForEdit.statusInfo.label" placeholder="Enter your complaint description">
+          </div>
+          
+          <div class="row g-4 mb-4">
+            <div class="col-md-4">
+              <label for="departmentId" class="form-label fw-semibold">
+                <i class="fas fa-building me-2 text-primary"></i>
+                Department <span class="text-danger">*</span>
+              </label>
+              <select id="departmentId" 
+                      name="departmentId" 
+                      class="form-select form-select-lg" 
+                      [(ngModel)]="selectedComplaintForEdit.departmentId" 
+                      (change)="onDepartmentChangeForEdit()" 
+                      required>
+                <option selected disabled value="">--Select Department--</option>
+                <option *ngFor="let dept of departments" [value]="dept.departmentId">
+                  {{ dept.departmentName }}
+                </option>
+              </select>
+              <div *ngIf="selectedComplaintForEdit.submitted && !selectedComplaintForEdit.departmentId" class="text-danger small mt-2">
+                <i class="fas fa-exclamation-triangle me-1"></i>Please select a department.
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <label for="categoryId" class="form-label fw-semibold">
+                <i class="fas fa-list me-2 text-primary"></i>
+                Category <span class="text-danger">*</span>
+              </label>
+              <select id="categoryId" 
+                      name="categoryId" 
+                      class="form-select form-select-lg" 
+                      [disabled]="!selectedComplaintForEdit.departmentId" 
+                      [(ngModel)]="selectedComplaintForEdit.categoryId" 
+                      (change)="onCategoryChangeForEdit()" 
+                      required>
+                <option selected disabled value="">--Select Category--</option>
+                <option *ngFor="let cat of categories" [value]="cat.categoryId">
+                  {{ cat.categoryName }}
+                </option>
+              </select>
+              <div *ngIf="selectedComplaintForEdit.submitted && !selectedComplaintForEdit.categoryId" class="text-danger small mt-2">
+                <i class="fas fa-exclamation-triangle me-1"></i>Please select a category.
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <label for="subCategoryId" class="form-label fw-semibold">
+                <i class="fas fa-sitemap me-2 text-primary"></i>
+                Sub-Category <span class="text-danger">*</span>
+              </label>
+              <select id="subCategoryId" 
+                      name="subCategoryId" 
+                      [disabled]="!selectedComplaintForEdit.categoryId"
+                      class="form-select form-select-lg" 
+                      [(ngModel)]="selectedComplaintForEdit.subCategoryId" 
+                      required>
+                <option selected disabled value="">--Select Sub-Category--</option>
+                <option *ngFor="let sub of subCategories" [value]="sub.subCategoryId">
+                  {{ sub.subCategoryName }}
+                </option>
+              </select>
+              <div *ngIf="selectedComplaintForEdit.submitted && !selectedComplaintForEdit.subCategoryId" class="text-danger small mt-2">
+                <i class="fas fa-exclamation-triangle me-1"></i>Please select a sub-category.
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-semibold">
+              <i class="fas fa-comment me-2 text-primary"></i>
+              Description
+            </label>
+            <input type="text" class="form-control form-control-lg" [(ngModel)]="selectedComplaintForEdit.description" placeholder="Enter your complaint description">
+          </div>
+
+          <!-- Location Section -->
+          <div class="mb-4">
+            <label class="form-label fw-semibold">
+              <i class="fas fa-map-marker-alt me-2 text-primary"></i>
+              Location
+            </label>
+            <div class="d-flex align-items-center justify-content-between bg-light p-3 rounded">
+              <div class="flex-grow-1">
+                <p class="mb-1" *ngIf="selectedComplaintForEdit.addressText; else noLocation">
+                  <strong>Address:</strong> {{ selectedComplaintForEdit.addressText }}
+                </p>
+                <ng-template #noLocation>
+                  <p class="mb-1 text-muted">No location set</p>
+                </ng-template>
+                <small class="text-muted" *ngIf="selectedComplaintForEdit.latitude && selectedComplaintForEdit.longitude">
+                  Coordinates: {{ selectedComplaintForEdit.latitude | number:'1.6-6' }}, {{ selectedComplaintForEdit.longitude | number:'1.6-6' }}
+                </small>
+              </div>
+              <button type="button" 
+                      class="btn btn-outline-primary" 
+                      (click)="openLocationPanel()">
+                <i class="fas fa-edit me-1"></i>
+                Change Location
+              </button>
+            </div>
+          </div>
+
+          <div *ngIf="selectedComplaintForEdit.slaDueAt" class="mb-3">
+            <strong>Due Date:</strong> {{ selectedComplaintForEdit.slaDueAt | date:'short' }}
+          </div>
+          
+          <!-- Attachments -->
+          <div class="mt-3">
+            <strong>Attachments:</strong>
+            <div class="mt-2 mb-4">
+                <label for="attachments" class="form-label fw-semibold">
+                  <i class="fas fa-camera me-2 text-primary"></i>
+                  Add attachments
+                </label>
+                <input type="file"
+                       id="attachments"
+                       class="form-control form-control-lg"
+                       (change)="onFileSelected($event)"
+                       multiple
+                       accept="image/*"
+                       #fileInput>
+                <div class="form-text">
+                  <i class="fas fa-info-circle me-1"></i>
+                  Maximum file size: 5MB per image. Supported formats: JPG, PNG, GIF
+                </div>
+              </div>
+              <h6 class="fw-semibold mb-2" *ngIf="selectedComplaintForEdit.attachments.length > 0">
+                <i class="fas fa-folder-open me-2"></i>
+                Existing Attachments
+              </h6>
+              <div class="d-flex gap-3 align-items-center">
+                <div class="d-flex flex-wrap gap-2 mt-2 attachment-images" *ngFor="let att of selectedComplaintForEdit.attachments">
+                  <div class="position-relative mb-2">
+                    <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1"
+                            (click)="openDeleteAttachmentModal(selectedComplaintForEdit.complaintId, att.attachmentId)"
+                            style="padding: 4px 8px;">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                    <img  
+                        [src]="att.imageUrl" 
+                        class="rounded" 
+                        style="width: 80px; height: 80px; object-fit: cover;"
+                        (click)="openAttachment(att.imageUrl)">
+                  </div>
+                </div>
+              </div>
+          </div>
+          <!-- Image Previews -->
+          <div *ngIf="previewImages.length > 0" class="mb-4">
+            <h6 class="fw-semibold mb-3">
+              <i class="fas fa-images me-2"></i>
+              Selected Images ({{ previewImages.length }})
+            </h6>
+            <div class="row g-3">
+              <div *ngFor="let img of previewImages; let i = index" class="col-6 col-md-4 col-lg-3">
+                <div class="position-relative">
+                  <img [src]="img" 
+                        class="img-fluid rounded shadow-sm" 
+                        style="height: 120px; width: 100%; object-fit: cover;">
+                  <button type="button"
+                          class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1"
+                          (click)="removeImage(i)"
+                          style="padding: 4px 8px;">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Location Panel (slides in from right) -->
+        <div class="location-panel" 
+            [class.slide-in]="showLocationPanel"
+            style="padding: 2rem; transition: transform 0.3s ease-in-out; width: 100%; position: absolute; top: 0; right: -100%; height: 100%; background: white; z-index: 2; overflow-y: auto;">
+          
+          <!-- Location Panel Header -->
+          <div class="d-flex align-items-center mb-4">
+            <button type="button" 
+                    class="btn btn-outline-secondary me-3" 
+                    [disabled]="!showLocationPanel"
+                    (click)="closeLocationPanel()">
+              <i class="fas fa-arrow-left"></i>
+            </button>
+            <div>
+              <h5 class="mb-1 fw-bold text-primary">
+                <i class="fas fa-map-marker-alt me-2"></i>
+                Edit Location
+              </h5>
+              <p class="mb-0 text-muted">Update the location of your complaint</p>
+            </div>
+          </div>
+
+          <!-- Address Input -->
+          <div class="mb-4">
+            <label for="editAddressText" class="form-label fw-semibold">
+              <i class="fas fa-home me-2 text-primary"></i>
+              Address
+            </label>
+            <input id="editAddressText" 
+                  name="editAddressText" 
+                  [disabled]="!showLocationPanel" 
+                  type="text"
+                  class="form-control form-control-lg" 
+                  [(ngModel)]="selectedComplaintForEdit.addressText" 
+                  placeholder="Enter your address">
+          </div>
+
+          <!-- Location Buttons -->
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <button type="button" 
+                      class="btn btn-outline-primary btn-lg w-100" 
+                      (click)="toggleMapForEdit()"
+                      [disabled]="isLoadingLocationEdit || !showLocationPanel">
+                <i class="fas fa-map me-2"></i>
+                {{ showMapEdit ? 'Hide Map' : 'Set Location on Map' }}
+              </button>
+            </div>
+            <div class="col-md-6">
+              <button type="button" 
+                      class="btn btn-outline-success btn-lg w-100" 
+                      (click)="useCurrentLocationForEdit()"
+                      [disabled]="isLoadingLocationEdit || !showLocationPanel">
+                <i class="fas fa-crosshairs me-2" 
+                  [class.fa-spin]="isLoadingLocationEdit"></i>
+                {{ isLoadingLocationEdit ? 'Detecting...' : 'Use My Location' }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Location Info -->
+          <div *ngIf="selectedComplaintForEdit.latitude && selectedComplaintForEdit.longitude" class="alert alert-success">
+            <i class="fas fa-check-circle me-2"></i>
+            <strong>Location Set:</strong> 
+            Latitude: {{ selectedComplaintForEdit.latitude | number:'1.6-6' }}, 
+            Longitude: {{ selectedComplaintForEdit.longitude | number:'1.6-6' }}
+          </div>
+
+          <!-- Error Display -->
+          <div *ngIf="locationErrorEdit" class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            {{ locationErrorEdit }}
+          </div>
+
+          <!-- Map Section -->
+          <div *ngIf="showMapEdit" class="map-container mb-4">
+            <div class="card shadow-sm">
+              <div class="card-header bg-primary text-white">
+                <h6 class="mb-0">
+                  <i class="fas fa-map me-2"></i>
+                  Select Location on Map
+                </h6>
+                <small>Click on the map or drag the marker to set location</small>
+              </div>
+              <div class="card-body p-0">
+                <div #mapContainerEdit 
+                    id="mapContainerEdit" 
+                    style="height: 350px; width: 100%;">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Location Panel Actions -->
+          <div class="d-flex justify-content-between">
+            <button type="button" 
+                    class="btn btn-outline-secondary" 
+                    [disabled]="!showLocationPanel"
+                    (click)="closeLocationPanel()">
+              Cancel
+            </button>
+            <button type="button" 
+                    class="btn btn-success" 
+                    [disabled]="!showLocationPanel || isSubmitting"
+                    (click)="saveLocationChanges()">
+              <i class="fas fa-save me-2"></i>
+              Save Location
+            </button>
           </div>
         </div>
       </div>
 
       <!-- Footer -->
-      <div class="modal-footer border-0 p-4">
-        <button type="button" class="btn btn-outline-secondary" (click)="closeEditComplaintModal()">
-          Close
+      <div class="modal-footer border-0 p-4" 
+          [style.display]="showLocationPanel ? 'none' : 'flex'">
+        <button type="button" 
+                class="btn btn-outline-secondary" 
+                (click)="closeEditComplaintModal()">
+          Cancel
+        </button>
+        <button type="button" 
+                class="btn btn-success" 
+                [disabled]="isSubmitting"
+                (click)="saveComplaintChanges()">
+          <i class="fas fa-save me-2"></i>
+          Save Changes
         </button>
       </div>
     </div>
   </div>
+
+  <!-- Delete Attachment Confirm Modal -->
+  <div class="modal fade" [class.show]="showDeleteAttachmentModal" 
+      [style.display]="showDeleteAttachmentModal ? 'block' : 'none'"
+      tabindex="-1" *ngIf="showDeleteAttachmentModal">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content" style="border-radius: 20px; border: none;">
+        
+        <!-- Header -->
+        <div class="modal-header bg-danger text-white" style="border-radius: 20px 20px 0 0;">
+          <h5 class="modal-title">
+            <i class="fas fa-trash-alt me-2"></i>
+            Delete Attachment
+          </h5>
+          <button type="button" class="btn-close btn-close-white" (click)="closeDeleteAttachmentModal()"></button>
+        </div>
+        
+        <!-- Body -->
+        <div class="modal-body text-center p-4">
+          <div class="mb-3">
+            <i class="fas fa-exclamation-triangle text-danger" style="font-size: 3rem;"></i>
+          </div>
+          <h5 class="fw-bold text-danger mb-2">Are you sure?</h5>
+          <p class="text-muted mb-0">
+            Do you really want to delete this attachment?  
+            This action <strong>cannot be undone</strong>.
+          </p>
+        </div>
+        
+        <!-- Footer -->
+        <div class="modal-footer border-0 p-4 d-flex justify-content-between">
+          <button type="button" class="btn btn-outline-secondary" (click)="closeDeleteAttachmentModal()">
+            <i class="fas fa-times me-1"></i>
+            Cancel
+          </button>
+          <button type="button" class="btn btn-danger" (click)="confirmDeleteAttachment()">
+            <i class="fas fa-trash me-2"></i>
+            Delete
+          </button>
+        </div>
+        
+      </div>
+    </div>
+  </div>
 </div>
+
 
 <!-- view complaint details modal -->
 <div class="modal fade" 
@@ -414,14 +692,44 @@ tabindex="-1"
           <strong>Due Date:</strong> {{ selectedComplaintForDetails.slaDueAt | date:'short' }}
         </p>
         
-        <!-- Attachments -->
-        <div *ngIf="selectedComplaintForDetails.attachments?.length > 0" class="mt-3">
-          <strong>Attachments:</strong>
-          <div class="d-flex flex-wrap gap-2 mt-2 attachment-images">
-            <img *ngFor="let att of selectedComplaintForDetails.attachments" 
-            [src]="att.imageUrl" 
-            class="rounded" 
-            style="width: 80px; height: 80px; object-fit: cover;">
+
+        <!--Citizen Attachments -->
+        <div *ngIf="selectedComplaintForDetails.citizenAttachments?.length > 0" class="mb-3">
+          <small class="text-muted d-block mb-2">
+            <i class="fas fa-paperclip me-1"></i>
+            {{ selectedComplaintForDetails.citizenAttachments.length }} citizen attachment(s)
+          </small>
+          <div class="d-flex flex-wrap gap-1">
+            <img *ngFor="let attachment of selectedComplaintForDetails.citizenAttachments.slice(0, 3)" 
+                  [src]="attachment.imageUrl" 
+                  class="rounded"
+                  (click)="openAttachment(attachment.imageUrl)"
+                  style="width: 100px; height: 80px; object-fit: cover;">
+            <div *ngIf="selectedComplaintForDetails.citizenAttachments.length > 3"
+                  class="d-flex align-items-center justify-content-center rounded bg-light"
+                  style="width: 100px; height: 80px;">
+              <small class="text-muted">+{{ selectedComplaintForDetails.citizenAttachments.length - 3 }}</small>
+            </div>
+          </div>
+        </div>
+
+        <!--Worker Attachments -->
+        <div *ngIf="selectedComplaintForDetails.workerAttachments?.length > 0" class="mb-3">
+          <small class="text-muted d-block mb-2">
+            <i class="fas fa-paperclip me-1"></i>
+            {{ selectedComplaintForDetails.workerAttachments.length }} Worker attachment(s)
+          </small>
+          <div class="d-flex flex-wrap gap-1">
+            <img *ngFor="let attachment of selectedComplaintForDetails.workerAttachments.slice(0, 3)" 
+                  [src]="attachment.imageUrl" 
+                  class="rounded"
+                  (click)="openAttachment(attachment.imageUrl)"
+                  style="width: 100px; height: 80px; object-fit: cover;">
+            <div *ngIf="selectedComplaintForDetails.workerAttachments.length > 3"
+                  class="d-flex align-items-center justify-content-center rounded bg-light"
+                  style="width: 100px; height: 80px;">
+              <small class="text-muted">+{{ selectedComplaintForDetails.workerAttachments.length - 3 }}</small>
+            </div>
           </div>
         </div>
       </div>
@@ -526,7 +834,56 @@ tabindex="-1"
     </div>
   </div>
 </div>
+
+
+<!--Confirm delete Modal-->
+<div class="modal fade" [class.show]="showDeleteModal" [style.display]="showDeleteModal ? 'block' : 'none'"
+     tabindex="-1" *ngIf="showDeleteModal">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius: 20px; border: none;">
+      
+      <!-- Header -->
+      <div class="modal-header bg-danger text-white" style="border-radius: 20px 20px 0 0;">
+        <h5 class="modal-title">
+          <i class="fas fa-trash-alt me-2"></i>
+          Confirm Delete
+        </h5>
+        <button type="button" class="btn-close btn-close-white" (click)="closeDeleteModal()"></button>
+      </div>
+      
+      <!-- Body -->
+      <div class="modal-body text-center p-4">
+        <div class="mb-3">
+          <i class="fas fa-exclamation-triangle text-danger" style="font-size: 3rem;"></i>
+        </div>
+        <h5 class="fw-bold text-danger mb-2">Are you sure?</h5>
+        <p class="text-muted mb-0">
+          This action <strong>cannot be undone</strong>.  
+          Do you really want to delete this item?
+        </p>
+      </div>
+      
+      <!-- Footer -->
+      <div class="modal-footer border-0 p-4 d-flex justify-content-between">
+        <button type="button" class="btn btn-outline-secondary" (click)="closeDeleteModal()">
+          <i class="fas fa-times me-1"></i>
+          Cancel
+        </button>
+        <button type="button" class="btn btn-danger" (click)="confirmDeleteComplaint()">
+          <i class="fas fa-trash me-2"></i>
+          Delete
+        </button>
+      </div>
+      
+    </div>
+  </div>
+</div>
+
+
 <!-- Modal Backdrop -->
+<div class="modal-backdrop fade" [class.show]="showComplaintDetailsModal" *ngIf="showComplaintDetailsModal"></div>
+
+<!-- Modal  Backdrop -->
 <div class="modal-backdrop fade" [class.show]="showComplaintDetailsModal" *ngIf="showComplaintDetailsModal"></div>
 
 <!-- Modal Backdrop for view component details -->

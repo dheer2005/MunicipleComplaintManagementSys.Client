@@ -1,9 +1,18 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ComplaintService } from '../../services/complaint.service';
 import { ToastrService } from 'ngx-toastr';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
+import * as L from 'leaflet';
 import { DepartmentService } from '../../services/department.service';
+import { NgForm } from '@angular/forms';
+
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
 
 export enum ComplaintStatus {
   Pending = 'Pending',
@@ -22,6 +31,8 @@ export enum ComplaintStatus {
   styleUrls: ['./my-complaints.component.css']
 })
 export class MyComplaintsComponent implements OnInit {
+  @ViewChild('fileInput') fileInputRef!: ElementRef;
+
   ComplaintStatus = ComplaintStatus;
   complaints: any[] = [];
   filteredComplaints: any[] = [];
@@ -62,6 +73,22 @@ export class MyComplaintsComponent implements OnInit {
   categories: any[] = [];
   subCategories: any[] = [];
 
+  showLocationPanel: boolean = false;
+  showMapEdit: boolean = false;
+  isLoadingLocationEdit: boolean = false;
+  locationErrorEdit: string = '';
+  mapEdit: any = null;
+  markerEdit: any = null;
+
+  selectedFiles: File[] = [];
+  previewImages: string[] = [];
+  isSubmitting = false;
+  showDeleteModal = false;
+  deleteComplaintId: string | null = null;
+  showDeleteAttachmentModal = false;
+  deleteTarget: { complaintId: string, attachmentId: number } | null = null;
+
+
   constructor(
     private complaintService: ComplaintService,
     private authSvc: AuthService,
@@ -77,6 +104,93 @@ export class MyComplaintsComponent implements OnInit {
       this.setStatusFlow(this.selectedComplaintForDetails.statusInfo.value, this.selectedComplaintForDetails.isReopened);
     }
   }
+
+  openDeleteAttachmentModal(complaintId: string, attachmentId: number) {
+    this.deleteTarget = { complaintId, attachmentId };
+    this.showDeleteAttachmentModal = true;
+  }
+
+  
+  closeDeleteAttachmentModal() {
+    this.showDeleteAttachmentModal = false;
+    this.deleteTarget = null;
+  }
+
+  confirmDeleteAttachment() {
+    if (!this.deleteTarget) return;
+
+    const { complaintId, attachmentId } = this.deleteTarget;
+
+    this.complaintService.deleteComplaintAttachment(complaintId, attachmentId).subscribe({
+      next: () => {
+        this.selectedComplaintForEdit.attachments =
+          this.selectedComplaintForEdit.attachments.filter((att: any) => att.attachmentId !== attachmentId);
+
+        this.toastr.success('Attachment deleted successfully');
+        this.loadComplaints();
+        this.closeDeleteAttachmentModal();
+      },
+      error: () => {
+        this.toastr.error('Failed to delete attachment');
+        this.closeDeleteAttachmentModal();
+      }
+    });
+  }
+
+  openDeleteModal(){
+    this.showDeleteModal = true;
+  }
+
+  closeDeleteModal(){
+    this.showDeleteModal = false;
+  }
+
+  deleteComplaintAttachment(complaintId: string, attachmentId: number){
+    if(confirm('Are you sure you want to delete this attachment?')){
+      this.complaintService.deleteComplaintAttachment(complaintId, attachmentId).subscribe((res)=>{
+        this.selectedComplaintForEdit.attachments = this.selectedComplaintForEdit.attachments.filter((att:any) => att.attachmentId !== attachmentId);
+        this.toastr.success('Attachments deleted successfully');
+        this.loadComplaints();
+      }, (err)=>{
+        this.toastr.error('Failed to delete attachments');  
+      });
+    }
+  }
+
+  openAttachment(url:string){
+    window.open(url, '_blank');
+  }
+
+  removeImage(index: number) {
+    this.previewImages.splice(index, 1);
+    this.selectedFiles.splice(index, 1);
+  }
+
+  onFileSelected(event: any) {
+    const files: File[] = Array.from(event.target.files);
+    
+    // Validate file size and type
+    for (let file of files) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        this.toastr.warning(`File ${file.name} is too large. Maximum size is 5MB.`);
+        continue;
+      }
+      
+      if (!file.type.startsWith('image/')) {
+        this.toastr.warning(`File ${file.name} is not a valid image.`);
+        continue;
+      }
+
+      this.selectedFiles.push(file);
+      if(this.fileInputRef){
+        this.fileInputRef.nativeElement.value = '';
+      }
+      const reader = new FileReader();
+      reader.onload = (e: any) => this.previewImages.push(e.target.result);
+      reader.readAsDataURL(file);
+    }
+  }
+
   onDepartmentChangeForEdit(){
     const deptId = this.selectedComplaintForEdit.departmentId;
     this.selectedComplaintForEdit.categoryId = '';
@@ -152,10 +266,20 @@ export class MyComplaintsComponent implements OnInit {
     
     this.complaintService.getAllComplaintsByUserId(this.currentUserId!).subscribe({
       next: (data) => {
-        this.complaints = data.map(complaint => ({
-          ...complaint,
-          statusInfo: this.getStatusInfo(complaint.currentStatus)
-        }))
+        this.complaints = data
+          .map(complaint => {
+            const citizenAttachments = (complaint.attachments || [])
+              .filter((att:any) => att.attachmentType === 'CitizenProof');
+
+            const workerAttachments = (complaint.attachments || [])
+              .filter((att:any) => att.attachmentType === 'WorkerProof');
+            return {
+              ...complaint,
+              statusInfo: this.getStatusInfo(complaint.currentStatus),
+              citizenAttachments,
+              workerAttachments
+            };
+          })
         .sort((a:any,b:any)=>{
           if(a.currentStatus == 'Closed' && b.currentStatus != 'Closed') return 1;
           if(a.currentStatus != 'Closed' && b.currentStatus == 'Closed') return -1;
@@ -277,28 +401,285 @@ export class MyComplaintsComponent implements OnInit {
   }
 
   deleteComplaint(complaintId: string){
-    this.complaintService.deleteComplaint(complaintId).subscribe({
+    this.deleteComplaintId = complaintId;
+    this.showDeleteModal = true;
+  }
+
+  confirmDeleteComplaint(){
+  if(!this.deleteComplaintId) return;
+    this.complaintService.deleteComplaint(this.deleteComplaintId).subscribe({
       next: (response) => {
         this.toastr.success('Complaint has been deleted');
+        this.deleteComplaintId = null;
         this.loadComplaints();
       },
       error: (error) => {
         this.toastr.error('Failed to delete complaint');
+        this.deleteComplaintId = null;
       }
     })
   }
 
   editComplaint(complaint: any){
     this.showEditComplaintDetailsModal = true;
-    this.selectedComplaintForEdit = complaint;
-    console.log("edit complaint modal:", this.selectedComplaintForEdit);
-    // this.complaintService.editComplaint(complaint).subscribe
-    // this.router.navigate(['/citizen/complaint/edit', complaint.complaintId]);
+    this.selectedComplaintForEdit = { ...complaint };
+
+    this.showLocationPanel = false;
+    this.showMapEdit = false;
+    this.locationErrorEdit = '';
+
+
+    const dept = this.departments.find(d => d.departmentName === complaint.departmentName);
+    if (dept) {
+      this.selectedComplaintForEdit.departmentId = dept.departmentId;
+
+      this.departmentSvc.getAllCategoriesbyDepartment(dept.departmentId).subscribe({
+        next: (res) => {
+          this.categories = res;
+          const cat = this.categories.find(c => c.categoryName === complaint.categoryName);
+          if (cat) {
+            this.selectedComplaintForEdit.categoryId = cat.categoryId;
+            this.departmentSvc.getAllSubCategoriesbyCategory(cat.categoryId).subscribe({
+              next: (res) => {
+                this.subCategories = res;
+                const subCat = this.subCategories.find(sc => sc.subCategoryName === complaint.subCategoryName);
+                if (subCat) {
+                  this.selectedComplaintForEdit.subCategoryId = subCat.subCategoryId;
+                }
+              }});
+            }
+        }
+      });
+    }
   }
 
-  closeEditComplaintModal(){
+  closeEditComplaintModal() {
     this.showEditComplaintDetailsModal = false;
     this.selectedComplaintForEdit = null;
+    this.showLocationPanel = false;
+    this.destroyMapEdit();
+  }
+
+  openLocationPanel() {
+    this.showLocationPanel = true;
+  }
+
+  closeLocationPanel() {
+    this.showLocationPanel = false;
+    this.destroyMapEdit();
+  }
+
+  saveLocationChanges() {
+    this.showLocationPanel = false;
+    this.showMapEdit = false;
+    this.destroyMapEdit();
+  }
+
+  toggleMapForEdit(){
+    this.showMapEdit = !this.showMapEdit;
+    this.locationErrorEdit = '';
+
+    if(this.showMapEdit){
+      setTimeout(() => {
+        this.initializeMapForEdit();
+      }, 100);
+    } else {
+      this.destroyMapEdit();
+    }
+  }
+
+  initializeMapForEdit(){
+    try{
+      if(this.mapEdit){
+        this.mapEdit.remove();
+        this.mapEdit = null;
+      }
+
+      const defaultLat = 26.9124;
+      const defaultLng = 75.7873;
+
+      const lat = this.selectedComplaintForEdit.latitude || defaultLat;
+      const lng = this.selectedComplaintForEdit.longitude || defaultLng;
+
+      this.mapEdit = L.map('mapContainerEdit', {
+        center: [lat, lng],
+        zoom: this.selectedComplaintForEdit.latitude ? 15 : 10,
+        zoomControl: true,
+        scrollWheelZoom: true
+      });
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19
+      }).addTo(this.mapEdit);
+
+      if(this.selectedComplaintForEdit.latitude && this.selectedComplaintForEdit.longitude){
+        this.addMarkerForEdit(this.selectedComplaintForEdit.latitude, this.selectedComplaintForEdit.longitude);
+      }
+
+      this.mapEdit.on('click', (e: L.LeafletMouseEvent) => {
+        console.log('leaflat moush event',e);
+        this.addMarkerForEdit(e.latlng.lat, e.latlng.lng);
+        this.reverseGeocodeForEdit(e.latlng.lat, e.latlng.lng);
+      });
+
+      setTimeout(()=>{
+        if(this.mapEdit){
+          this.mapEdit.invalidateSize();
+        }
+      },200);
+    } catch(error){
+      console.error('Error initializing map:', error);
+      this.locationErrorEdit = 'Failed to initialize map';
+    }
+  }
+
+  addMarkerForEdit(lat: number, lng: number){
+    try{
+      if(this.markerEdit){
+        this.mapEdit.removeLayer(this.markerEdit);
+      }
+
+      this.markerEdit = L.marker([lat, lng], {
+        draggable: true
+      }).addTo(this.mapEdit);
+
+      this.selectedComplaintForEdit.latitude = lat;
+      this.selectedComplaintForEdit.longitude = lng;
+
+      this.markerEdit.on('dragend', (e: any) => {
+        console.log("Dragend event", e);
+        const position = e.target.getLatLng();
+        this.selectedComplaintForEdit.latitude = position.lat;
+        this.selectedComplaintForEdit.longitude = position.lng;
+        this.reverseGeocodeForEdit(position.lat, position.lng);
+      });
+
+      this.mapEdit.setView([lat, lng], 15);
+
+    } catch(error){
+      console.error('Error adding marker:', error);
+    }
+  }
+
+  useCurrentLocationForEdit(){
+    if(!navigator.geolocation){
+      this.toastr.warning('Geolocation is not supported by your browser');
+      return;
+    }
+
+    this.isLoadingLocationEdit = true;
+    this.locationErrorEdit = '';
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+
+        if(!this.showMapEdit){
+          this.showMapEdit = true;
+          setTimeout(() => {
+            this.initializeMapForEdit();
+            this.addMarkerForEdit(lat, lng);
+            this.reverseGeocodeForEdit(lat, lng);
+          }, 100);
+        } else {
+          this.addMarkerForEdit(lat, lng);
+          this.reverseGeocodeForEdit(lat, lng);
+        }
+
+        this.isLoadingLocationEdit = false;
+        this.toastr.success('Location detected successfully');
+      },
+      (error) => {
+        this.isLoadingLocationEdit = false;
+        let message = 'Failed to get your location';
+
+        switch (error.code) {
+        case error.PERMISSION_DENIED:
+          message = 'Location access denied by user';
+          break;
+        case error.POSITION_UNAVAILABLE:
+          message = 'Location information is unavailable';
+          break;
+        case error.TIMEOUT:
+          message = 'Location request timed out';
+          break;
+        }
+
+        this.locationErrorEdit = message;
+        this.toastr.error(message);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 60000
+      }
+    );
+  }
+
+  reverseGeocodeForEdit(lat: number, lng: number){
+    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+      .then(response => response.json())
+      .then(data => {
+        if (data && data.display_name) {
+          this.selectedComplaintForEdit.addressText = data.display_name;
+        }
+      })
+      .catch(error => {
+        this.toastr.error('Reverse geocoding failed:', error);
+      });
+  }
+
+  destroyMapEdit(){
+    if (this.mapEdit) {
+      this.mapEdit.remove();
+      this.mapEdit = null;
+      this.markerEdit = null;
+    }
+  }
+
+  saveComplaintChanges() {
+
+    const EditcomplaintData = {
+      citizenId: this.authSvc.getUserId(),
+      description: this.selectedComplaintForEdit.description,
+      departmentId: this.selectedComplaintForEdit.departmentId,
+      categoryId: this.selectedComplaintForEdit.categoryId,
+      subCategoryId: this.selectedComplaintForEdit.subCategoryId,
+      addressText: this.selectedComplaintForEdit.addressText,
+      latitude: this.selectedComplaintForEdit.latitude,
+      longitude: this.selectedComplaintForEdit.longitude
+    };
+
+    const formData = new FormData();
+    
+    Object.entries(EditcomplaintData).forEach(([key, value]) => {
+      if (value !== null && value !== undefined) {
+        formData.append(key, String(value));
+      } else {
+        formData.append(key, "");
+      }
+    });
+
+    this.selectedFiles.forEach(file => {
+      formData.append('attachments', file);
+    });
+
+    this.isSubmitting = true;
+    
+    this.complaintService.editComplaint(this.selectedComplaintForEdit.complaintId, formData).subscribe((res:any)=>{
+      this.toastr.success('Complaint updated successfully');
+      this.selectedFiles = [];
+      this.previewImages = [];
+      this.closeEditComplaintModal();
+      this.isSubmitting = false;
+      this.loadComplaints();
+    }, (err)=>{
+      this.toastr.error('Failed to update complaint');
+      this.isSubmitting = false;
+    });
+
   }
 
   animateStepper(targetIndex: number) {
@@ -314,7 +695,7 @@ export class MyComplaintsComponent implements OnInit {
       } else {
         clearInterval(interval);
       }
-    }, 300); // Faster animation for better UX
+    }, 300); 
   }
   
   updateProgressWidth(stepIndex: number) {

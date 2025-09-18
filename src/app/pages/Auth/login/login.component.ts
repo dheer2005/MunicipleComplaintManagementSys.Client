@@ -28,9 +28,9 @@ export class LoginComponent implements OnInit {
         const role = this.authSvc.getUserRole();
 
         if (role === 'Citizen') {
-          this.route.navigate(['/citizen/dashboard']);
+          this.route.navigate(['/citizen/complaints/my']);
         } else if (role === 'Official') {
-          this.route.navigate(['/official/dashboard']);
+          this.route.navigate(['/official/complaints/department']);
         } else if (role === 'Worker') {
           this.route.navigate(['/worker/dashboard']);
         } else {

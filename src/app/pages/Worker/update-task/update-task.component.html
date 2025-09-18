@@ -20,7 +20,7 @@
                                 <i [ngClass]="getStatusConfig(taskDetails.currentStatus).icon"></i>
                                 {{ getStatusConfig(taskDetails.currentStatus).label }}
                             </span>
-                            <span class="status-badge" [ngClass]="'bg-' + getStatusConfig(taskDetails.currentStatus).color + ' text-white'">
+                            <span class="status-badge" *ngIf="taskDetails.currentStatus != 'Resolved' && taskDetails.currentStatus != 'Closed'" [ngClass]="'bg-' + getStatusConfig(taskDetails.currentStatus).color + ' text-white'">
                                 <i [ngClass]="getPriorityIcon(taskDetails.priority)"></i>
                                 {{ taskDetails.priority }} Priority
                             </span>
@@ -346,7 +346,7 @@
                     </div>
                     <div class="card-body">
                         <div class="row mb-3">
-                            <div class="col-6">
+                            <div class="col-6" *ngIf="taskDetails.currentStatus != 'Resolved' && taskDetails.currentStatus != 'Closed'">
                                 <small class="text-muted d-block">Priority</small>
                                 <span [ngClass]="getPriorityClass(taskDetails.priority)">
                                     <i [ngClass]="getPriorityIcon(taskDetails.priority)"></i>
@@ -366,20 +366,32 @@
                                 <small class="text-muted d-block">Days Since Assigned</small>
                                 <strong>{{ daysSinceAssigned == 0? 'Today' : daysSinceAssigned | number:'1.0-0' }}</strong>
                             </div>
-                            <div class="col-6">
+                            <div class="col-6" *ngIf="taskDetails.currentStatus != 'Resolved' && taskDetails.currentStatus != 'Closed'">
                                 <small class="text-muted d-block">Time Until Due</small>
                                 <strong [ngClass]="getDaysUntilDue() < 0 ? 'text-danger' : getDaysUntilDue() <= 2 ? 'text-warning' : ''">
                                     {{ getDaysUntilDue() >= 0 ? getDaysUntilDue() + ' days' : 'Overdue' }}
                                 </strong>
                             </div>
+
+                            <div class="col-6" *ngIf="taskDetails.currentStatus == 'Resolved' || taskDetails.currentStatus == 'Closed'">
+                                <small class="text-muted d-block text-center">Status</small>
+                                <span class="status-badge bg-white text-dark text-center">
+                                    <i [ngClass]="getStatusConfig(taskDetails.currentStatus).icon"></i>
+                                    {{ getStatusConfig(taskDetails.currentStatus).label }}
+                                </span>
+                            </div>
                         </div>
                         
-                        <div class="mb-3">
-                            <small class="text-muted d-block">Category</small>
-                            <strong>{{ taskDetails.categoryName }}</strong>
-                            <div *ngIf="taskDetails.subCategoryName">
-                                <small class="text-muted">{{ taskDetails.subCategoryName }}</small>
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <small class="text-muted d-block">Category</small>
+                                <strong>{{ taskDetails.categoryName }}</strong>
                             </div>
+                            <div class="col-6">
+                                <small class="text-muted d-block">Sub-Category</small>
+                                <strong>{{ taskDetails.subCategoryName }}</strong>
+                            </div>
+
                         </div>
                         
                         <div *ngIf="taskDetails.addressText">

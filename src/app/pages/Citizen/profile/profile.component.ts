@@ -20,17 +20,14 @@ export class ProfileComponent implements OnInit {
   isLoading = false;
   isEditing = false;
   
-  // Mock current user ID - replace with actual logged-in user ID from auth service
   currentUserId: string | null = null;
 
-  // Edit form data
   editForm = {
     fullName: '',
     email: '',
     phone: ''
   };
 
-  // Role information
   roleInfo: {
     Official: { name: string; icon: string; color: string; description: string };
     Worker: { name: string; icon: string; color: string; description: string };
@@ -135,7 +132,7 @@ export class ProfileComponent implements OnInit {
   toggleEdit() {
     this.isEditing = !this.isEditing;
     if (!this.isEditing) {
-      this.populateEditForm(); // Reset form if canceling
+      this.populateEditForm(); 
     }
   }
 
@@ -144,22 +141,18 @@ export class ProfileComponent implements OnInit {
       return;
     }
 
-    // Here you would call an update profile API
-    // this.apiService.updateProfile(this.currentUserId, this.editForm).subscribe({
-    //   next: (response) => {
-    //     this.toastr.success('Profile updated successfully');
-    //     this.userProfile = { ...this.userProfile, ...this.editForm };
-    //     this.isEditing = false;
-    //   },
-    //   error: (error) => {
-    //     this.toastr.error('Failed to update profile');
-    //   }
-    // });
+    this.authSvc.updateUserProfile(this.currentUserId!, this.editForm).subscribe({
+      next: (res) => {
+        this.toastr.success('Profile updated successfully');
+        this.loadUserProfile();
+        this.isEditing = false;
+      },
+      error: (err) => {
+        this.toastr.error('Failed to update profile');
+        this.isEditing = false;
+      }
+    });
 
-    // Mock update for now
-    this.userProfile = { ...this.userProfile, ...this.editForm };
-    this.toastr.success('Profile updated successfully');
-    this.isEditing = false;
   }
 
   validateForm(): boolean {

@@ -1,3 +1,4 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { JwtHelperService } from '@auth0/angular-jwt';
@@ -8,8 +9,9 @@ import { ToastrService } from 'ngx-toastr';
 })
 export class AuthService {
   private tokenKey = "token";
+  private apiUrl:any = `https://localhost:7082/api/Authentication`
   
-    constructor(private jwtHelper: JwtHelperService, private toastrSvc: ToastrService, private router: Router ) { }
+    constructor(private jwtHelper: JwtHelperService, private toastrSvc: ToastrService, private router: Router, private http: HttpClient ) { }
     
     getToken(): string | null {
       return localStorage.getItem(this.tokenKey);
@@ -69,5 +71,9 @@ export class AuthService {
     getUserFullName(): string | null{
       const decodedToken = this.getDecodedToken();
       return decodedToken ? decodedToken.name : null;
+    }
+
+    updateUserProfile(userId: string, data:any){
+      return this.http.put<any>(`${this.apiUrl}/update-profile/${userId}`, data);
     }
 }

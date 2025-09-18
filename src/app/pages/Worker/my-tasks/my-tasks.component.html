@@ -197,7 +197,7 @@
                                     {{ task.currentStatus }}
                                 </span>
                             </td>
-                            <td class="text-center">
+                            <td class="text-center" *ngIf="task.currentStatus !== 'Resolved' && task.currentStatus !== 'Closed'">
                                 <div [ngClass]="task.isOverdue ? 'text-danger' : task.daysUntilDue <= 2 ? 'text-warning' : ''">
                                     {{ task.slaDueAt | date:'short' }}
                                 </div>
@@ -205,6 +205,11 @@
                                     {{ task.daysUntilDue >= 0 ? task.daysUntilDue + ' days left' : 'Overdue by ' + getAbs(task.daysUntilDue) + ' days' }}
                                 </small>
                             </td>
+                            <td class="text-center fw-bold" *ngIf="task.currentStatus == 'Resolved' || task.currentStatus == 'Closed'">
+                                <span>N/A</span>
+
+                            </td>
+
                             <td class="text-center">
                                 <div class="btn-group btn-group-sm">
                                     <button class="btn btn-outline-primary" (click)="viewTaskDetails(task)" title="View Details">
@@ -272,9 +277,10 @@
                         <div class="row text-center mb-3">
                             <div class="col-6">
                                 <small class="text-muted d-block">Due Date</small>
-                                <small [ngClass]="task.isOverdue ? 'text-danger' : task.daysUntilDue <= 2 ? 'text-warning' : 'text-muted'">
+                                <small *ngIf="task.currentStatus !== 'Resolved' && task.currentStatus !== 'Closed'" [ngClass]="task.isOverdue ? 'text-danger' : task.daysUntilDue <= 2 ? 'text-warning' : 'text-muted'">
                                     {{ task.slaDueAt | date:'short' }}
                                 </small>
+                                <small>N/A</small>
                             </div>
                             <div class="col-6">
                                 <small class="text-muted d-block">Assigned</small>

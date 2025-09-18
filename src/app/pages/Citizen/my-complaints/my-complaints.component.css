@@ -193,14 +193,9 @@
 
 /* Attachment Images */
 .attachment-images img {
-  transition: all 0.3s ease;
   cursor: pointer;
 }
 
-.attachment-images img:hover {
-  transform: scale(1.1);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-}
 
 
 
@@ -541,6 +536,27 @@
   font-weight: bold;
 }
 
+.modal-body{
+  overflow-x: hidden !important;
+}
+
+.slide-left {
+  transform: translateX(-100%) !important;
+}
+
+.slide-in {
+  transform: translateX(-100%) !important;
+}
+
+.main-panel {
+  transform: translateX(0);
+}
+
+.location-panel {
+  transform: translateX(0);
+}
+
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .complaint-stepper .step-container {
@@ -563,4 +579,19 @@
     max-width: 60px;
     margin-top: 5px;
   }
+
+  .modal-dialog {
+    max-width: 95%;
+    margin: 0.5rem;
+  }
+  
+  .location-panel {
+    padding: 1rem !important;
+  }
+  
+  .main-panel {
+    padding: 1rem !important;
+  }
 }
+
+

@@ -128,8 +128,8 @@ export class MyTasksComponent implements OnInit {
           subCategoryName: c.subCategoryName,
           description: c.description,
           currentStatus: c.currentStatus,
-          priority: (daysUntilDue < 0 || daysUntilDue <= 1) ? 'High'
-                  : (daysUntilDue <= 3 ? 'Medium' : 'Low'),
+          priority: (c.currentStatus != 'Resolved' && c.currentStatus != 'Closed') && (daysUntilDue < 0 || daysUntilDue <= 1) ? 'High'
+                  : ( (c.currentStatus != 'Resolved' && c.currentStatus != 'Closed') && daysUntilDue <= 3 ? 'Medium' : (c.currentStatus != 'Resolved' && c.currentStatus != 'Closed') ? 'Low' : 'N/A'),
           createdAt: new Date(c.createdAt),
           assignedAt: assignedAt,
           slaDueAt: slaDue,
@@ -148,7 +148,6 @@ export class MyTasksComponent implements OnInit {
           daysUntilDue: daysUntilDue
         } as TaskComplaint;
       });
-      // console.log("tasks", this.allTasks);
 
       // baaki calculations
       this.calculateTaskPriorities();
@@ -264,7 +263,6 @@ export class MyTasksComponent implements OnInit {
     });
   }
 
-  // Event handlers
   onFilterChange(): void {
     this.applyFilters();
   }

@@ -115,7 +115,7 @@
                     {{ userProfile.phone }}
                   </div>
                   <input *ngIf="isEditing" 
-                         type="tel" 
+                         type="text" 
                          class="form-control" 
                          [(ngModel)]="editForm.phone"
                          placeholder="Phone Number">
@@ -217,18 +217,6 @@
                     </div>
                   </div>
 
-                  <!-- Closed Complaints -->
-                  <div class="col-6 col-md-3">
-                    <div class="stat-card">
-                      <div class="stat-icon bg-dark">
-                        <i class="fas fa-archive"></i>
-                      </div>
-                      <div class="stat-content">
-                        <h4 class="stat-number">{{ userProfile.closedComplaints || 0 }}</h4>
-                        <p class="stat-label">Closed</p>
-                      </div>
-                    </div>
-                  </div>
 
 
                   <!-- Total Feedbacks -->
