@@ -28,11 +28,11 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-4 text-end">
+            <div class="col-md-4 text-end" >
                 <div class="progress-circle bg-white text-primary">
                     {{ latestCompletion }}%
                 </div>
-                <small class="d-block mt-2">
+                <small class="d-block mt-2" *ngIf="taskDetails.currentStatus != 'Closed' && taskDetails.currentStatus != 'Resolved'"x>
                     Due: {{ taskDetails.slaDueAt | date:'short' }}
                     <span [ngClass]="getDaysUntilDue() < 0 ? 'text-danger' : getDaysUntilDue() <= 2 ? 'text-warning' : 'text-light'">
                         ({{ getDaysUntilDue() >= 0 ? getDaysUntilDue() + ' days left' : 'Overdue by ' +     getAbs(getDaysUntilDue()) + ' days' }})
@@ -76,7 +76,6 @@
                     </ul>
 
                     <div class="tab-content">
-                        <!-- Task Details Tab -->
                         <div *ngIf="activeTab === 'details'">
                             <div class="row">
                                 <div class="col-md-8">
@@ -283,7 +282,6 @@
                             </ng-template>
                         </div>
 
-                        <!-- Work History Tab -->
                         <div *ngIf="activeTab === 'history'">
                             <h5 class="mb-4">Work Progress History</h5>
                             <div *ngFor="let entry of workHistory; let i = index" class="work-history-item">
@@ -318,7 +316,6 @@
 
             <!-- Quick Actions & Information -->
             <div class="col-lg-4">
-                <!-- Quick Actions -->
                 <div class="card task-card mb-4">
                     <div class="card-header bg-white border-0">
                         <h6 class="mb-0"><i class="fas fa-bolt text-primary"></i> Quick Actions</h6>
@@ -339,7 +336,6 @@
                     </div>
                 </div>
 
-                <!-- Task Information -->
                 <div class="card task-card mb-4">
                     <div class="card-header bg-white border-0">
                         <h6 class="mb-0"><i class="fas fa-info-circle text-info"></i> Task Information</h6>
@@ -374,8 +370,8 @@
                             </div>
 
                             <div class="col-6" *ngIf="taskDetails.currentStatus == 'Resolved' || taskDetails.currentStatus == 'Closed'">
-                                <small class="text-muted d-block text-center">Status</small>
-                                <span class="status-badge bg-white text-dark text-center">
+                                <small class="text-muted d-block ms-3">Status</small>
+                                <span class="status-badge bg-white text-dark ">
                                     <i [ngClass]="getStatusConfig(taskDetails.currentStatus).icon"></i>
                                     {{ getStatusConfig(taskDetails.currentStatus).label }}
                                 </span>

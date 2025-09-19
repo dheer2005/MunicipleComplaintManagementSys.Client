@@ -41,11 +41,9 @@ interface TaskAttachment {
 })
 export class MyTasksComponent implements OnInit {
 
-  // Data properties
   allTasks: TaskComplaint[] = [];
   filteredTasks: TaskComplaint[] = [];
   
-  // Filter and sorting
   statusFilter = 'All';
   priorityFilter = 'All';
   overdueFilter = false;
@@ -53,20 +51,16 @@ export class MyTasksComponent implements OnInit {
   sortBy = 'assignedAt';
   sortOrder: 'asc' | 'desc' = 'desc';
   
-  // Pagination
   currentPage = 1;
   itemsPerPage = 10;
   
-  // UI state
   loading = false;
   selectedTask: TaskComplaint | null = null;
   showTaskDetails = false;
   viewMode: 'list' | 'card' = 'list';
   
-  // Worker info
   workerId: string | null = null;
   
-  // Statistics
   taskStats = {
     totalAssigned: 0,
     pending: 0,
@@ -99,9 +93,7 @@ export class MyTasksComponent implements OnInit {
     this.loading = true;
     try {
       await this.fetchWorkerTasks();
-      // this.calculateTaskPriorities();
-      // this.calculateStatistics();
-      // this.applyFilters();
+      
     } catch (error) {
       console.error('Error loading tasks:', error);
       this.toastrService.error('Failed to load your tasks');
@@ -114,7 +106,6 @@ export class MyTasksComponent implements OnInit {
     this.workerService.getComplaintsForWorker(this.workerId!).subscribe((res: any[]) => {
       
       this.allTasks = res.map(c => {
-        // calculate extra fields
         const assignedAt = new Date(c.updatedAt ?? c.createdAt);
         const slaDue = new Date(c.slaDueAt);
         const daysUntilDue = this.calculateDaysUntilDue(slaDue);
@@ -149,7 +140,6 @@ export class MyTasksComponent implements OnInit {
         } as TaskComplaint;
       });
 
-      // baaki calculations
       this.calculateTaskPriorities();
       this.calculateStatistics();
       this.applyFilters();
@@ -165,7 +155,6 @@ export class MyTasksComponent implements OnInit {
       task.daysSinceAssigned = daysSinceAssigned;
       task.isOverdue = daysUntilDue < 0;
       
-      // Auto-calculate priority based on urgency if not set
       if (!task.priority) {
         if (task.isOverdue || daysUntilDue <= 1) {
           task.priority = 'High';
@@ -194,7 +183,6 @@ export class MyTasksComponent implements OnInit {
 
   calculateStatistics(): void {
     this.workerService.getWorkerStats(this.workerId!).subscribe((res:any)=>{
-      console.log("stats",res);
       this.taskStats = res;
       // this.workerService.getTaskPriority(this.workerId!).subscribe((res:any)=>{
       //   console.log("priority",res);
@@ -225,7 +213,7 @@ export class MyTasksComponent implements OnInit {
     });
 
     this.sortTasks();
-    this.currentPage = 1; // Reset to first page when filters change
+    this.currentPage = 1; 
   }
 
   sortTasks(): void {
@@ -281,7 +269,6 @@ export class MyTasksComponent implements OnInit {
     this.sortTasks();
   }
 
-  // Task actions
   viewTaskDetails(task: TaskComplaint): void {
     this.selectedTask = task;
     this.showTaskDetails = true;
@@ -310,11 +297,9 @@ export class MyTasksComponent implements OnInit {
   }
 
   exportTasks(): void {
-    // Implementation for exporting tasks
     this.toastrService.info('Export functionality will be implemented');
   }
 
-  // Utility methods
   getPriorityClass(priority: string): string {
     switch (priority?.toLowerCase()) {
       case 'high': return 'badge-danger';

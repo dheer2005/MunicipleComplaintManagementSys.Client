@@ -49,11 +49,9 @@ interface WorkUpdate {
 })
 export class UpdateTaskComponent implements OnInit {
 
-  // Task data
   taskDetails: TaskDetails | null = null;
   workHistory: any[] = [];
   
-  // Form data
   updateForm = {
     status: '',
     notes: '',
@@ -63,33 +61,26 @@ export class UpdateTaskComponent implements OnInit {
     additionalResourcesNeeded: ''
   };
   
-  // Track the minimum completion percentage (cannot go below last update)
   minCompletionPercentage: number = 0;
   
-  // File upload
   selectedFiles: File[] = [];
   uploadProgress: number = 0;
   
-  // UI state
   loading = false;
   saving = false;
   showWorkHistory = false;
   showLocationModal = false;
   activeTab = 'update';
   
-  // Form validation
   formErrors: any = {};
   
-  // Available statuses
   availableStatuses = [
     { value: 'Pending', label: 'Pending', icon: 'fas fa-clock', color: 'warning' },
     { value: 'InProgress', label: 'In Progress', icon: 'fas fa-cog', color: 'info' },
     { value: 'Resolved', label: 'Resolved', icon: 'fas fa-check-circle', color: 'success' },
     { value: 'Closed', label: 'Closed', icon: 'fas fa-times-circle', color: 'danger' }
-
   ];
   
-  // Route params
   taskId: string | null = null;
   workerId: string | null = null;
 
@@ -153,7 +144,6 @@ export class UpdateTaskComponent implements OnInit {
       const daysUntilDue = this.calculateDaysUntilDue(res.slaDueAt);
       const isOverdue = daysUntilDue < 0;
 
-      // Assign priority based on SLA
       let priority: 'High' | 'Medium' | 'Low';
       if (isOverdue || daysUntilDue <= 1) {
         priority = 'High';
@@ -172,6 +162,8 @@ export class UpdateTaskComponent implements OnInit {
         isOverdue: isOverdue
       } as TaskDetails;
 
+      // console.log("task details:", this.taskDetails);
+
     });
   }
 
@@ -189,10 +181,6 @@ export class UpdateTaskComponent implements OnInit {
         estimatedCompletionDate: item.estimatedCompletionDate ? new Date(item.estimatedCompletionDate) : null
       }))
       .sort((a: any, b: any) => new Date(b.completionPercentage).getTime() - new Date(a.completionPercentage).getTime());
-
-      // console.log(this.workHistory);
-      // Initialize form with last update data
-      // this.initializeFormWithLastUpdate();
     });
   }
 
@@ -242,13 +230,11 @@ export class UpdateTaskComponent implements OnInit {
     });
 
 
-    // Make the API call
     this.workerService.addWorkUpdate(this.taskId!, formData).subscribe({
       next: (res: any) => {
         console.log("API Response:", res);
         this.toastrService.success('Task updated successfully');
         
-        // Refresh data
         this.loadTaskDetails();
         this.resetForm();
       },

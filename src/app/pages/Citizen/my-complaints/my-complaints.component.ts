@@ -145,18 +145,6 @@ export class MyComplaintsComponent implements OnInit {
     this.showDeleteModal = false;
   }
 
-  deleteComplaintAttachment(complaintId: string, attachmentId: number){
-    if(confirm('Are you sure you want to delete this attachment?')){
-      this.complaintService.deleteComplaintAttachment(complaintId, attachmentId).subscribe((res)=>{
-        this.selectedComplaintForEdit.attachments = this.selectedComplaintForEdit.attachments.filter((att:any) => att.attachmentId !== attachmentId);
-        this.toastr.success('Attachments deleted successfully');
-        this.loadComplaints();
-      }, (err)=>{
-        this.toastr.error('Failed to delete attachments');  
-      });
-    }
-  }
-
   openAttachment(url:string){
     window.open(url, '_blank');
   }
@@ -169,7 +157,6 @@ export class MyComplaintsComponent implements OnInit {
   onFileSelected(event: any) {
     const files: File[] = Array.from(event.target.files);
     
-    // Validate file size and type
     for (let file of files) {
       if (file.size > 5 * 1024 * 1024) { // 5MB limit
         this.toastr.warning(`File ${file.name} is too large. Maximum size is 5MB.`);
@@ -252,7 +239,6 @@ export class MyComplaintsComponent implements OnInit {
 
     this.activeStepIndex = this.statusSteps.indexOf(currentStatus);
 
-    // Set CSS custom property for line positioning
     setTimeout(() => {
       const stepContainer = document.querySelector('.step-container') as HTMLElement;
       if (stepContainer) {
@@ -281,8 +267,12 @@ export class MyComplaintsComponent implements OnInit {
             };
           })
         .sort((a:any,b:any)=>{
+
           if(a.currentStatus == 'Closed' && b.currentStatus != 'Closed') return 1;
           if(a.currentStatus != 'Closed' && b.currentStatus == 'Closed') return -1;
+          if(a.currentStatus == 'Resolved' && b.currentStatus != 'Resolved') return 1;
+          if(a.currentStatus != 'Resolved' && b.currentStatus == 'Resolved') return -1;
+
           return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
         });
         this.filterComplaints();
