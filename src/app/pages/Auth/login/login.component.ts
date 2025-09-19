@@ -9,7 +9,7 @@ import { ToastrService } from 'ngx-toastr';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent {
   loginData: any = {
     emailId: '',
     password: ''
@@ -17,14 +17,19 @@ export class LoginComponent implements OnInit {
 
   constructor(private apiSvc: ApiService, private authSvc: AuthService, private route: Router, private toastrSvc: ToastrService) { }
 
-  ngOnInit(): void {
-  }
 
   onLogin() {
     this.apiSvc.login(this.loginData).subscribe({
       next: (res) => {
+        const auditObj = {
+          userId: res.userId,
+          action: 'Login',
+          ActionResult: 'LoggedIn successfully'
+        }
+        this.authSvc.createAudit(auditObj).subscribe();
+        console.log("login data:", res);
         this.authSvc.setToken(res.token);
-        this.toastrSvc.success("Login successful!","Success");
+        this.toastrSvc.success("Login successfull!","Success");
         const role = this.authSvc.getUserRole();
 
         if (role === 'Citizen') {
@@ -33,12 +38,19 @@ export class LoginComponent implements OnInit {
           this.route.navigate(['/official/complaints/department']);
         } else if (role === 'Worker') {
           this.route.navigate(['/worker/dashboard']);
-        } else {
-          this.route.navigate(['/']); // fallback
+        }else if(role === 'Admin') {
+          this.route.navigate(['/admin/dashboard']);
+        }else {
+          this.route.navigate(['/']); 
         }
-        
       },
       error: (err) => {
+        const auditObj = {
+          userId: '',
+          action: 'Login',
+          ActionResult: 'Failed to login'
+        }
+        this.authSvc.createAudit(auditObj).subscribe();
         this.toastrSvc.error(err.error?.message || "Login failed. Please try again.","Error");
       }
     });

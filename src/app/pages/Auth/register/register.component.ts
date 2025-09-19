@@ -29,6 +29,7 @@ export class RegisterComponent implements OnInit {
     role: -1,
     departmentId: null
   };
+  confirmPassword: string = '';
 
   selectedRoleLabel = '';
   departments: any[] = [];
@@ -80,27 +81,36 @@ export class RegisterComponent implements OnInit {
   }
 
   onRegister() {
-    console.log(this.registerData);
-    this.registerData = {
-      ...this.registerData,
-      phone : this.registerData.phone?.toString()
-    }
     this.apiSvc.register(this.registerData).subscribe({
       next: (res) => {
+        const auditObj = {
+          userId: res.userId,
+          action: 'Register',
+          ActionResult: `New ${this.registerData.role} registered successfully`
+        };
+        this.authSvc.createAudit(auditObj).subscribe();
         this.authSvc.setToken(res.token);
         this.toastr.success(`${this.selectedRoleLabel} Registration successful!`, "Success");
 
         if (this.registerData.role === 0) {
-          this.router.navigate(['/citizen/dashboard']);
+          this.router.navigate(['/citizen/complaints/my']);
         } else if (this.registerData.role === 1) {
-          this.router.navigate(['/official/dashboard']);
+          this.router.navigate(['/official/complaints/department']);
         } else if (this.registerData.role === 2) {
           this.router.navigate(['/worker/dashboard']);
+        }else if(this.registerData.role === 3) {
+          this.router.navigate(['/admin/dashboard']);
         } else {
           this.router.navigate(['/']);
         }
       },
       error: (err) => {
+        const auditObj = {
+          userId: '',
+          action: 'Register',
+          ActionResult: `Failed to register new ${this.registerData.role}`
+        };
+        this.authSvc.createAudit(auditObj).subscribe();
         this.errorMessage = err.error?.message || "Registration failed. Please try again.";
         this.toastr.error(this.errorMessage, "Error");
       }

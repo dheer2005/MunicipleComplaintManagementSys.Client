@@ -64,6 +64,7 @@ export class MyTasksComponent implements OnInit {
   taskStats = {
     totalAssigned: 0,
     pending: 0,
+    assigned: 0,
     inProgress: 0,
     resolved: 0,
     overdue: 0
@@ -102,7 +103,7 @@ export class MyTasksComponent implements OnInit {
     }
   }
 
-  async fetchWorkerTasks(): Promise<void> {
+  fetchWorkerTasks(){
     this.workerService.getComplaintsForWorker(this.workerId!).subscribe((res: any[]) => {
       
       this.allTasks = res.map(c => {

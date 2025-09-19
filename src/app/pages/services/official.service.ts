@@ -71,6 +71,10 @@ export class OfficialService {
     return this.http.put<any>(`${this.apiUrl}/assign-complaint/${complaintId}`, { workerId });
   }
 
+  deleteComplaint(complaintId: string){
+    return this.http.delete(`${this.apiUrl}/delete-complaint/${complaintId}`);
+  }
+
 
   // Department Management
   getDepartmentsOverview(): Observable<Department[]> {

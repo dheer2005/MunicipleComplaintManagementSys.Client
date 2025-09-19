@@ -55,7 +55,6 @@ export class ProfileComponent implements OnInit {
     
     this.apiService.userProfile(this.currentUserId!).subscribe({
       next: (data) => {
-        console.log('Profile data:', data);
         this.userProfile = data;
         this.populateEditForm();
         this.isLoading = false;
@@ -143,11 +142,23 @@ export class ProfileComponent implements OnInit {
 
     this.authSvc.updateUserProfile(this.currentUserId!, this.editForm).subscribe({
       next: (res) => {
+        const auditObj = {
+          userId: this.currentUserId,
+          action: 'Update profile',
+          ActionResult: `Profile updated successfully for ${this.currentUserId}`
+        };
+        this.authSvc.createAudit(auditObj).subscribe();
         this.toastr.success('Profile updated successfully');
         this.loadUserProfile();
         this.isEditing = false;
       },
       error: (err) => {
+        const auditObj = {
+          userId: this.currentUserId,
+          action: 'Update profile',
+          ActionResult: `Failed to update the Profile for ${this.currentUserId}`
+        };
+        this.authSvc.createAudit(auditObj).subscribe();
         this.toastr.error('Failed to update profile');
         this.isEditing = false;
       }

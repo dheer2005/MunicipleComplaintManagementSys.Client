@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { OfficialService } from '../../services/official.service';
+import { ToastrService } from 'ngx-toastr';
 
 export interface Department {
   departmentId: number;
@@ -53,17 +54,18 @@ export class ComplaintDepartmentsComponent implements OnInit {
   selectedComplaintId: string | null = null;
   selectedWorkerId: number | null = null;
   showAssignModal = false;
+  depaertmentIdForLoad: number | null = null;
   
-  // Filter options
   statusFilter = 'All';
   priorityFilter = 'All';
   searchTerm = '';
+  showDeleteModal = false;
+  deleteComplaintId: string | null = null;
   
-  // Pagination
   currentPage = 1;
   itemsPerPage = 10;
   
-  constructor(private router: Router, private authSvc:AuthService, private OfficialSvc: OfficialService) { }
+  constructor(private router: Router, private authSvc:AuthService, private OfficialSvc: OfficialService, private toastrSvc: ToastrService) { }
 
   ngOnInit(): void {
     this.loadDepartments();
@@ -74,7 +76,6 @@ export class ComplaintDepartmentsComponent implements OnInit {
     try {
       this.OfficialSvc.getDepartmentsOverview().subscribe((data: Department[]) => {
         this.departments = data;
-        console.log("getDepartmentsOverview:", data);
       });
     } catch (error) {
       console.error('Error loading departments:', error);
@@ -83,17 +84,14 @@ export class ComplaintDepartmentsComponent implements OnInit {
     }
   }
 
-  async selectDepartment(department: Department): Promise<void> {
-    this.selectedDepartment = department;
-    this.loading = true;
-    
+  loadComplaintsSummeryByDepartmentId(departmentId: number){
     try {
-      this.OfficialSvc.getComplaintSummaryByDepartment(department.departmentId).subscribe((data: ComplaintSummary[]) => {
-        console.log("getComplaintSummaryByDepartment:", data);
+      this.OfficialSvc.getComplaintSummaryByDepartment(departmentId).subscribe((data: ComplaintSummary[]) => {
         this.departmentComplaints = data;
+        console.log("departmentComplaints:", this.departmentComplaints);
       }); 
       
-      await this.loadAvailableWorkers(department.departmentId);
+      this.loadAvailableWorkers(departmentId);
       
     } catch (error) {
       console.error('Error loading department complaints:', error);
@@ -102,13 +100,22 @@ export class ComplaintDepartmentsComponent implements OnInit {
     }
   }
 
-  async loadAvailableWorkers(departmentId: number): Promise<void> {
+  selectDepartment(department: Department){
+    this.selectedDepartment = department;
+    this.depaertmentIdForLoad = department.departmentId;
+    this.loading = true;
+    
+    this.loadComplaintsSummeryByDepartmentId(department.departmentId);
+  }
+
+  loadAvailableWorkers(departmentId: number){
     try {
       this.OfficialSvc.getWorkersByDepartment(departmentId).subscribe((data: Worker[]) => {
         this.availableWorkers = data;
       });
     } catch (error) {
       console.error('Error loading workers:', error);
+      this.toastrSvc.error('Error loading workers:');
     }
   }
 
@@ -124,29 +131,29 @@ export class ComplaintDepartmentsComponent implements OnInit {
     this.selectedWorkerId = null;
   }
 
-  async assignComplaint(): Promise<void> {
+  assignComplaint(){
     if (!this.selectedComplaintId || !this.selectedWorkerId) {
-      alert('Please select a worker');
+      this.toastrSvc.warning('Please select a worker');
       return;
     }
 
     try {
       this.OfficialSvc.assignComplaint(this.selectedComplaintId, this.selectedWorkerId.toString()).subscribe((res)=>{
-        console.log("assignComplaint:", res);
+        this.loadComplaintsSummeryByDepartmentId(this.depaertmentIdForLoad!);
         this.loadDepartments();
       }); 
       
       // Refresh the complaints list
       if (this.selectedDepartment) {
-        await this.selectDepartment(this.selectedDepartment);
+        this.selectDepartment(this.selectedDepartment);
       }
       
       this.closeAssignModal();
-      alert('Complaint assigned successfully!');
+      this.toastrSvc.success("Complaint assigned successfully");
       
     } catch (error) {
       console.error('Error assigning complaint:', error);
-      alert('Error assigning complaint. Please try again.');
+      this.toastrSvc.error('Error assigning complaint. Please try again.');
     }
   }
 
@@ -168,6 +175,26 @@ export class ComplaintDepartmentsComponent implements OnInit {
 
   viewComplaintDetails(complaintId: string): void {
     this.router.navigate(['/complaint-details', complaintId]);
+  }
+
+  opendeleteComplaintModal(complaintId: string){
+    this.deleteComplaintId = complaintId;
+    this.showDeleteModal = true;
+  }
+
+  closeDeleteModal(){
+    this.showDeleteModal = false;
+    this.deleteComplaintId = null;
+  }
+
+  confirmDeleteComplaint(){
+    this.OfficialSvc.deleteComplaint(this.deleteComplaintId!).subscribe(()=>{
+      this.toastrSvc.success("complaint deleted successfully");
+      this.loadComplaintsSummeryByDepartmentId(this.depaertmentIdForLoad!);
+      },err=>{
+        this.toastrSvc.error("Filed to delete complaint");
+      }
+    )
   }
 
   get filteredComplaints(): ComplaintSummary[] {

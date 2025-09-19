@@ -9,7 +9,8 @@ import { ToastrService } from 'ngx-toastr';
 })
 export class AuthService {
   private tokenKey = "token";
-  private apiUrl:any = `https://localhost:7082/api/Authentication`
+  private apiUrl:any = `https://localhost:7082/api/Authentication`;
+  private auditUrl: any = `https://localhost:7082/api/Audit`;
   
     constructor(private jwtHelper: JwtHelperService, private toastrSvc: ToastrService, private router: Router, private http: HttpClient ) { }
     
@@ -75,5 +76,9 @@ export class AuthService {
 
     updateUserProfile(userId: string, data:any){
       return this.http.put<any>(`${this.apiUrl}/update-profile/${userId}`, data);
+    }
+
+    createAudit(audit: any){
+      return this.http.post(`${this.auditUrl}/create`,audit);
     }
 }

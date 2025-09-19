@@ -1,11 +1,10 @@
-import { Component, OnInit, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { DepartmentService } from '../../services/department.service';
 import { ToastrService } from 'ngx-toastr';
 import { ComplaintService } from '../../services/complaint.service';
 import * as L from 'leaflet';
 import { AuthService } from '../../services/auth.service';
 
-// Fix for default markers in Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
@@ -18,7 +17,7 @@ L.Icon.Default.mergeOptions({
   templateUrl: './new-complaint.component.html',
   styleUrls: ['./new-complaint.component.css']
 })
-export class NewComplaintComponent implements OnInit, AfterViewInit {
+export class NewComplaintComponent implements OnInit{
   @ViewChild('fileInput') fileInputRef!: ElementRef;
   @ViewChild('mapContainer', { static: false }) mapContainer!: ElementRef;
 
@@ -47,23 +46,21 @@ export class NewComplaintComponent implements OnInit, AfterViewInit {
   isLoadingLocation = false;
   locationError = '';
 
-  // Form steps for better UX
   currentStep = 1;
   totalSteps = 4;
+  currentUserId: string | null = null;
 
   constructor(
     private departmentSvc: DepartmentService,
     private complaintSvc: ComplaintService,
     private authSvc: AuthService,
     private toastr: ToastrService
-  ) {}
+  ) {
+    this.currentUserId = this.authSvc.getUserId();
+  }
 
   ngOnInit(): void {
     this.loadDepartments();
-  }
-
-  ngAfterViewInit(): void {
-    // Initialize map after view is ready if needed
   }
 
   loadDepartments() {
@@ -149,12 +146,11 @@ export class NewComplaintComponent implements OnInit, AfterViewInit {
         this.map = null;
       }
 
-      // Default location (you can change this to your city's coordinates)
       const defaultLat = 26.9124;
       const defaultLng = 75.7873;
 
       this.map = L.map('mapContainer', {
-        center: [this.complaint.latitude || defaultLat, this.complaint.longitude || defaultLng],
+        center: [this.complaint.latitude ?? defaultLat, this.complaint.longitude ?? defaultLng],
         zoom: this.complaint.latitude ? 15 : 10,
         zoomControl: true,
         scrollWheelZoom: true
@@ -249,10 +245,22 @@ export class NewComplaintComponent implements OnInit, AfterViewInit {
         }
 
         this.isLoadingLocation = false;
+        const auditObj = {
+          userId: this.currentUserId,
+          action: 'Location detection',
+          ActionResult: `Location of user: ${this.currentUserId} detected successfully`
+        };
+        this.authSvc.createAudit(auditObj).subscribe();
         this.toastr.success('Location detected successfully');
       },
       (error) => {
         this.isLoadingLocation = false;
+        const auditObj = {
+          userId: this.currentUserId,
+          action: 'Location detection',
+          ActionResult: `Failed to detect the location of the user: ${this.currentUserId}`
+        };
+        this.authSvc.createAudit(auditObj).subscribe();
         let message = 'Failed to get your location';
         
         switch (error.code) {
@@ -341,7 +349,7 @@ export class NewComplaintComponent implements OnInit, AfterViewInit {
 
     const formData = new FormData();
     
-    // Append complaint data
+
     Object.entries(this.complaint).forEach(([key, value]) => {
       if (value !== null && value !== undefined) {
         formData.append(key, String(value));
@@ -350,7 +358,6 @@ export class NewComplaintComponent implements OnInit, AfterViewInit {
       }
     });
 
-    // Append files
     this.selectedFiles.forEach(file => {
       formData.append('attachments', file);
     });
@@ -358,12 +365,24 @@ export class NewComplaintComponent implements OnInit, AfterViewInit {
     this.isSubmitting = true;
     this.complaintSvc.createComplaint(formData).subscribe({
       next: (res: any) => {
+        const auditObj = {
+          userId: this.currentUserId,
+          action: 'Create complaint',
+          ActionResult: `Complaint: ${res.complaintId} created successfully`
+        };
+        this.authSvc.createAudit(auditObj).subscribe();
         this.toastr.success(res.message || 'Complaint created successfully');
         form.resetForm();
         this.resetForm();
         this.isSubmitting = false
       },
       error: (err: any) => {
+        const auditObj = {
+          userId: this.currentUserId,
+          action: 'Create complaint',
+          ActionResult: `Failed to create complaint`
+        };
+        this.authSvc.createAudit(auditObj).subscribe();
         this.toastr.error(err.error?.message || 'Failed to create complaint');
         this.isSubmitting = false;
       }

@@ -164,10 +164,10 @@
                                             </div>
                                             
                                             <!-- Show minimum threshold indicator -->
-                                            <div class="mt-2" *ngIf="minCompletionPercentage > 0">
+                                            <div class="mt-2" *ngIf="updateForm.completionPercentage > 0">
                                                 <small class="text-info">
                                                     <i class="fas fa-info-circle"></i>
-                                                    Minimum: {{ minCompletionPercentage }}% (cannot decrease from current progress)
+                                                    Minimum: {{ updateForm.completionPercentage }}% (cannot decrease from current progress)
                                                 </small>
                                             </div>
                                             
@@ -190,7 +190,7 @@
                                     <div class="row" *ngIf="updateForm.status === 'InProgress' || updateForm.status === 'OnHold'">
                                         <div class="col-md-6 mb-4">
                                             <div class="form-floating">
-                                                <input type="date" class="form-control" id="estimatedCompletion"
+                                                <input type="datetime-local" class="form-control" id="estimatedCompletion"
                                                        [(ngModel)]="updateForm.estimatedCompletionDate" name="estimatedCompletionDate">
                                                 <label for="estimatedCompletion">Estimated Completion Date</label>
                                             </div>

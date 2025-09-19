@@ -693,48 +693,35 @@
         </p>
         
 
-        <!--Citizen Attachments -->
         <div *ngIf="selectedComplaintForDetails.citizenAttachments?.length > 0" class="mb-3">
           <small class="text-muted d-block mb-2">
             <i class="fas fa-paperclip me-1"></i>
             {{ selectedComplaintForDetails.citizenAttachments.length }} citizen attachment(s)
           </small>
           <div class="d-flex flex-wrap gap-1">
-            <img *ngFor="let attachment of selectedComplaintForDetails.citizenAttachments.slice(0, 3)" 
+            <img *ngFor="let attachment of selectedComplaintForDetails.citizenAttachments" 
                   [src]="attachment.imageUrl" 
                   class="rounded"
                   (click)="openAttachment(attachment.imageUrl)"
                   style="width: 100px; height: 80px; object-fit: cover;">
-            <div *ngIf="selectedComplaintForDetails.citizenAttachments.length > 3"
-                  class="d-flex align-items-center justify-content-center rounded bg-light"
-                  style="width: 100px; height: 80px;">
-              <small class="text-muted">+{{ selectedComplaintForDetails.citizenAttachments.length - 3 }}</small>
-            </div>
           </div>
         </div>
 
-        <!--Worker Attachments -->
         <div *ngIf="selectedComplaintForDetails.workerAttachments?.length > 0" class="mb-3">
           <small class="text-muted d-block mb-2">
             <i class="fas fa-paperclip me-1"></i>
             {{ selectedComplaintForDetails.workerAttachments.length }} Worker attachment(s)
           </small>
           <div class="d-flex flex-wrap gap-1">
-            <img *ngFor="let attachment of selectedComplaintForDetails.workerAttachments.slice(0, 3)" 
+            <img *ngFor="let attachment of selectedComplaintForDetails.workerAttachments" 
                   [src]="attachment.imageUrl" 
                   class="rounded"
                   (click)="openAttachment(attachment.imageUrl)"
                   style="width: 100px; height: 80px; object-fit: cover;">
-            <div *ngIf="selectedComplaintForDetails.workerAttachments.length > 3"
-                  class="d-flex align-items-center justify-content-center rounded bg-light"
-                  style="width: 100px; height: 80px;">
-              <small class="text-muted">+{{ selectedComplaintForDetails.workerAttachments.length - 3 }}</small>
-            </div>
           </div>
         </div>
       </div>
       
-      <!-- Footer -->
       <div class="modal-footer border-0 p-4">
         <button type="button" class="btn btn-outline-secondary" (click)="closeComplaintDetailsModal()">
           Close
@@ -744,7 +731,6 @@
   </div>
 </div>
 
-<!-- Feedback Modal -->
 <div class="modal fade" [class.show]="showFeedbackModal" [style.display]="showFeedbackModal ? 'block' : 'none'"
      tabindex="-1" *ngIf="showFeedbackModal">
   <div class="modal-dialog modal-dialog-centered">
@@ -763,7 +749,6 @@
           <p class="text-muted small">{{ selectedComplaintForFeedback?.description }}</p>
         </div>
 
-        <!-- Satisfaction Check -->
         <div class="mb-4">
           <label class="form-label fw-semibold">
             <i class="fas fa-question-circle me-2 text-primary"></i>
@@ -789,7 +774,6 @@
           </small>
         </div>
 
-        <!-- Rating -->
         <div class="mb-4">
           <label class="form-label fw-semibold">
             <i class="fas fa-star me-2 text-warning"></i>
@@ -808,7 +792,6 @@
           <small class="form-text text-muted">Current rating: {{ feedbackData.rating }}/5</small>
         </div>
 
-        <!-- Comments -->
         <div class="mb-3">
           <label class="form-label fw-semibold">
             <i class="fas fa-comment me-2 text-primary"></i>
@@ -842,7 +825,6 @@
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content" style="border-radius: 20px; border: none;">
       
-      <!-- Header -->
       <div class="modal-header bg-danger text-white" style="border-radius: 20px 20px 0 0;">
         <h5 class="modal-title">
           <i class="fas fa-trash-alt me-2"></i>
@@ -851,7 +833,6 @@
         <button type="button" class="btn-close btn-close-white" (click)="closeDeleteModal()"></button>
       </div>
       
-      <!-- Body -->
       <div class="modal-body text-center p-4">
         <div class="mb-3">
           <i class="fas fa-exclamation-triangle text-danger" style="font-size: 3rem;"></i>
@@ -863,7 +844,6 @@
         </p>
       </div>
       
-      <!-- Footer -->
       <div class="modal-footer border-0 p-4 d-flex justify-content-between">
         <button type="button" class="btn btn-outline-secondary" (click)="closeDeleteModal()">
           <i class="fas fa-times me-1"></i>
@@ -873,8 +853,7 @@
           <i class="fas fa-trash me-2"></i>
           Delete
         </button>
-      </div>
-      
+      </div>      
     </div>
   </div>
 </div>

@@ -6,6 +6,7 @@ import { WorkerService } from '../../services/worker.service';
 
 interface DashboardStats {
   totalAssigned: number;
+  assigned: number;
   pending: number;
   inProgress: number;
   resolved: number;
@@ -29,6 +30,7 @@ export class WorkerDashboardComponent implements OnInit {
   // Dashboard data
   stats: DashboardStats = {
     totalAssigned: 0,
+    assigned: 0,
     pending: 0,
     inProgress: 0,
     resolved: 0,

@@ -232,7 +232,6 @@ export class UpdateTaskComponent implements OnInit {
 
     this.workerService.addWorkUpdate(this.taskId!, formData).subscribe({
       next: (res: any) => {
-        console.log("API Response:", res);
         this.toastrService.success('Task updated successfully');
         
         this.loadTaskDetails();

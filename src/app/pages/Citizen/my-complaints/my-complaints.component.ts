@@ -93,7 +93,6 @@ export class MyComplaintsComponent implements OnInit {
     private complaintService: ComplaintService,
     private authSvc: AuthService,
     private departmentSvc: DepartmentService,
-    private router: Router,
     private toastr: ToastrService
   ) { }
 
@@ -123,6 +122,12 @@ export class MyComplaintsComponent implements OnInit {
 
     this.complaintService.deleteComplaintAttachment(complaintId, attachmentId).subscribe({
       next: () => {
+        const auditObj = {
+          userId: this.currentUserId,
+          action: 'Complaint deletion',
+          ActionResult: `Attchment: ${attachmentId} of complaint:- ${complaintId} deleted successfully`
+        };
+        this.authSvc.createAudit(auditObj).subscribe();
         this.selectedComplaintForEdit.attachments =
           this.selectedComplaintForEdit.attachments.filter((att: any) => att.attachmentId !== attachmentId);
 
@@ -131,15 +136,18 @@ export class MyComplaintsComponent implements OnInit {
         this.closeDeleteAttachmentModal();
       },
       error: () => {
+        const auditObj = {
+          userId: this.currentUserId,
+          action: 'Complaint deletion',
+          ActionResult: `Failed to delete Attchment: ${attachmentId} of complaint:- ${complaintId}`
+        };
+        this.authSvc.createAudit(auditObj).subscribe();
         this.toastr.error('Failed to delete attachment');
         this.closeDeleteAttachmentModal();
       }
     });
   }
 
-  openDeleteModal(){
-    this.showDeleteModal = true;
-  }
 
   closeDeleteModal(){
     this.showDeleteModal = false;
@@ -312,7 +320,7 @@ export class MyComplaintsComponent implements OnInit {
   }
 
   canProvideFeedback(complaint: any): boolean {
-    return complaint.currentStatus === ComplaintStatus.Resolved && !complaint.feedback;
+    return complaint.currentStatus === ComplaintStatus.Resolved && complaint.feedback;
   }
 
   canReopenComplaint(complaint: any): boolean {
@@ -356,6 +364,12 @@ export class MyComplaintsComponent implements OnInit {
 
     this.complaintService.submitFeedback(feedbackPayload).subscribe({
       next: (response) => {
+        const auditObj = {
+          userId: this.currentUserId,
+          action: 'Feedback Submission',
+          ActionResult: `Feedback for complaint ${this.selectedComplaintForFeedback.complaintId} submitted successfully`
+        };
+        this.authSvc.createAudit(auditObj).subscribe();
         this.toastr.success('Feedback submitted successfully');
         this.closeFeedbackModal();
         
@@ -367,6 +381,12 @@ export class MyComplaintsComponent implements OnInit {
         }
       },
       error: (error) => {
+        const auditObj = {
+          userId: this.currentUserId,
+          action: 'Feedback Submission',
+          ActionResult: `Failed to submit Feedback for complaint ${this.selectedComplaintForFeedback.complaintId} `
+        };
+        this.authSvc.createAudit(auditObj).subscribe();
         this.toastr.error('Failed to submit feedback');
       }
     });
@@ -381,10 +401,22 @@ export class MyComplaintsComponent implements OnInit {
   reopenComplaint(complaintId: string) {
     this.complaintService.reopenComplaint(complaintId).subscribe({
       next: (response) => {
+        const auditObj = {
+          userId: this.currentUserId,
+          action: 'Complaint Reopen',
+          ActionResult: `Complaint ${this.selectedComplaintForFeedback.complaintId} reopened successfully`
+        };
+        this.authSvc.createAudit(auditObj).subscribe();
         this.toastr.info('Complaint has been reopened');
         this.loadComplaints();
       },
       error: (error) => {
+        const auditObj = {
+          userId: this.currentUserId,
+          action: 'Complaint Reopen',
+          ActionResult: `Failed to reopened complaint ${this.selectedComplaintForFeedback.complaintId}`
+        };
+        this.authSvc.createAudit(auditObj).subscribe();
         this.toastr.error('Failed to reopen complaint');
       }
     });
@@ -399,13 +431,27 @@ export class MyComplaintsComponent implements OnInit {
   if(!this.deleteComplaintId) return;
     this.complaintService.deleteComplaint(this.deleteComplaintId).subscribe({
       next: (response) => {
+        const auditObj = {
+          userId: this.currentUserId,
+          action: 'Complaint deletion',
+          ActionResult: `Complaint ${this.selectedComplaintForFeedback.complaintId} deleted successfully`
+        };
+        this.authSvc.createAudit(auditObj).subscribe();
         this.toastr.success('Complaint has been deleted');
         this.deleteComplaintId = null;
         this.loadComplaints();
+        this.showDeleteModal = false;
       },
       error: (error) => {
+        const auditObj = {
+          userId: this.currentUserId,
+          action: 'Complaint deletion',
+          ActionResult: `Complaint ${this.selectedComplaintForFeedback.complaintId} deletion failed`
+        };
+        this.authSvc.createAudit(auditObj).subscribe();
         this.toastr.error('Failed to delete complaint');
         this.deleteComplaintId = null;
+        this.showDeleteModal = false;
       }
     })
   }
@@ -436,8 +482,9 @@ export class MyComplaintsComponent implements OnInit {
                 if (subCat) {
                   this.selectedComplaintForEdit.subCategoryId = subCat.subCategoryId;
                 }
-              }});
-            }
+              }
+            });
+          }
         }
       });
     }
@@ -488,8 +535,8 @@ export class MyComplaintsComponent implements OnInit {
       const defaultLat = 26.9124;
       const defaultLng = 75.7873;
 
-      const lat = this.selectedComplaintForEdit.latitude || defaultLat;
-      const lng = this.selectedComplaintForEdit.longitude || defaultLng;
+      const lat = this.selectedComplaintForEdit.latitude ?? defaultLat;
+      const lng = this.selectedComplaintForEdit.longitude ?? defaultLng;
 
       this.mapEdit = L.map('mapContainerEdit', {
         center: [lat, lng],
@@ -508,7 +555,6 @@ export class MyComplaintsComponent implements OnInit {
       }
 
       this.mapEdit.on('click', (e: L.LeafletMouseEvent) => {
-        console.log('leaflat moush event',e);
         this.addMarkerForEdit(e.latlng.lat, e.latlng.lng);
         this.reverseGeocodeForEdit(e.latlng.lat, e.latlng.lng);
       });
@@ -538,7 +584,6 @@ export class MyComplaintsComponent implements OnInit {
       this.selectedComplaintForEdit.longitude = lng;
 
       this.markerEdit.on('dragend', (e: any) => {
-        console.log("Dragend event", e);
         const position = e.target.getLatLng();
         this.selectedComplaintForEdit.latitude = position.lat;
         this.selectedComplaintForEdit.longitude = position.lng;
@@ -579,10 +624,22 @@ export class MyComplaintsComponent implements OnInit {
         }
 
         this.isLoadingLocationEdit = false;
+        const auditObj = {
+          userId: this.currentUserId,
+          action: 'Location detection',
+          ActionResult: `Location of user: ${this.currentUserId} detected successfully`
+        };
+        this.authSvc.createAudit(auditObj).subscribe();
         this.toastr.success('Location detected successfully');
       },
       (error) => {
         this.isLoadingLocationEdit = false;
+        const auditObj = {
+          userId: this.currentUserId,
+          action: 'Location detection',
+          ActionResult: `Failed to detect the location of the user: ${this.currentUserId}`
+        };
+        this.authSvc.createAudit(auditObj).subscribe();
         let message = 'Failed to get your location';
 
         switch (error.code) {
@@ -658,18 +715,33 @@ export class MyComplaintsComponent implements OnInit {
 
     this.isSubmitting = true;
     
-    this.complaintService.editComplaint(this.selectedComplaintForEdit.complaintId, formData).subscribe((res:any)=>{
-      this.toastr.success('Complaint updated successfully');
-      this.selectedFiles = [];
-      this.previewImages = [];
-      this.closeEditComplaintModal();
-      this.isSubmitting = false;
-      this.loadComplaints();
-    }, (err)=>{
-      this.toastr.error('Failed to update complaint');
-      this.isSubmitting = false;
-    });
+    this.complaintService.editComplaint(this.selectedComplaintForEdit.complaintId, formData).subscribe({
+      next: (res:any)=>{
+        const auditObj = {
+          userId: this.currentUserId,
+          action: 'Update complaint',
+          ActionResult: `Complaint ${this.selectedComplaintForFeedback.complaintId} updated successfully`
+        };
+        this.authSvc.createAudit(auditObj).subscribe();
+        this.toastr.success('Complaint updated successfully');
+        this.selectedFiles = [];
+        this.previewImages = [];
+        this.closeEditComplaintModal();
+        this.isSubmitting = false;
+        this.loadComplaints();
 
+      },
+      error: (err:any)=>{
+        const auditObj = {
+          userId: this.currentUserId,
+          action: 'Update complaint',
+          ActionResult: `Complaint ${this.selectedComplaintForFeedback.complaintId} updation failed`
+        };
+        this.authSvc.createAudit(auditObj).subscribe();
+        this.toastr.error('Failed to update complaint');
+        this.isSubmitting = false;
+      }
+    });
   }
 
   animateStepper(targetIndex: number) {
@@ -705,7 +777,6 @@ export class MyComplaintsComponent implements OnInit {
     const segmentWidth = 100 / (totalSteps);
     this.progressWidth = stepIndex * segmentWidth;
 
-    // Ensure don't exceed 100%
     this.progressWidth = Math.min(this.progressWidth, 100);
   }
 
@@ -715,7 +786,6 @@ export class MyComplaintsComponent implements OnInit {
     this.setStatusFlow(complaint.statusInfo.value, complaint.isReopened);
     this.activeStepIndex = 0;
 
-    // Set CSS custom property for total steps
     setTimeout(() => {
       const stepContainer = document.querySelector('.step-container') as HTMLElement;
       if (stepContainer) {

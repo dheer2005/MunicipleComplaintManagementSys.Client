@@ -24,40 +24,75 @@
       </h3>
 
       <form (ngSubmit)="onRegister()" #registerForm="ngForm" novalidate>
-        
         <div class="mb-3">
           <label class="form-label fw-semibold"><i class="fa-solid fa-user"></i> Full Name</label>
           <input type="text" name="fullName" [(ngModel)]="registerData.fullName"
-            class="form-control form-control-lg" placeholder="Enter your full name" required>
+            class="form-control form-control-lg" placeholder="Enter your full name"
+            required #fullName="ngModel">
+          <div *ngIf="fullName.invalid && fullName.touched" class="text-danger">
+            Full Name is required.
+          </div>
         </div>
 
         <div class="mb-3">
           <label class="form-label fw-semibold"><i class="fa-solid fa-envelope"></i> Email</label>
           <input type="email" name="email" [(ngModel)]="registerData.email"
-            class="form-control form-control-lg" placeholder="Enter your email" required>
+            class="form-control form-control-lg" placeholder="Enter your email"
+            required email #email="ngModel">
+          <div *ngIf="email.invalid && email.touched" class="text-danger">
+            <div *ngIf="email.errors?.['required']">Email is required.</div>
+            <div *ngIf="email.errors?.['email']">Invalid email format.</div>
+          </div>
         </div>
 
         <div class="mb-3">
           <label class="form-label fw-semibold"><i class="fa-solid fa-key"></i> Password</label>
           <input type="password" name="password" [(ngModel)]="registerData.password"
-            class="form-control form-control-lg" placeholder="Enter a strong password" required>
+            class="form-control form-control-lg" placeholder="Enter a strong password"
+            required minlength="6" #password="ngModel">
+          <div *ngIf="password.invalid && password.touched" class="text-danger">
+            <div *ngIf="password.errors?.['required']">Password is required.</div>
+            <div *ngIf="password.errors?.['minlength']">Password must be at least 6 characters.</div>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold"><i class="fa-solid fa-lock"></i> Confirm Password</label>
+          <input type="password" name="confirmPassword" [(ngModel)]="confirmPassword"
+            class="form-control form-control-lg" placeholder="Re-enter password"
+            required #confirmPasswordModel="ngModel">
+          <div *ngIf="confirmPasswordModel.invalid && confirmPasswordModel.touched" class="text-danger">
+            Confirm Password is required.
+          </div>
+          <div *ngIf="confirmPassword && registerData.password !== confirmPassword && confirmPasswordModel.touched" class="text-danger">
+            Passwords do not match.
+          </div>
         </div>
 
         <div class="mb-3">
           <label class="form-label fw-semibold"><i class="fa-solid fa-phone"></i> Phone</label>
           <input type="number" name="phone" [(ngModel)]="registerData.phone"
-            class="form-control form-control-lg" placeholder="Enter your phone number">
+            class="form-control form-control-lg" placeholder="Enter your phone number"
+            required pattern="^[0-9]{10}$" #phone="ngModel">
+          <div *ngIf="phone.invalid && phone.touched" class="text-danger">
+            <div *ngIf="phone.errors?.['required']">Phone number is required.</div>
+          </div>
         </div>
 
         <div class="mb-3" *ngIf="registerData.role === 1 || registerData.role === 2">
           <label class="form-label fw-semibold"><i class="fa-solid fa-building"></i> Department</label>
-          <select name="departmentId" [(ngModel)]="registerData.departmentId" class="form-select form-select-lg" required>
+          <select name="departmentId" [(ngModel)]="registerData.departmentId"
+            class="form-select form-select-lg" required #departmentId="ngModel">
             <option [ngValue]="null">-- Select Department --</option>
             <option *ngFor="let dept of departments" [value]="dept.departmentId">{{ dept.departmentName }}</option>
           </select>
+          <div *ngIf="departmentId.invalid && departmentId.touched" class="text-danger">
+            Please select a department.
+          </div>
         </div>
 
-        <button type="submit" class="btn btn-primary btn-lg w-100 fw-semibold mt-2" [disabled]="registerForm.invalid">
+        <button type="submit" class="btn btn-primary btn-lg w-100 fw-semibold mt-2"
+          [disabled]="registerForm.invalid || registerData.password !== confirmPassword">
           🚀 Register
         </button>
       </form>

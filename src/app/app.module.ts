@@ -16,14 +16,13 @@ import { NavbarComponent } from './pages/Shared/nav-bar/nav-bar.component';
 import { NewComplaintComponent } from './pages/Citizen/new-complaint/new-complaint.component';
 import { MyComplaintsComponent } from './pages/Citizen/my-complaints/my-complaints.component';
 import { ProfileComponent } from './pages/Citizen/profile/profile.component';
-import { DashboardComponent } from './pages/Citizen/dashboard/dashboard.component';
-import { OfficialDashboardComponent } from './pages/Official/official-dashboard/official-dashboard.component';
 import { WorkerDashboardComponent } from './pages/Worker/worker-dashboard/worker-dashboard.component';
 import { MyTasksComponent } from './pages/Worker/my-tasks/my-tasks.component';
 import { UpdateTaskComponent } from './pages/Worker/update-task/update-task.component';
 import { ComplaintDepartmentsComponent } from './pages/Official/complaint-departments/complaint-departments.component';
 import { AssignComplaintsComponent } from './pages/Official/assign-complaints/assign-complaints.component';
 import { PageNotFoundComponent } from './pages/page-not-found/page-not-found.component';
+import { AdminDashboardComponent } from './pages/Admin/admin-dashboard/admin-dashboard.component';
 
 export function tokenGetter() {
   return localStorage.getItem('token'); 
@@ -38,14 +37,13 @@ export function tokenGetter() {
     NewComplaintComponent,
     MyComplaintsComponent,
     ProfileComponent,
-    DashboardComponent,
-    OfficialDashboardComponent,
     WorkerDashboardComponent,
     MyTasksComponent,
     UpdateTaskComponent,
     ComplaintDepartmentsComponent,
     AssignComplaintsComponent,
     PageNotFoundComponent,
+    AdminDashboardComponent,
     
   ],
   imports: [
