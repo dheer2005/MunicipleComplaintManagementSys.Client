@@ -434,7 +434,7 @@ export class MyComplaintsComponent implements OnInit {
         const auditObj = {
           userId: this.currentUserId,
           action: 'Complaint deletion',
-          ActionResult: `Complaint ${this.selectedComplaintForFeedback.complaintId} deleted successfully`
+          ActionResult: `Complaint ${this.deleteComplaintId} deleted successfully`
         };
         this.authSvc.createAudit(auditObj).subscribe();
         this.toastr.success('Complaint has been deleted');
@@ -446,7 +446,7 @@ export class MyComplaintsComponent implements OnInit {
         const auditObj = {
           userId: this.currentUserId,
           action: 'Complaint deletion',
-          ActionResult: `Complaint ${this.selectedComplaintForFeedback.complaintId} deletion failed`
+          ActionResult: `Complaint ${this.deleteComplaintId} deletion failed`
         };
         this.authSvc.createAudit(auditObj).subscribe();
         this.toastr.error('Failed to delete complaint');
@@ -720,7 +720,7 @@ export class MyComplaintsComponent implements OnInit {
         const auditObj = {
           userId: this.currentUserId,
           action: 'Update complaint',
-          ActionResult: `Complaint ${this.selectedComplaintForFeedback.complaintId} updated successfully`
+          ActionResult: `Complaint ${this.selectedComplaintForEdit.complaintId} updated successfully`
         };
         this.authSvc.createAudit(auditObj).subscribe();
         this.toastr.success('Complaint updated successfully');
@@ -735,7 +735,7 @@ export class MyComplaintsComponent implements OnInit {
         const auditObj = {
           userId: this.currentUserId,
           action: 'Update complaint',
-          ActionResult: `Complaint ${this.selectedComplaintForFeedback.complaintId} updation failed`
+          ActionResult: `Complaint ${this.selectedComplaintForEdit.complaintId} updation failed`
         };
         this.authSvc.createAudit(auditObj).subscribe();
         this.toastr.error('Failed to update complaint');
@@ -772,8 +772,6 @@ export class MyComplaintsComponent implements OnInit {
       return;
     }
 
-    // Calculate progress based on actual step completion
-    // Each step represents a segment between circles
     const segmentWidth = 100 / (totalSteps);
     this.progressWidth = stepIndex * segmentWidth;
 

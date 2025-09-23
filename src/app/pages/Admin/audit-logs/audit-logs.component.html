@@ -18,17 +18,14 @@
           </thead>
           <tbody>
             <tr *ngFor="let log of auditLogs; let i = index">
-              <!-- Index -->
               <td>{{ i + 1 }}</td>
 
-              <!-- Action -->
               <td>
                 <span class="badge bg-info text-dark px-3 py-2">
                   <i class="fas fa-cogs me-1"></i> {{ log.action }}
                 </span>
               </td>
 
-              <!-- Result -->
               <td>
                 <span
                   class="badge px-3 py-2"
@@ -42,14 +39,12 @@
                 </span>
               </td>
 
-              <!-- User ID -->
               <td>
                 <code class="text-muted small">
                   {{ log.userId || 'N/A' }}
                 </code>
               </td>
 
-              <!-- Created At -->
               <td>
                 <i class="far fa-clock me-1 text-primary"></i>
                 {{ log.createdAt | date: 'short' }}
