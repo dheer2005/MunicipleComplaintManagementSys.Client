@@ -52,14 +52,11 @@
             </span>
           </td>
 
-          <!-- Created / Updated -->
           <td>{{ complaint.createdAt | date: 'short' }}</td>
           <td>{{ complaint.updatedAt | date: 'short' }}</td>
 
-          <!-- Attachments -->
           <td>
             <div class="d-flex flex-column">
-              <!-- Citizen Attachments -->
               <div *ngIf="hasCitizenProof(complaint.attachments)">
                 <strong class="text-muted small">Citizen</strong>
                 <div class="d-flex flex-wrap gap-2 mt-1">
@@ -79,7 +76,6 @@
                 </div>
               </div>
 
-              <!-- Worker Attachments -->
               <div *ngIf="hasWorkerProof(complaint.attachments)" class="mt-2">
                 <strong class="text-muted small">Worker</strong>
                 <div class="d-flex flex-wrap gap-2 mt-1">
@@ -101,7 +97,6 @@
             </div>
           </td>
 
-          <!-- Location -->
           <td>
             <button
               class="btn btn-sm btn-outline-primary"
@@ -111,7 +106,6 @@
             </button>
           </td>
 
-          <!-- Feedback -->
           <td>
             <ng-container *ngIf="complaint.feedback; else noFeedback">
               <span
@@ -141,7 +135,6 @@
   </div>
 
 
-  <!-- Gallery Modal -->
     <div class="modal fade show d-block" tabindex="-1" *ngIf="showGalleryModal" style="background: rgba(0,0,0,0.6);">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content rounded-4 shadow-lg">
@@ -153,7 +146,6 @@
             </div>
             
             <div class="modal-body">
-                <!-- Carousel -->
                 <div id="galleryCarousel" class="carousel slide" data-bs-ride="carousel">
                 <div class="carousel-inner">
                     <div 
@@ -168,7 +160,6 @@
                     </div>
                     </div>
                 </div>
-                <!-- Controls -->
                 <button class="carousel-control-prev" type="button" data-bs-target="#galleryCarousel" data-bs-slide="prev">
                     <span class="carousel-control-prev-icon text-dark"></span>
                 </button>
