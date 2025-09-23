@@ -15,11 +15,16 @@ import { PageNotFoundComponent } from './pages/page-not-found/page-not-found.com
 import { WorkerDashboardComponent } from './pages/Worker/worker-dashboard/worker-dashboard.component';
 import { AssignComplaintsComponent } from './pages/Official/assign-complaints/assign-complaints.component';
 import { AdminDashboardComponent } from './pages/Admin/admin-dashboard/admin-dashboard.component';
+import { UnauthguardGuard } from './guards/unauthguard.guard';
+import { DepartmentsComponent } from './pages/Admin/departments/departments.component';
+import { ComplaintsComponent } from './pages/Admin/complaints/complaints.component';
+import { UsersComponent } from './pages/Admin/users/users.component';
+import { AuditLogsComponent } from './pages/Admin/audit-logs/audit-logs.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
-  { path: 'login', component: LoginComponent },
-  { path: 'register', component: RegisterComponent },
+  { path: 'login', component: LoginComponent, canActivate: [UnauthguardGuard] },
+  { path: 'register', component: RegisterComponent, canActivate: [UnauthguardGuard] },
   { path: 'citizen/complaint/new', component: NewComplaintComponent, canActivate: [AuthGuard] },
   { path: 'citizen/complaints/my', component: MyComplaintsComponent, canActivate: [AuthGuard] },
   { path: 'citizen/profile', component: ProfileComponent,canActivate: [AuthGuard] },
@@ -29,7 +34,12 @@ const routes: Routes = [
   { path: 'official/complaints/department', component: ComplaintDepartmentsComponent, canActivate: [AuthGuard] },
   { path: 'official/complaints/assign', component: AssignComplaintsComponent, canActivate: [AuthGuard] },
   { path: 'admin/dashboard', component: AdminDashboardComponent, canActivate: [AuthGuard]},
-  { path: '**', component: PageNotFoundComponent }
+  { path: 'admin/users', component: UsersComponent, canActivate: [AuthGuard]},
+  { path: 'admin/departments', component: DepartmentsComponent, canActivate: [AuthGuard]},
+  { path: 'admin/auditLogs', component: AuditLogsComponent, canActivate: [AuthGuard]},
+  { path: 'admin/complaints', component: ComplaintsComponent, canActivate: [AuthGuard]},
+  { path: 'page-not-found', component: PageNotFoundComponent},
+  { path: '**', redirectTo: 'page-not-found' }
 ];
 
 @NgModule({

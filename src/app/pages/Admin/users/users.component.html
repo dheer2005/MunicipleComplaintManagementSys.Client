@@ -1,0 +1,220 @@
+<div class="container my-4">
+
+  <div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5 class="mb-0"><i class="fas fa-users me-2"></i>Manage Users</h5>
+    </div>
+
+    <ul class="nav nav-tabs mt-2" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#officials" type="button" role="tab">
+          Officials
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#workers" type="button" role="tab">
+          Workers
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#users" type="button" role="tab">
+          Citizens
+        </button>
+      </li>
+    </ul>
+
+    <div class="tab-content p-3">
+      
+      <div class="tab-pane fade show active" id="officials" role="tabpanel">
+        <div class="d-flex justify-content-end mb-3">
+          <button class="btn btn-primary ms-2" (click)="openOfficialModal()">+ Add New Official</button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover table-striped align-middle">
+            <thead class="table-light">
+              <tr>
+                <th class="text-center">#</th>
+                <th class="text-center">Full Name</th>
+                <th class="text-center">Email</th>
+                <th class="text-center">Phone</th>
+                <th class="text-center">Role</th>
+                <th class="text-center">Created At</th>
+                <th class="text-center">Active</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let official of officials; let i = index">
+                <td class="text-center">{{ i + 1 }}</td>
+                <td class="text-center">{{ official.fullName }}</td>
+                <td class="text-center">{{ official.email }}</td>
+                <td class="text-center">{{ official.phone }}</td>
+                <td class="text-center">
+                  <span class="badge bg-info">{{ getUserRole(official.role) }}</span>
+                </td>
+                <td class="text-center">{{ official.createdAt | date:'short' }}</td>
+                <td class="text-center">
+                  <span class="badge" [ngClass]="official.isActive ? 'bg-success' : 'bg-secondary'">
+                    {{ official.isActive ? 'Yes' : 'No' }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <ng-template #noOfficials>
+          <p class="text-center text-muted py-4">No officials found.</p>
+        </ng-template>
+      </div>
+
+      <div class="tab-pane fade" id="workers" role="tabpanel">
+        <div class="d-flex justify-content-end mb-3">
+          <button class="btn btn-success" (click)="openWorkerModal()">+ Add New Worker</button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover table-striped align-middle">
+            <thead class="table-light">
+              <tr>
+                <th class="text-center">#</th>
+                <th class="text-center">Full Name</th>
+                <th class="text-center">Email</th>
+                <th class="text-center">Phone</th>
+                <th class="text-center">Assigned Complaints</th>
+                <th class="text-center">Resolved Complaints</th>
+                <th class="text-center">Pending Complaints</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let worker of workers; let i = index">
+                <td class="text-center">{{ i + 1 }}</td>
+                <td class="text-center">{{ worker.fullName }}</td>
+                <td class="text-center">{{ worker.email }}</td>
+                <td class="text-center">{{ worker.phone }}</td>
+                <td class="text-center">{{ worker.totalAssignedComplaints }}</td>
+                <td class="text-center">{{ worker.totalResolvedComplaints }}</td>
+                <td class="text-center">{{ worker.totalPendingComplaints }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <ng-template #noWorkers>
+          <p class="text-center text-muted py-4">No workers found.</p>
+        </ng-template>
+      </div>
+
+      <div class="tab-pane fade" id="users" role="tabpanel">
+        <div class="table-responsive">
+          <table class="table table-hover table-striped align-middle">
+            <thead class="table-light">
+              <tr>
+                <th class="text-center">#</th>
+                <th class="text-center">Full Name</th>
+                <th class="text-center">Email</th>
+                <th class="text-center">Phone</th>
+                <th class="text-center">Raised Complaints</th>
+                <th class="text-center">Resolved Complaints</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let user of generalUsers; let i = index">
+                <td class="text-center">{{ i + 1 }}</td>
+                <td class="text-center">{{ user.fullName }}</td>
+                <td class="text-center">{{ user.email }}</td>
+                <td class="text-center">{{ user.phone }}</td>
+                <td class="text-center">{{ user.totalComplaints }}</td>
+                <td class="text-center">{{ user.totalResolvedComplaints }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <ng-template #noUsers>
+          <p class="text-center text-muted py-4">No users found.</p>
+        </ng-template>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+
+<!-- Add Worker Modal -->
+<div class="modal fade" id="workerModal" tabindex="-1" aria-labelledby="workerModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4 shadow">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title" id="workerModalLabel"><i class="fas fa-user-tie me-2"></i>Add New Worker</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form #workerForm="ngForm" (ngSubmit)="onAddWorker(workerForm)">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Full Name</label>
+            <input type="text" name="fullName" class="form-control" [(ngModel)]="newWorker.fullName" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Email</label>
+            <input type="email" name="email" class="form-control" [(ngModel)]="newWorker.email" required email>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Phone</label>
+            <input type="text" name="phone" class="form-control" [(ngModel)]="newWorker.phone" required pattern="^[0-9]{10}$">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Password</label>
+            <input type="password" name="password" class="form-control" [(ngModel)]="newWorker.password" required minlength="6">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Department</label>
+            <select name="departmentId" class="form-select" [(ngModel)]="newWorker.departmentId" required>
+              <option [ngValue]="null">-- Select Department --</option>
+              <option *ngFor="let dept of departments" [value]="dept.departmentId">{{ dept.departmentName }}</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-success w-100" [disabled]="workerForm.invalid">Add Worker</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Official Modal -->
+<div class="modal fade" id="officialModal" tabindex="-1" aria-labelledby="officialModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4 shadow">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="officialModalLabel"><i class="fas fa-user-shield me-2"></i>Add New Official</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form #officialForm="ngForm" (ngSubmit)="onAddOfficial(officialForm)">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Full Name</label>
+            <input type="text" name="fullName" class="form-control" [(ngModel)]="newOfficial.fullName" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Email</label>
+            <input type="email" name="email" class="form-control" [(ngModel)]="newOfficial.email" required email>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Phone</label>
+            <input type="text" name="phone" class="form-control" [(ngModel)]="newOfficial.phone" required pattern="^[0-9]{10}$">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Password</label>
+            <input type="password" name="password" class="form-control" [(ngModel)]="newOfficial.password" required minlength="6">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Department</label>
+            <select name="departmentId" class="form-select" [(ngModel)]="newOfficial.departmentId" required>
+              <option [ngValue]="null">-- Select Department --</option>
+              <option *ngFor="let dept of departments" [value]="dept.departmentId">{{ dept.departmentName }}</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary w-100" [disabled]="officialForm.invalid">Add Official</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

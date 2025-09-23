@@ -1,0 +1,281 @@
+/* Admin Dashboard Styles */
+.admin-dashboard {
+  padding: 20px;
+  background-color: #f8f9fa;
+  min-height: calc(100vh - 100px);
+}
+
+.dashboard-title {
+  color: #2c3e50;
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+
+/* Statistics Cards */
+.stat-card {
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0.25rem 2rem 0 rgba(58, 59, 69, 0.2);
+}
+
+.stat-card .card-body {
+  padding: 1.5rem;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05rem;
+}
+
+.stat-number {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #5a5c69;
+}
+
+/* Border styles for stat cards */
+.border-left-primary {
+  border-left: 4px solid #4e73df !important;
+}
+
+.border-left-success {
+  border-left: 4px solid #1cc88a !important;
+}
+
+.border-left-info {
+  border-left: 4px solid #36b9cc !important;
+}
+
+.border-left-warning {
+  border-left: 4px solid #f6c23e !important;
+}
+
+.border-left-danger {
+  border-left: 4px solid #e74a3b !important;
+}
+
+/* Chart Card */
+.chart-card {
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+}
+
+.chart-card .card-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e3e6f0;
+  border-radius: 10px 10px 0 0;
+}
+
+.chart-container {
+  position: relative;
+  height: 300px;
+  margin-bottom: 20px;
+}
+
+.chart-placeholder {
+  height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+/* Chart Legend */
+.legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+/* Status Legend */
+.status-legend {
+  padding: 20px 0;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.status-count {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+/* Badge Styles */
+.badge-primary {
+  background-color: #4e73df;
+}
+
+.badge-warning {
+  background-color: #f6c23e;
+  color: #000;
+}
+
+.badge-success {
+  background-color: #1cc88a;
+}
+
+.badge-danger {
+  background-color: #e74a3b;
+}
+
+.badge-secondary {
+  background-color: #858796;
+}
+
+.badge-light {
+  background-color: #f8f9fa;
+  color: #5a5c69;
+}
+
+.badge-info {
+  background-color: #36b9cc;
+}
+
+/* Tables */
+.table {
+  margin-bottom: 0;
+}
+
+.table thead th {
+  border-top: none;
+  border-bottom: 2px solid #e3e6f0;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05rem;
+  color: #5a5c69;
+}
+
+.table td {
+  padding: 1rem 0.75rem;
+  border-top: 1px solid #e3e6f0;
+  vertical-align: middle;
+}
+
+.table-hover tbody tr:hover {
+  background-color: rgba(0, 0, 0, 0.025);
+}
+
+/* Quick Actions */
+.card {
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+  margin-bottom: 20px;
+}
+
+.card-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e3e6f0;
+  border-radius: 10px 10px 0 0;
+  padding: 1rem 1.25rem;
+}
+
+.card-title {
+  color: #5a5c69;
+  font-weight: 600;
+}
+
+/* Progress Bar */
+.progress {
+  height: 0.5rem;
+  border-radius: 0.35rem;
+  background-color: #eaecf4;
+}
+
+.progress-bar {
+  border-radius: 0.35rem;
+}
+
+/* Loading Spinner */
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+}
+
+/* Quick Stats */
+.quick-stat-item {
+  padding: 10px 0;
+}
+
+.worker-activity {
+  margin-top: 15px;
+}
+
+/* Buttons */
+.btn {
+  border-radius: 6px;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0.05rem;
+}
+
+.btn-outline-primary:hover,
+.btn-outline-success:hover,
+.btn-outline-info:hover,
+.btn-outline-warning:hover,
+.btn-outline-danger:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0.125rem 0.5rem 0 rgba(58, 59, 69, 0.2);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .admin-dashboard {
+    padding: 15px;
+  }
+  
+  .dashboard-title {
+    font-size: 1.5rem;
+  }
+  
+  .stat-number {
+    font-size: 1.5rem;
+  }
+  
+  .chart-placeholder {
+    height: 250px;
+  }
+}
+
+@media (max-width: 576px) {
+  .stat-card .card-body {
+    padding: 1rem;
+  }
+  
+  .table-responsive {
+    font-size: 0.875rem;
+  }
+}
+
+/* Animation for cards */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 40px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.card {
+  animation: fadeInUp 0.5s ease;
+}

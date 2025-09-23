@@ -90,10 +90,10 @@ export class MyTasksComponent implements OnInit {
     }
   }
 
-  async loadMyTasks(): Promise<void> {
+  loadMyTasks(){
     this.loading = true;
     try {
-      await this.fetchWorkerTasks();
+      this.fetchWorkerTasks();
       
     } catch (error) {
       console.error('Error loading tasks:', error);
@@ -337,7 +337,6 @@ export class MyTasksComponent implements OnInit {
     }
   }
 
-  // Pagination
   get paginatedTasks(): TaskComplaint[] {
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
     return this.filteredTasks.slice(startIndex, startIndex + this.itemsPerPage);

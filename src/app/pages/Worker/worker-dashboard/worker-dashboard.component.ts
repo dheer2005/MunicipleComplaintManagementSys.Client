@@ -27,7 +27,7 @@ interface TaskPriority {
 export class WorkerDashboardComponent implements OnInit {
   selectedComplaint: any = null;
   isComplaintModalOpen = false;
-  // Dashboard data
+
   stats: DashboardStats = {
     totalAssigned: 0,
     assigned: 0,
@@ -46,12 +46,10 @@ export class WorkerDashboardComponent implements OnInit {
   recentTasks: any[] = [];
   upcomingDeadlines: any[] = [];
   
-  // UI state
   loading = false;
   workerId: string | null = null;
   workerName: string | null = null;
   
-  // Chart data
   statusChartData: any[] = [];
   priorityChartData: any[] = [];
   
@@ -93,12 +91,12 @@ export class WorkerDashboardComponent implements OnInit {
   }
   
 
-  async loadDashboardData(): Promise<void> {
+  loadDashboardData(){
     this.loading = true;
     try {
-      await this.loadWorkerStats();
-      await this.loadRecentTasks();
-      await this.loadUpcomingDeadlines();
+      this.loadWorkerStats();
+      this.loadRecentTasks();
+      this.loadUpcomingDeadlines();
       this.prepareChartData();
     } catch (error) {
       console.error('Error loading dashboard data:', error);
@@ -127,7 +125,6 @@ export class WorkerDashboardComponent implements OnInit {
 
   loadUpcomingDeadlines(){
     this.workerSvc.getUpcomingDeadlines(this.workerId!).subscribe((res:any)=>{
-      // console.log("upcoming",res);
       this.upcomingDeadlines = res;
     });
   }
@@ -147,7 +144,6 @@ export class WorkerDashboardComponent implements OnInit {
     ];
   }
 
-  // Navigation methods
   viewMyTasks(): void {
     this.router.navigate(['/worker/tasks']);
   }
@@ -156,7 +152,6 @@ export class WorkerDashboardComponent implements OnInit {
     this.router.navigate(['/worker/update-task', taskId]);
   }
 
-  // Utility methods
   getPriorityClass(priority: string): string {
     switch (priority?.toLowerCase()) {
       case 'high': return 'badge-danger';

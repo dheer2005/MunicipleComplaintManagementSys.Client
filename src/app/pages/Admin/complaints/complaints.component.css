@@ -1,0 +1,27 @@
+.complaints-container {
+  max-width: 100%;
+}
+
+.attachment-thumb {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out;
+  border-radius: 8px;
+}
+
+.attachment-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+  filter: invert(1) grayscale(100); /* turns them black */
+}
+
+.carousel-control-prev-icon:hover,
+.carousel-control-next-icon:hover {
+  filter: invert(34%) sepia(93%) saturate(6000%) hue-rotate(200deg); /* e.g., blue on hover */
+}

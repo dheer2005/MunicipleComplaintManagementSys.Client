@@ -45,20 +45,62 @@
         </li>
       </ng-container>
 
-      <ng-container *ngIf="role === 'Admin'">
-        <li class="nav-item" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-          <a class="nav-link" routerLink="admin/dashboard">Dashboard</a>
-        </li>
-        <li class="nav-item" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-          <a class="nav-link" routerLink="admin/departments">Departments</a>
-        </li>
-        <li class="nav-item" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-          <a class="nav-link" routerLink="admin/users">Users</a>
-        </li>
-        <li class="nav-item" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-          <a class="nav-link" routerLink="admin/settings">Settings</a>
-        </li>
-      </ng-container>
+      <ng-container *ngIf="role == 'Admin'">
+          <!-- <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+              <i class="fas fa-tachometer-alt me-1"></i>Admin Panel
+            </a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" routerLink="/admin/dashboard">
+                <i class="fas fa-chart-line me-2"></i>Dashboard
+              </a></li>
+              <li><a class="dropdown-item" routerLink="/admin/departments">
+                <i class="fas fa-building me-2"></i>Departments
+              </a></li>
+              <li><a class="dropdown-item" routerLink="/admin/users">
+                <i class="fas fa-users me-2"></i>Users
+              </a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" routerLink="/admin/complaints">
+                <i class="fas fa-tasks me-2"></i>All Complaints
+              </a></li>
+              <li><a class="dropdown-item" routerLink="/admin/auditLogs">
+                <i class="fas fa-chart-bar me-2"></i>Audit Logs
+              </a></li>
+            </ul>
+          </li> -->
+
+          <li class="nav-item" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">
+            <a class="nav-link" routerLink="/admin/dashboard">
+              <!-- <i class="fas fa-chart-line me-2"></i> -->
+              Dashboard
+            </a>
+          </li>
+          <li class="nav-item" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">
+            <a class="nav-link" routerLink="/admin/departments">
+              <!-- <i class="fas fa-building me-2"></i> -->
+              Departments
+            </a>
+          </li>
+          <li class="nav-item" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">
+            <a class="nav-link" routerLink="/admin/users">
+              <!-- <i class="fas fa-users me-2"></i> -->
+              Users
+            </a>
+          </li>
+          <li class="nav-item" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">
+            <a class="nav-link" routerLink="/admin/complaints">
+              <!-- <i class="fas fa-tasks me-2"></i> -->
+              All Complaints
+            </a>
+          </li>
+          <li class="nav-item" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">
+            <a class="nav-link" routerLink="/admin/auditLogs">
+                <!-- <i class="fas fa-chart-bar me-2"></i> -->
+                Audit Logs
+              </a>
+          </li>
+        </ng-container>
 
     </ul>
 

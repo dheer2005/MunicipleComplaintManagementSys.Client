@@ -1,1 +1,346 @@
-<p>admin-dashboard works!</p>
+<div class="admin-dashboard">
+  <div *ngIf="loading" class="d-flex justify-content-center align-items-center" style="height: 400px;">
+    <div class="spinner-border text-primary" role="status">
+      <span class="sr-only">Loading...</span>
+    </div>
+  </div>
+
+  <div *ngIf="error && !loading" class="alert alert-danger" role="alert">
+    <i class="fas fa-exclamation-triangle mr-2"></i>
+    {{ error }}
+    <button class="btn btn-sm btn-outline-danger ml-2" (click)="refreshDashboard()">
+      <i class="fas fa-redo"></i> Retry
+    </button>
+  </div>
+
+  <div *ngIf="!loading && !error" class="dashboard-content">
+    
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h1 class="dashboard-title">Admin Dashboard</h1>
+            <p class="text-muted">Monitor and manage your municipal complaint system</p>
+          </div>
+          <button class="btn btn-outline-primary" (click)="refreshDashboard()">
+            <i class="fas fa-sync-alt mr-2"></i>Refresh
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mb-4" *ngIf="dashboardStats">
+      
+      <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stat-card border-left-primary">
+          <div class="card-body">
+            <div class="row no-gutters align-items-center">
+              <div class="col mr-2">
+                <div class="stat-label text-primary font-weight-bold mb-1">Total Complaints</div>
+                <div class="stat-number">{{ dashboardStats.totalComplaints }}</div>
+              </div>
+              <div class="col-auto">
+                <i class="fas fa-file-alt fa-2x text-primary"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stat-card border-left-danger">
+          <div class="card-body">
+            <div class="row no-gutters align-items-center">
+              <div class="col mr-2">
+                <div class="stat-label text-danger font-weight-bold mb-1">Overdue Complaints</div>
+                <div class="stat-number text-danger">{{ dashboardStats.overDueComplaints }}</div>
+              </div>
+              <div class="col-auto">
+                <i class="fas fa-exclamation-triangle fa-2x text-danger"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stat-card border-left-success">
+          <div class="card-body">
+            <div class="row no-gutters align-items-center">
+              <div class="col mr-2">
+                <div class="stat-label text-success font-weight-bold mb-1">Total Citizens</div>
+                <div class="stat-number">{{ dashboardStats.totalCitizens }}</div>
+              </div>
+              <div class="col-auto">
+                <i class="fas fa-users fa-2x text-success"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stat-card border-left-info">
+          <div class="card-body">
+            <div class="row no-gutters align-items-center">
+              <div class="col mr-2">
+                <div class="stat-label text-info font-weight-bold mb-1">Active Workers</div>
+                <div class="stat-number">{{ dashboardStats.activeWorkers }}/{{ dashboardStats.totalWorkers }}</div>
+              </div>
+              <div class="col-auto">
+                <i class="fas fa-hard-hat fa-2x text-info"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="row justify-content-center align-items-stretch mb-4">
+      
+      <div class="col-lg-6 mb-4">
+        <div class="card chart-card">
+          <div class="card-header">
+            <h5 class="card-title mb-0">
+              <i class="fas fa-chart-pie mr-2"></i>Complaint Status Distribution
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="row" *ngIf="dashboardStats?.complaintByStatus && dashboardStats?.complaintByStatus?.length! > 0; else noChartData">
+              <div class="col-md-8">
+                <div class="chart-container">
+                  <div class="chartcircle position-relative m-auto mt-4" style="width: 250px; height: 250px">
+                    <canvas
+                    baseChart
+                    [data]="pieChartData"
+                    [type]="pieChartType"
+                    [options]="pieChartOptions"
+                    [legend]="false"
+                    >
+                    </canvas>
+                    <div class="d-flex flex-column justify-content-center align-items-center totalComplaints position-absolute" style="position: absolute; top: 105px; left: 65px;">
+                      <p class="d-block fs-6 fw-semibold" style="font-size: 9px;">Total Complaints</p>
+                      <div class="fw-bold">{{totalComplaints}}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="status-legend text-center">
+                  <h6 class="mb-3">Status Breakdown</h6>
+                  <div *ngFor="let item of getChartLegendData()" class="status-item mb-2 d-flex justify-content-center align-items-center">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div class="d-flex align-items-center">
+                        <div class="legend-color me-2" [style.background-color]="item.color"></div>
+                        <span class="ml-2">{{ item.label }}</span>
+                      </div>
+                      <div class="ms-2 d-flex align-items-center">
+                        <span class="badge mr-2" [ngClass]="item.badgeClass">{{ item.count }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <ng-template #noChartData>
+              <div class="text-center py-5">
+                <i class="fas fa-chart-pie fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">No Data Available</h5>
+                <p class="text-muted">No complaint status data found to display in the chart.</p>
+              </div>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-5 mb-4">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title mb-0">
+              <i class="fas fa-info-circle mr-2"></i>System Overview
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="quick-stat-item" *ngIf="dashboardStats">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="text-muted">
+                  <i class="fas fa-building mr-1"></i>Departments
+                </span>
+                <span class="font-weight-bold">{{ dashboardStats.totalDepartments }}</span>
+              </div>
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="text-muted">
+                  <i class="fas fa-hard-hat mr-1"></i>Total Workers
+                </span>
+                <span class="font-weight-bold">{{ dashboardStats.totalWorkers }}</span>
+              </div>
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="text-muted">
+                  <i class="fas fa-user-tie mr-1"></i>Officials
+                </span>
+                <span class="font-weight-bold">{{ dashboardStats.totalOfficials }}</span>
+              </div>
+              <hr>
+              <div class="worker-activity">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="text-muted">Worker Activity</span>
+                  <span class="font-weight-bold">{{ calculateWorkerActivityPercentage() }}%</span>
+                </div>
+                <div class="progress mb-2">
+                  <div class="progress-bar bg-success" 
+                       [style.width.%]="calculateWorkerActivityPercentage()">
+                  </div>
+                </div>
+                <small class="text-muted">
+                  {{ dashboardStats.activeWorkers }} of {{ dashboardStats.totalWorkers }} workers active
+                </small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="row" *ngIf="recentComplaints">
+      
+      <div class="col-lg-6 mb-4">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">
+              <i class="fas fa-clock mr-2 text-warning"></i>Recent Submissions
+            </h5>
+            <a routerLink="/admin/complaints" class="btn btn-sm btn-outline-primary">View All</a>
+          </div>
+          <div class="card-body p-0">
+            <div *ngIf="recentComplaints.recentSubmittedComplaints && recentComplaints.recentSubmittedComplaints.length > 0; else noSubmittedComplaints">
+              <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                  <thead class="thead-light">
+                    <tr>
+                      <th>Complaint ID</th>
+                      <th>Description</th>
+                      <th>Status</th>
+                      <th>Submitted</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let complaint of recentComplaints.recentSubmittedComplaints">
+                      <td>#{{ complaint.complaintId }}</td>
+                      <td>
+                        <span [title]="complaint.description">
+                          {{ complaint.description | slice:0:30 }}{{ complaint.description.length > 30 ? '...' : '' }}
+
+                        </span>
+                      </td>
+                      <td>
+                        <span class="badge" [ngClass]="getStatusBadgeClass(getStatusName(complaint.currentStatus))">
+                          {{ getStatusName(complaint.currentStatus) }}
+                        </span>
+                      </td>
+                      <td>{{ formatDate(complaint.createdAt) }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <ng-template #noSubmittedComplaints>
+              <div class="text-center py-4">
+                <i class="fas fa-inbox fa-2x text-muted mb-2"></i>
+                <p class="text-muted mb-0">No recent submissions</p>
+              </div>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6 mb-4">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">
+              <i class="fas fa-check-circle mr-2 text-success"></i>Recent Resolutions
+            </h5>
+            <a routerLink="/admin/complaints" class="btn btn-sm btn-outline-success">View All</a>
+          </div>
+          <div class="card-body p-0">
+            <div *ngIf="recentComplaints.recentResolvedComplaints && recentComplaints.recentResolvedComplaints.length > 0; else noResolvedComplaints">
+              <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                  <thead class="thead-light">
+                    <tr>
+                      <th>Complaint ID</th>
+                      <th>Description</th>
+                      <th>Status</th>
+                      <th>Resolved</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let complaint of recentComplaints.recentResolvedComplaints">
+                      <td>#{{ complaint.complaintId }}</td>
+                      <td>
+                        <span [title]="complaint.description">
+                          {{ (complaint.description | slice:0:30) }}{{ complaint.description.length > 30 ? '...' : '' }}
+                        </span>
+                      </td>
+                      <td>
+                        <span class="badge" [ngClass]="getStatusBadgeClass(getStatusName(complaint.currentStatus))">
+                          {{ getStatusName(complaint.currentStatus) }}
+                        </span>
+                      </td>
+                      <td>{{ formatDate(complaint.updatedAt) }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <ng-template #noResolvedComplaints>
+              <div class="text-center py-4">
+                <i class="fas fa-check-circle fa-2x text-muted mb-2"></i>
+                <p class="text-muted mb-0">No recent resolutions</p>
+              </div>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title mb-0">
+              <i class="fas fa-bolt mr-2"></i>Quick Actions
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-3 mb-2">
+                <button class="btn btn-outline-primary btn-block" routerLink="/admin/departments">
+                  <i class="fas fa-building mr-2"></i>Manage Departments
+                </button>
+              </div>
+              <div class="col-md-3 mb-2">
+                <button class="btn btn-outline-success btn-block" routerLink="/admin/users">
+                  <i class="fas fa-user-cog mr-2"></i>Manage Users
+                </button>
+              </div>
+              <div class="col-md-3 mb-2">
+                <button class="btn btn-outline-info btn-block" routerLink="/admin/complaints">
+                  <i class="fas fa-tasks mr-2"></i>View All Complaints
+                </button>
+              </div>
+              <div class="col-md-3 mb-2">
+                <button class="btn btn-outline-warning btn-block" routerLink="/admin/reports">
+                  <i class="fas fa-chart-line mr-2"></i>Generate Reports
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

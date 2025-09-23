@@ -29,27 +29,23 @@ interface WorkerWithLoad extends Worker {
 })
 export class AssignComplaintsComponent implements OnInit {
 
-  // Data properties
   departments: Department[] = [];
   selectedDepartmentId: number | null = null;
   selectedDepartment: Department | null = null;
   unassignedComplaints: UnassignedComplaint[] = [];
   availableWorkers: WorkerWithLoad[] = [];
   
-  // UI state
   loading = false;
   assigningComplaint = false;
   showBulkAssignModal = false;
   showWorkerDetailsModal = false;
   
-  // Selection and assignment
   selectedComplaintId: string | null = null;
   selectedWorkerId: number | null = null;
   selectedComplaints: string[] = [];
   bulkAssignWorkerId: number | null = null;
   selectedWorkerDetails: WorkerWithLoad | null = null;
   
-  // Filters and pagination
   statusFilter = 'All';
   priorityFilter = 'All';
   categoryFilter = 'All';
@@ -59,11 +55,9 @@ export class AssignComplaintsComponent implements OnInit {
   currentPage = 1;
   itemsPerPage = 10;
   
-  // Assignment modes
   assignmentMode: 'individual' | 'bulk' | 'auto' = 'individual';
   autoAssignmentCriteria: 'workload' | 'random' | 'roundrobin' = 'workload';
   
-  // Statistics
   totalUnassigned = 0;
   overdueUnassigned = 0;
   highPriorityUnassigned = 0;
@@ -89,10 +83,12 @@ export class AssignComplaintsComponent implements OnInit {
     }
   }
 
-  async loadDepartments(): Promise<void> {
+  loadDepartments(){
     this.loading = true;
     try {
-      this.departments = await this.officialService.getDepartmentsOverview().toPromise() || [];
+      this.officialService.getDepartmentsOverview().subscribe((res)=> {
+        this.departments = res;
+      })
     } catch (error) {
       console.error('Error loading departments:', error);
       this.toastrService.error('Failed to load departments');
@@ -120,7 +116,6 @@ export class AssignComplaintsComponent implements OnInit {
 
       await this.officialService.getComplaintSummaryByDepartment(departmentId).subscribe((res:any)=>{
         const allComplaints = res;
-
         this.unassignedComplaints = allComplaints
         .filter((complaint:any) => complaint.currentStatus === 'Pending' && !complaint.assignedWorkerName)
         .map((complaint:any) => ({
@@ -138,9 +133,9 @@ export class AssignComplaintsComponent implements OnInit {
     }
   }
 
-  async loadAvailableWorkers(departmentId: number): Promise<void> {
+  loadAvailableWorkers(departmentId: number) {
     try {
-      await this.officialService.getWorkersByDepartment(departmentId).subscribe((res:any)=>{
+      this.officialService.getWorkersByDepartment(departmentId).subscribe((res:any)=>{
         const allWorkers = res;
         this.availableWorkers = allWorkers
         .filter((worker:any) => worker.isActive)
@@ -191,21 +186,23 @@ export class AssignComplaintsComponent implements OnInit {
     this.highPriorityUnassigned = this.unassignedComplaints.filter(c => c.priority === 'High').length;
   }
 
-  // Assignment Methods
-  async assignComplaint(complaintId: string, workerId: number): Promise<void> {
+  assignComplaint(complaintId: string, workerId: number){
     if (this.assigningComplaint) return;
     
     this.assigningComplaint = true;
     try {
-        await this.officialService.assignComplaint(complaintId, workerId.toString()).subscribe((res:any)=>{
-          this.toastrService.success('Complaint assigned successfully!');
-        },err=>{
-          this.toastrService.error('Failed to assigned the complaint to the worker!');
+        this.officialService.assignComplaint(complaintId, workerId.toString()).subscribe({
+          next: (res:any)=>{
+            this.toastrService.success('Complaint assigned successfully!');
+          },
+          error : (err:any)=>{
+            this.toastrService.error('Failed to assigned the complaint to the worker!');
+          }
         }
       );
       
       if (this.selectedDepartmentId) {
-        await this.selectDepartment(this.selectedDepartmentId);
+        this.selectDepartment(this.selectedDepartmentId);
       }
       
       this.closeAssignModal();
@@ -250,7 +247,7 @@ export class AssignComplaintsComponent implements OnInit {
   //   }
   // }
 
-  async autoAssignComplaints(): Promise<void> {
+  autoAssignComplaints() {
     if (this.unassignedComplaints.length === 0 || this.availableWorkers.length === 0) {
       this.toastrService.warning('No complaints or workers available for auto-assignment');
       return;
@@ -272,16 +269,14 @@ export class AssignComplaintsComponent implements OnInit {
           break;
       }
 
-      // Execute assignments
       for (const assignment of assignments) {
-        await this.officialService.assignComplaint(assignment.complaintId, assignment.workerId.toString()).toPromise();
+        this.officialService.assignComplaint(assignment.complaintId, assignment.workerId.toString()).toPromise();
       }
 
       this.toastrService.success(`${assignments.length} complaints auto-assigned successfully!`);
       
-      // Refresh data
       if (this.selectedDepartmentId) {
-        await this.selectDepartment(this.selectedDepartmentId);
+       this.selectDepartment(this.selectedDepartmentId);
       }
       
     } catch (error) {
@@ -345,7 +340,6 @@ export class AssignComplaintsComponent implements OnInit {
     return assignments;
   }
 
-  // UI Methods
   openAssignModal(complaintId: string): void {
     this.selectedComplaintId = complaintId;
     this.selectedWorkerId = null;
@@ -440,7 +434,6 @@ export class AssignComplaintsComponent implements OnInit {
     return Math.ceil(this.filteredComplaints.length / this.itemsPerPage);
   }
 
-  // Utility methods
   getPriorityClass(priority: string): string {
     switch (priority) {
       case 'High': return 'priority-high';

@@ -90,6 +90,7 @@ export class UpdateTaskComponent implements OnInit {
     private authService: AuthService,
     private workerService: WorkerService,
     private complaintService: ComplaintService,
+    private authSvc: AuthService,
     private toastrService: ToastrService
   ) { }
 
@@ -162,7 +163,6 @@ export class UpdateTaskComponent implements OnInit {
         isOverdue: isOverdue
       } as TaskDetails;
 
-      // console.log("task details:", this.taskDetails);
 
     });
   }
@@ -232,6 +232,12 @@ export class UpdateTaskComponent implements OnInit {
 
     this.workerService.addWorkUpdate(this.taskId!, formData).subscribe({
       next: (res: any) => {
+        const auditObj = {
+          userId: this.workerId,
+          action: 'Work update',
+          ActionResult: `Work updated successfully by worker: ${this.workerId} `
+        };
+        this.authSvc.createAudit(auditObj).subscribe();
         this.toastrService.success('Task updated successfully');
         
         this.loadTaskDetails();
@@ -328,7 +334,6 @@ export class UpdateTaskComponent implements OnInit {
     }
   }
 
-  // Method to handle completion percentage change
   onCompletionPercentageChange(): void {
     if (this.updateForm.completionPercentage < this.minCompletionPercentage) {
       this.updateForm.completionPercentage = this.minCompletionPercentage;

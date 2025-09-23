@@ -14,12 +14,15 @@ export class NavbarComponent implements AfterViewInit, OnDestroy {
   @ViewChild('underline', { static: true }) underline!: ElementRef<HTMLElement>;
 
   role: string | null = null;   
+  currentUser: string | null = null;
   fullName: string | null = null;
+  isAdmin: boolean = false;
 
   private subs = new Subscription();
 
   constructor(private router: Router, private authSvc: AuthService) {
     this.role = this.authSvc.getUserRole();
+    this.currentUser = this.authSvc.getUserId();
     this.fullName = this.authSvc.getUserFullName();
   }
 
@@ -64,6 +67,12 @@ export class NavbarComponent implements AfterViewInit, OnDestroy {
   }
 
   logout() {
+    const auditObj = {
+      userId: this.currentUser,
+      action: 'Logged out',
+      ActionResult: `User: ${this.currentUser} Logged out Successfully`
+    }
+    this.authSvc.createAudit(auditObj).subscribe();
     localStorage.removeItem('token');
     this.router.navigate(['/login']);
   }

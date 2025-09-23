@@ -23,6 +23,11 @@ import { ComplaintDepartmentsComponent } from './pages/Official/complaint-depart
 import { AssignComplaintsComponent } from './pages/Official/assign-complaints/assign-complaints.component';
 import { PageNotFoundComponent } from './pages/page-not-found/page-not-found.component';
 import { AdminDashboardComponent } from './pages/Admin/admin-dashboard/admin-dashboard.component';
+import { NgChartsModule } from 'ng2-charts';
+import { DepartmentsComponent } from './pages/Admin/departments/departments.component';
+import { UsersComponent } from './pages/Admin/users/users.component';
+import { ComplaintsComponent } from './pages/Admin/complaints/complaints.component';
+import { AuditLogsComponent } from './pages/Admin/audit-logs/audit-logs.component';
 
 export function tokenGetter() {
   return localStorage.getItem('token'); 
@@ -44,9 +49,14 @@ export function tokenGetter() {
     AssignComplaintsComponent,
     PageNotFoundComponent,
     AdminDashboardComponent,
+    DepartmentsComponent,
+    UsersComponent,
+    ComplaintsComponent,
+    AuditLogsComponent,
     
   ],
   imports: [
+    NgChartsModule,
     BrowserModule,
     RouterModule,
     HttpClientModule,

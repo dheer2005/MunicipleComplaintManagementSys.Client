@@ -64,8 +64,12 @@ export class ComplaintDepartmentsComponent implements OnInit {
   
   currentPage = 1;
   itemsPerPage = 10;
+  currentUserId: string | null = null;
   
-  constructor(private router: Router, private authSvc:AuthService, private OfficialSvc: OfficialService, private toastrSvc: ToastrService) { }
+  constructor(private router: Router, private authSvc:AuthService, private OfficialSvc: OfficialService, private toastrSvc: ToastrService) 
+  { 
+    this.currentUserId = this.authSvc.getUserId();
+  }
 
   ngOnInit(): void {
     this.loadDepartments();
@@ -88,7 +92,6 @@ export class ComplaintDepartmentsComponent implements OnInit {
     try {
       this.OfficialSvc.getComplaintSummaryByDepartment(departmentId).subscribe((data: ComplaintSummary[]) => {
         this.departmentComplaints = data;
-        console.log("departmentComplaints:", this.departmentComplaints);
       }); 
       
       this.loadAvailableWorkers(departmentId);
@@ -139,11 +142,16 @@ export class ComplaintDepartmentsComponent implements OnInit {
 
     try {
       this.OfficialSvc.assignComplaint(this.selectedComplaintId, this.selectedWorkerId.toString()).subscribe((res)=>{
+        const auditObj = {
+          userId: this.currentUserId,
+          action: 'Complaint assignment',
+          ActionResult: `Complaint: ${this.selectedComplaintId} has been assignd to worker: ${this.selectedWorkerId} successfully`
+        };
+        this.authSvc.createAudit(auditObj).subscribe();
         this.loadComplaintsSummeryByDepartmentId(this.depaertmentIdForLoad!);
         this.loadDepartments();
       }); 
       
-      // Refresh the complaints list
       if (this.selectedDepartment) {
         this.selectDepartment(this.selectedDepartment);
       }
@@ -152,6 +160,12 @@ export class ComplaintDepartmentsComponent implements OnInit {
       this.toastrSvc.success("Complaint assigned successfully");
       
     } catch (error) {
+      const auditObj = {
+          userId: this.currentUserId,
+          action: 'Complaint assignment',
+          ActionResult: `Failed to assign complaint`
+        };
+        this.authSvc.createAudit(auditObj).subscribe();
       console.error('Error assigning complaint:', error);
       this.toastrSvc.error('Error assigning complaint. Please try again.');
     }
@@ -188,13 +202,27 @@ export class ComplaintDepartmentsComponent implements OnInit {
   }
 
   confirmDeleteComplaint(){
-    this.OfficialSvc.deleteComplaint(this.deleteComplaintId!).subscribe(()=>{
+    this.OfficialSvc.deleteComplaint(this.deleteComplaintId!).subscribe({
+      next: ()=>{
+        const auditObj = {
+          userId: this.currentUserId,
+          action: 'Complaint deletion',
+          ActionResult: `Complaint: ${this.selectedComplaintId} deleted successfully`
+        };
+        this.authSvc.createAudit(auditObj).subscribe();
       this.toastrSvc.success("complaint deleted successfully");
       this.loadComplaintsSummeryByDepartmentId(this.depaertmentIdForLoad!);
-      },err=>{
+      },
+      error: (err)=>{
+        const auditObj = {
+          userId: this.currentUserId,
+          action: 'Complaint deletion',
+          ActionResult: `Complaint: ${this.selectedComplaintId} deleted successfully`
+        };
+        this.authSvc.createAudit(auditObj).subscribe();
         this.toastrSvc.error("Filed to delete complaint");
       }
-    )
+    });
   }
 
   get filteredComplaints(): ComplaintSummary[] {

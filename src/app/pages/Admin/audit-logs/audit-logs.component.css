@@ -1,0 +1,14 @@
+.audit-logs-container {
+  max-width: 100%;
+}
+
+.table th {
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+}
+
+.badge {
+  font-size: 0.85rem;
+  border-radius: 12px;
+}

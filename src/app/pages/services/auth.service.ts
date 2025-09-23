@@ -68,6 +68,14 @@ export class AuthService {
       const decodedToken = this.getDecodedToken();
       return decodedToken ? decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] : null;
     } 
+
+    isAdmin(): boolean | null{
+      const role = this.getUserRole();
+      if(role == 'Admin'){
+        return true;
+      }
+      return false;
+    }
   
     getUserFullName(): string | null{
       const decodedToken = this.getDecodedToken();

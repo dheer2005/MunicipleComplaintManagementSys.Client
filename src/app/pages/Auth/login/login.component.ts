@@ -27,7 +27,6 @@ export class LoginComponent {
           ActionResult: 'LoggedIn successfully'
         }
         this.authSvc.createAudit(auditObj).subscribe();
-        console.log("login data:", res);
         this.authSvc.setToken(res.token);
         this.toastrSvc.success("Login successfull!","Success");
         const role = this.authSvc.getUserRole();
@@ -45,13 +44,13 @@ export class LoginComponent {
         }
       },
       error: (err) => {
+        this.toastrSvc.error(err.error?.message || "Login failed. Please try again.","Error");
         const auditObj = {
           userId: '',
           action: 'Login',
           ActionResult: 'Failed to login'
         }
         this.authSvc.createAudit(auditObj).subscribe();
-        this.toastrSvc.error(err.error?.message || "Login failed. Please try again.","Error");
       }
     });
     

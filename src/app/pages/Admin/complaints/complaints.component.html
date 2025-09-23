@@ -1,0 +1,188 @@
+<div class="complaints-container p-3">
+  <h3 class="fw-bold text-primary mb-4">📋 All Complaints</h3>
+
+  <div class="table-responsive shadow-sm rounded bg-white p-3">
+    <table class="table table-hover align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Ticket No</th>
+          <th>Citizen</th>
+          <th>Category</th>
+          <th>Department</th>
+          <th>Status</th>
+          <th>Created</th>
+          <th>Updated</th>
+          <th>Attachments</th>
+          <th>Location</th>
+          <th>Feedback</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let complaint of complaints">
+          <td>
+            <span class="fw-semibold text-dark">{{ complaint.ticketNo }}</span>
+          </td>
+
+          <td>{{ complaint.citizenName }}</td>
+
+          <td>
+            <span class="badge bg-info text-dark">
+              {{ complaint.categoryName }}
+            </span>
+            <br />
+            <small class="text-muted">{{ complaint.subCategoryName }}</small>
+          </td>
+
+          <td>{{ complaint.departmentName }}</td>
+
+          <td>
+            <span
+              class="badge"
+              [ngClass]="{
+                'bg-warning': complaint.currentStatus === 'Pending',
+                'bg-primary text-dark': complaint.currentStatus === 'InProgress',
+                'bg-info text-light': complaint.currentStatus === 'Assigned',
+                'bg-success': complaint.currentStatus === 'Resolved',
+                'bg-warning text-dark': complaint.currentStatus === 'Reopened',
+                'bg-dark': complaint.currentStatus === 'Closed',
+                'bg-danger': complaint.cuurentStatus === 'Rejected'
+              }"
+            >
+              {{ complaint.currentStatus }}
+            </span>
+          </td>
+
+          <!-- Created / Updated -->
+          <td>{{ complaint.createdAt | date: 'short' }}</td>
+          <td>{{ complaint.updatedAt | date: 'short' }}</td>
+
+          <!-- Attachments -->
+          <td>
+            <div class="d-flex flex-column">
+              <!-- Citizen Attachments -->
+              <div *ngIf="hasCitizenProof(complaint.attachments)">
+                <strong class="text-muted small">Citizen</strong>
+                <div class="d-flex flex-wrap gap-2 mt-1">
+                  <img
+                    *ngFor="let img of getCitizenProofs(complaint.attachments).slice(0,2)"
+                    [src]="img.imageUrl"
+                    class="img-thumbnail attachment-thumb"
+                    alt="Citizen Proof"
+                    (click)="openImage(img.imageUrl)"
+                  />
+                  <div *ngIf="getCitizenProofs(complaint.attachments).length > 2"
+                       class="d-flex align-items-center justify-content-center rounded bg-light"
+                       style="width: 70px; height: 55px; cursor: pointer;"
+                       (click)="openGallery(getCitizenProofs(complaint.attachments), 'Citizen')">
+                    <small class="text-muted">+{{ getCitizenProofs(complaint.attachments).length - 2 }}</small>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Worker Attachments -->
+              <div *ngIf="hasWorkerProof(complaint.attachments)" class="mt-2">
+                <strong class="text-muted small">Worker</strong>
+                <div class="d-flex flex-wrap gap-2 mt-1">
+                  <img
+                    *ngFor="let img of getWorkerProofs(complaint.attachments).slice(0,2)"
+                    [src]="img.imageUrl"
+                    class="img-thumbnail attachment-thumb"
+                    alt="Worker Proof"
+                    (click)="openImage(img.imageUrl)"
+                  />
+                  <div *ngIf="getWorkerProofs(complaint.attachments).length > 2"
+                       class="d-flex align-items-center justify-content-center rounded bg-light"
+                       style="width: 60px; height: 55px; cursor: pointer;"
+                       (click)="openGallery(getWorkerProofs(complaint.attachments), 'Worker')">
+                    <small class="text-muted">+{{ getWorkerProofs(complaint.attachments).length - 2 }}</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </td>
+
+          <!-- Location -->
+          <td>
+            <button
+              class="btn btn-sm btn-outline-primary"
+              (click)="openMap(complaint.latitude, complaint.longitude)"
+            >
+              <i class="fa-solid fa-map-location-dot"></i> View
+            </button>
+          </td>
+
+          <!-- Feedback -->
+          <td>
+            <ng-container *ngIf="complaint.feedback; else noFeedback">
+              <span
+                class="badge bg-success"
+                *ngIf="complaint.feedback.isSatisfied"
+              >
+                👍 Satisfied
+              </span>
+              <span
+                class="badge bg-danger"
+                *ngIf="!complaint.feedback.isSatisfied"
+              >
+                👎 Not Satisfied
+              </span>
+              <br />
+              ⭐ {{ complaint.feedback.rating }}/5
+              <br />
+              <small class="text-muted">{{ complaint.feedback.comments }}</small>
+            </ng-container>
+            <ng-template #noFeedback>
+              <span class="text-muted">No feedback</span>
+            </ng-template>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+
+  <!-- Gallery Modal -->
+    <div class="modal fade show d-block" tabindex="-1" *ngIf="showGalleryModal" style="background: rgba(0,0,0,0.6);">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content rounded-4 shadow-lg">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                {{ selectedGallery?.type }} Attachments
+                </h5>
+                <button type="button" class="btn-close btn-close-white" (click)="closeGallery()"></button>
+            </div>
+            
+            <div class="modal-body">
+                <!-- Carousel -->
+                <div id="galleryCarousel" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    <div 
+                    *ngFor="let img of selectedGallery?.images; let i = index" 
+                    class="carousel-item" 
+                    [class.active]="i === 0">
+                    <img [src]="img.imageUrl" class="d-block w-100 rounded" style="max-height: 500px; object-fit: contain;" alt="Attachment">
+                    <div class="carousel-caption d-none d-md-block">
+                        <small class="bg-dark px-2 py-1 rounded">
+                        {{ img.attachmentType }} • {{ img.uploadedAt | date:'short' }}
+                        </small>
+                    </div>
+                    </div>
+                </div>
+                <!-- Controls -->
+                <button class="carousel-control-prev" type="button" data-bs-target="#galleryCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon text-dark"></span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#galleryCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon"></span>
+                </button>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn btn-secondary" (click)="closeGallery()">Close</button>
+            </div>
+            </div>
+        </div>
+    </div>
+
+</div>

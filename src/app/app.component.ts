@@ -16,7 +16,7 @@ export class AppComponent {
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {
       // login & register page pe navbar hide
-      if (event.urlAfterRedirects === '/login' || event.urlAfterRedirects === '/register' || event.urlAfterRedirects === '**') {
+      if (event.urlAfterRedirects === '/login' || event.urlAfterRedirects === '/register' || event.urlAfterRedirects === '/page-not-found') {
         this.showNavbar = false;
       } else {
         this.showNavbar = true;
