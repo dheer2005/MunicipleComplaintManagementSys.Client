@@ -148,32 +148,83 @@
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <form #workerForm="ngForm" (ngSubmit)="onAddWorker(workerForm)">
-          <div class="mb-3">
-            <label class="form-label fw-semibold">Full Name</label>
-            <input type="text" name="fullName" class="form-control" [(ngModel)]="newWorker.fullName" required>
+        <form (ngSubmit)="onAddWorker(registerForm)" #registerForm="ngForm" novalidate>
+        <div class="mb-3">
+          <label class="form-label fw-semibold"><i class="fa-solid fa-user"></i> Full Name</label>
+          <input type="text" 
+            name="fullName" 
+            [(ngModel)]="newWorker.fullName"
+            class="form-control form-control-lg"
+            placeholder="Enter your full name"
+            required 
+            #fullName="ngModel">
+          <div *ngIf="fullName.invalid && fullName.touched" class="text-danger">
+            Full Name is required.
           </div>
-          <div class="mb-3">
-            <label class="form-label fw-semibold">Email</label>
-            <input type="email" name="email" class="form-control" [(ngModel)]="newWorker.email" required email>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold"><i class="fa-solid fa-envelope"></i> Email</label>
+          <input type="email" name="email" [(ngModel)]="newWorker.email"
+            class="form-control form-control-lg" placeholder="Enter your email"
+            required email #email="ngModel">
+          <div *ngIf="email.invalid && email.touched" class="text-danger">
+            <div *ngIf="email.errors?.['required']">Email is required.</div>
+            <div *ngIf="email.errors?.['email']">Invalid email format.</div>
           </div>
-          <div class="mb-3">
-            <label class="form-label fw-semibold">Phone</label>
-            <input type="text" name="phone" class="form-control" [(ngModel)]="newWorker.phone" required pattern="^[0-9]{10}$">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold"><i class="fa-solid fa-key"></i> Password</label>
+          <input type="password" name="password" [(ngModel)]="newWorker.password"
+            class="form-control form-control-lg" placeholder="Enter a strong password"
+            required minlength="6" #password="ngModel">
+          <div *ngIf="password.invalid && password.touched" class="text-danger">
+            <div *ngIf="password.errors?.['required']">Password is required.</div>
+            <div *ngIf="password.errors?.['minlength']">Password must be at least 6 characters.</div>
           </div>
-          <div class="mb-3">
-            <label class="form-label fw-semibold">Password</label>
-            <input type="password" name="password" class="form-control" [(ngModel)]="newWorker.password" required minlength="6">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold"><i class="fa-solid fa-lock"></i> Confirm Password</label>
+          <input type="password" name="confirmPassword" [(ngModel)]="confirmPasswordWorker"
+            class="form-control form-control-lg" placeholder="Re-enter password"
+            required #confirmPasswordModel="ngModel">
+          <div *ngIf="confirmPasswordModel.invalid && confirmPasswordModel.touched" class="text-danger">
+            Confirm Password is required.
           </div>
-          <div class="mb-3">
-            <label class="form-label fw-semibold">Department</label>
-            <select name="departmentId" class="form-select" [(ngModel)]="newWorker.departmentId" required>
-              <option [ngValue]="null">-- Select Department --</option>
-              <option *ngFor="let dept of departments" [value]="dept.departmentId">{{ dept.departmentName }}</option>
-            </select>
+          <div *ngIf="confirmPasswordWorker && newWorker.password !== confirmPasswordWorker && confirmPasswordModel.touched" class="text-danger">
+            Passwords do not match.
           </div>
-          <button type="submit" class="btn btn-success w-100" [disabled]="workerForm.invalid">Add Worker</button>
-        </form>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold"><i class="fa-solid fa-phone"></i> Phone</label>
+          <input type="number" name="phone" [(ngModel)]="newWorker.phone"
+            class="form-control form-control-lg" placeholder="Enter your phone number"
+            required pattern="^[0-9]{10}$" #phone="ngModel">
+          <div *ngIf="phone.invalid && phone.touched" class="text-danger">
+            <div *ngIf="phone.errors?.['required']">Phone number is required.</div>
+          </div>
+        </div>
+
+        <div class="mb-3" >
+          <label class="form-label fw-semibold"><i class="fa-solid fa-building"></i> Department</label>
+          <select name="departmentId" [(ngModel)]="newWorker.departmentId"
+            class="form-select form-select-lg" required #departmentId="ngModel">
+            <option [ngValue]="null">-- Select Department --</option>
+            <option *ngFor="let dept of departments" [ngValue]="dept.departmentId">{{ dept.departmentName }}</option>
+          </select>
+          <div *ngIf="departmentId.invalid && departmentId.touched" class="text-danger">
+            Please select a department.
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-lg w-100 fw-semibold mt-2"
+          [disabled]="registerForm.invalid || newWorker.password !== confirmPasswordWorker">
+          🚀 Register worker
+        </button>
+      </form>
       </div>
     </div>
   </div>
@@ -188,32 +239,88 @@
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <form #officialForm="ngForm" (ngSubmit)="onAddOfficial(officialForm)">
-          <div class="mb-3">
-            <label class="form-label fw-semibold">Full Name</label>
-            <input type="text" name="fullName" class="form-control" [(ngModel)]="newOfficial.fullName" required>
+        <form (ngSubmit)="onAddOfficial(registerOfficialForm)" #registerOfficialForm="ngForm" >
+        <div class="mb-3">
+          <label class="form-label fw-semibold"><i class="fa-solid fa-user"></i> Full Name</label>
+          <input type="text" 
+            name="fullName" 
+            [(ngModel)]="newOfficial.fullName"
+            class="form-control form-control-lg"
+            placeholder="Enter your full name"
+            required 
+            #officialFullName="ngModel">
+          <div *ngIf="officialFullName.invalid && officialFullName.touched" class="text-danger">
+            Full Name is required.
           </div>
-          <div class="mb-3">
-            <label class="form-label fw-semibold">Email</label>
-            <input type="email" name="email" class="form-control" [(ngModel)]="newOfficial.email" required email>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold"><i class="fa-solid fa-envelope"></i> Email</label>
+          <input type="email" name="email" [(ngModel)]="newOfficial.email"
+            class="form-control form-control-lg" placeholder="Enter your email"
+            required email #officialEmail="ngModel">
+          <div *ngIf="officialEmail.invalid && officialEmail.touched" class="text-danger">
+            <div *ngIf="officialEmail.errors?.['required']">Email is required.</div>
+            <div *ngIf="officialEmail.errors?.['email']">Invalid email format.</div>
           </div>
-          <div class="mb-3">
-            <label class="form-label fw-semibold">Phone</label>
-            <input type="text" name="phone" class="form-control" [(ngModel)]="newOfficial.phone" required pattern="^[0-9]{10}$">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold"><i class="fa-solid fa-key"></i> Password</label>
+          <input type="password" name="password" [(ngModel)]="newOfficial.password"
+            class="form-control form-control-lg" placeholder="Enter a strong password"
+            required minlength="6" #officialPassword="ngModel">
+          <div *ngIf="officialPassword.invalid && officialPassword.touched" class="text-danger">
+            <div *ngIf="officialPassword.errors?.['required']">Password is required.</div>
+            <div *ngIf="officialPassword.errors?.['minlength']">Password must be at least 6 characters.</div>
           </div>
-          <div class="mb-3">
-            <label class="form-label fw-semibold">Password</label>
-            <input type="password" name="password" class="form-control" [(ngModel)]="newOfficial.password" required minlength="6">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold"><i class="fa-solid fa-lock"></i> Confirm Password</label>
+          <input type="password" name="confirmPassword" [(ngModel)]="confirmPasswordOfficial"
+            class="form-control form-control-lg" placeholder="Re-enter password"
+            required #officialConfirmPasswordModel="ngModel">
+          <div *ngIf="officialConfirmPasswordModel.invalid && officialConfirmPasswordModel.touched" class="text-danger">
+            Confirm Password is required.
           </div>
-          <div class="mb-3">
-            <label class="form-label fw-semibold">Department</label>
-            <select name="departmentId" class="form-select" [(ngModel)]="newOfficial.departmentId" required>
-              <option [ngValue]="null">-- Select Department --</option>
-              <option *ngFor="let dept of departments" [value]="dept.departmentId">{{ dept.departmentName }}</option>
-            </select>
+          <div *ngIf="confirmPasswordOfficial && newOfficial.password !== confirmPasswordOfficial && officialConfirmPasswordModel.touched" class="text-danger">
+            Passwords do not match.
           </div>
-          <button type="submit" class="btn btn-primary w-100" [disabled]="officialForm.invalid">Add Official</button>
-        </form>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold"><i class="fa-solid fa-phone"></i> Phone</label>
+          <input type="number" name="phone" [(ngModel)]="newOfficial.phone"
+            class="form-control form-control-lg" placeholder="Enter your phone number"
+            required pattern="^[0-9]{10}$" minlength="1000000000" maxlength="9999999999" #officialPhone="ngModel">
+          <div *ngIf="officialPhone.invalid && officialPhone.touched" class="text-danger">
+            <div *ngIf="officialPhone.errors?.['pattern']" class="text-danger">
+              Phone number must be exactly 10 digits.
+              <!-- (You entered: {{ officialPhone.errors?.['pattern'].actualValue }}) -->
+            </div>
+            <div *ngIf="officialPhone.errors?.['required']">Phone number is required.
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-3" >
+          <label class="form-label fw-semibold"><i class="fa-solid fa-building"></i> Department</label>
+          <select name="departmentId" [(ngModel)]="newOfficial.departmentId"
+            class="form-select form-select-lg" required #officialDepartmentId="ngModel">
+            <option [ngValue]="null">-- Select Department --</option>
+            <option *ngFor="let dept of departments" [ngValue]="dept.departmentId">{{ dept.departmentName }}</option>
+          </select>
+          <div *ngIf="officialDepartmentId.invalid && officialDepartmentId.touched" class="text-danger">
+            Please select a department.
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-lg w-100 fw-semibold mt-2"
+          [disabled]="registerOfficialForm.invalid || newOfficial.password !== confirmPasswordOfficial">
+          🚀 Register Official
+        </button>
+      </form>
       </div>
     </div>
   </div>

@@ -1,1 +1,106 @@
-<p>departments works!</p>
+<div class="container-fluid mt-4">
+
+  <h2 class="mb-4">Departments Overview</h2>
+
+  <!-- Department Dropdown -->
+  <div class="mb-4 d-flex align-items-center gap-3">
+    <label for="departmentSelect" class="form-label mb-0 fw-semibold">Select Department:</label>
+    <select id="departmentSelect" class="form-select w-auto" [(ngModel)]="selectedDepartmentId" (change)="onDepartmentChange()">
+      <option *ngFor="let dept of departments" [value]="dept.departmentId">
+        {{dept.departmentName}}
+      </option>
+    </select>
+  </div>
+
+  <!-- Overview Cards -->
+  <div class="row g-4 mb-4" *ngIf="overview">
+
+    <!-- Total Complaints -->
+    <div class="col-lg-3 col-md-6">
+      <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-body text-center">
+          <h6 class="text-muted">Total Complaints</h6>
+          <h3 class="fw-bold text-primary mt-2">{{overview.totalComplaint}}</h3>
+        </div>
+      </div>
+    </div>
+
+    <!-- Overdue Complaints -->
+    <div class="col-lg-3 col-md-6">
+      <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-body text-center">
+          <h6 class="text-muted">Overdue Complaints</h6>
+          <h3 class="fw-bold text-danger mt-2">{{overview.overDueComplaint}}</h3>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLA Met -->
+    <div class="col-lg-3 col-md-6">
+      <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-body text-center">
+          <h6 class="text-muted">SLA Met</h6>
+          <h3 class="fw-bold text-success mt-2">{{overview.slaCompliance.met}}</h3>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLA Missed -->
+    <div class="col-lg-3 col-md-6">
+      <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-body text-center">
+          <h6 class="text-muted">SLA Missed</h6>
+          <h3 class="fw-bold text-warning mt-2">{{overview.slaCompliance.missed}}</h3>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Pie Chart + Table -->
+  <div class="row g-4" *ngIf="overview">
+
+    <!-- Pie Chart -->
+    <div class="col-lg-6 col-md-12" >
+      <div class="card shadow-sm border-1 mb-1 rounded-3 p-3 d-flex justify-content-center align-items-center" style="height: 400px;" >
+        <h6 class="fw-semibold text-center mb-3">Complaints by Status</h6>
+        <div style="width: 250px; text-align: center;" class="position-relative">
+            <canvas baseChart 
+                    [data]="pieChartData"
+                    [type]="pieChartType"
+                    [options]="pieChartOptions">
+            </canvas>
+            <div class="d-flex flex-column justify-content-center align-items-center totalComplaints" style="position: absolute; top: 105px; left: 105px;">
+                <p class="d-block fs-6 fw-semibold" style="font-size: 9px;">Total </p>
+                <div class="fw-bold">{{totalDepartmentComplaints}}</div>
+            </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Complaint Status Table -->
+    <div class="col-lg-6 col-md-12" style="height: 400px;">
+      <div class="card shadow-sm border-0 rounded-3 p-3" style="height: 400px;">
+        <h6 class="fw-semibold text-center mb-3">Status Details</h6>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Status</th>
+                <th class="text-end">Count</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of overview.complaintStatus">
+                <td>{{item.status}}</td>
+                <td class="text-end">{{item.count}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
