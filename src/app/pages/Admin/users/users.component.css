@@ -26,3 +26,9 @@
   font-size: 0.85rem;
   padding: 0.35em 0.6em;
 }
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}

@@ -185,18 +185,7 @@ export class MyTasksComponent implements OnInit {
   calculateStatistics(): void {
     this.workerService.getWorkerStats(this.workerId!).subscribe((res:any)=>{
       this.taskStats = res;
-      // this.workerService.getTaskPriority(this.workerId!).subscribe((res:any)=>{
-      //   console.log("priority",res);
-      //   this.taskPriority = res;
-      // });
     });
-    // this.taskStats = {
-    //   total: this.allTasks.length,
-    //   pending: this.allTasks.filter(t => t.currentStatus === 'Pending').length,
-    //   inProgress: this.allTasks.filter(t => t.currentStatus === 'InProgress').length,
-    //   resolved: this.allTasks.filter(t => t.currentStatus === 'Resolved').length,
-    //   overdue: this.allTasks.filter(t => t.isOverdue).length
-    // };
   }
 
   applyFilters(): void {
@@ -214,7 +203,7 @@ export class MyTasksComponent implements OnInit {
     });
 
     this.sortTasks();
-    this.currentPage = 1; 
+    this.currentPage = 1;
   }
 
   sortTasks(): void {

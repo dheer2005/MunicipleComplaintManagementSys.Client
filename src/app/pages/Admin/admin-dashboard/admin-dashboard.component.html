@@ -225,7 +225,7 @@
                 <table class="table table-hover mb-0">
                   <thead class="thead-light">
                     <tr>
-                      <th>Complaint ID</th>
+                      <th>Ticket No.</th>
                       <th>Description</th>
                       <th>Status</th>
                       <th>Submitted</th>
@@ -233,7 +233,7 @@
                   </thead>
                   <tbody>
                     <tr *ngFor="let complaint of recentComplaints.recentSubmittedComplaints">
-                      <td>#{{ complaint.complaintId }}</td>
+                      <td>{{ complaint.ticketNo }}</td>
                       <td>
                         <span [title]="complaint.description">
                           {{ complaint.description | slice:0:30 }}{{ complaint.description.length > 30 ? '...' : '' }}
@@ -275,7 +275,7 @@
                 <table class="table table-hover mb-0">
                   <thead class="thead-light">
                     <tr>
-                      <th>Complaint ID</th>
+                      <th>Ticket No.</th>
                       <th>Description</th>
                       <th>Status</th>
                       <th>Resolved</th>
@@ -283,7 +283,7 @@
                   </thead>
                   <tbody>
                     <tr *ngFor="let complaint of recentComplaints.recentResolvedComplaints">
-                      <td>#{{ complaint.complaintId }}</td>
+                      <td>{{ complaint.ticketNo }}</td>
                       <td>
                         <span [title]="complaint.description">
                           {{ (complaint.description | slice:0:30) }}{{ complaint.description.length > 30 ? '...' : '' }}

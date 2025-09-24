@@ -81,28 +81,22 @@ export class RegisterComponent implements OnInit {
   }
 
   onRegister() {
-    this.apiSvc.register(this.registerData).subscribe({
+    const registerPayload = {
+      ...this.registerData,
+      phone: this.registerData.phone?.toString()
+    }
+    this.apiSvc.register(registerPayload).subscribe({
       next: (res) => {
+        console.log(res);
         const auditObj = {
           userId: res.userId,
           action: 'Register',
           ActionResult: `New ${this.registerData.role} registered successfully`
         };
         this.authSvc.createAudit(auditObj).subscribe();
-        this.authSvc.setToken(res.token);
         this.toastr.success(`${this.selectedRoleLabel} Registration successful!`, "Success");
 
-        if (this.registerData.role === 0) {
-          this.router.navigate(['/citizen/complaints/my']);
-        } else if (this.registerData.role === 1) {
-          this.router.navigate(['/official/complaints/department']);
-        } else if (this.registerData.role === 2) {
-          this.router.navigate(['/worker/dashboard']);
-        }else if(this.registerData.role === 3) {
-          this.router.navigate(['/admin/dashboard']);
-        } else {
-          this.router.navigate(['/']);
-        }
+        this.router.navigate(['/lgin']);
       },
       error: (err) => {
         const auditObj = {

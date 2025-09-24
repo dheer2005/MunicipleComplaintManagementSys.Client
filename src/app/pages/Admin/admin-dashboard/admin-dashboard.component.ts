@@ -87,7 +87,6 @@ export class AdminDashboardComponent implements OnInit, OnDestroy, AfterViewInit
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (stats: any) => {
-          console.log("stats:", stats);
           this.dashboardStats = stats;
 
           this.totalComplaints = this.dashboardStats?.complaintByStatus.reduce((acc,n)=>acc+n.count, 0)
@@ -118,7 +117,6 @@ export class AdminDashboardComponent implements OnInit, OnDestroy, AfterViewInit
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (complaints: any) => {
-          console.log("complaints:", complaints);
           this.recentComplaints = complaints;
           this.loading = false;
         },

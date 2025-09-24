@@ -9,24 +9,24 @@
         <table class="table table-hover align-middle mb-0">
           <thead class="table-light">
             <tr>
-              <th>#</th>
-              <th>Action</th>
-              <th>Result</th>
-              <th>User ID</th>
-              <th>Created At</th>
+              <th class="text-center">#</th>
+              <th class="text-center">Action</th>
+              <th class="text-center">Action Result</th>
+              <th class="text-center">User ID</th>
+              <th class="text-center">Created At</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let log of auditLogs; let i = index">
               <td>{{ i + 1 }}</td>
 
-              <td>
+              <td class="text-center">
                 <span class="badge bg-info text-dark px-3 py-2">
                   <i class="fas fa-cogs me-1"></i> {{ log.action }}
                 </span>
               </td>
 
-              <td>
+              <td class="text-center">
                 <span
                   class="badge px-3 py-2"
                   [ngClass]="{
@@ -39,13 +39,13 @@
                 </span>
               </td>
 
-              <td>
+              <td class="text-center">
                 <code class="text-muted small">
                   {{ log.userId || 'N/A' }}
                 </code>
               </td>
 
-              <td>
+              <td class="text-center">
                 <i class="far fa-clock me-1 text-primary"></i>
                 {{ log.createdAt | date: 'short' }}
               </td>

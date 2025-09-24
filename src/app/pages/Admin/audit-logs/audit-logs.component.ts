@@ -16,7 +16,6 @@ export class AuditLogsComponent implements OnInit {
     this.adminSvc.getAllAuditLogs().subscribe({
       next: (res:any)=>{
         this.auditLogs = res;
-        console.log("audit logs", res);
       },
       error: (err:any)=>{
         this.toastrSvc.error("Failed to load the logs");

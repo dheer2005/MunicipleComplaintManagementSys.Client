@@ -19,7 +19,7 @@ export interface RecentComplaints {
 }
 
 export interface Complaint {
-  complaintId: number;
+  ticketNo: number;
   title: string;
   description: string;
   currentStatus: string;

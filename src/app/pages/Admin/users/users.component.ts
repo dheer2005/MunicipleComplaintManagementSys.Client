@@ -3,6 +3,8 @@ import { AdminService } from '../../services/admin.service';
 import { ToastrService } from 'ngx-toastr';
 import { ApiService } from '../../services/api.service';
 import { DepartmentService } from '../../services/department.service';
+import { AuthService } from '../../services/auth.service';
+import { NgForm } from '@angular/forms';
 
 declare var bootstrap: any;
 
@@ -26,11 +28,27 @@ export class UsersComponent implements OnInit {
   error: string | null = null;
 
 
-  newWorker: any = {};
-  newOfficial: any = {};
+  newWorker: any = {
+    fullName: '',
+    email: '',
+    password: '',
+    phone: '',
+    role: UserRole.Worker,
+    departmentId: null
+  };
+  newOfficial: any = {
+    fullName: '',
+    email: '',
+    password: '',
+    phone: '',
+    role: UserRole.Official,
+    departmentId: null
+  };
   departments: any[] = [];
+  confirmPasswordWorker: string = '';
+  confirmPasswordOfficial: string = '';
 
-  constructor(private adminSvc: AdminService, private toastrSvc: ToastrService, private apiSvc: ApiService, private deptSvc: DepartmentService) { }
+  constructor(private adminSvc: AdminService, private toastrSvc: ToastrService, private apiSvc: ApiService, private deptSvc: DepartmentService, private authSvc: AuthService) { }
 
   ngOnInit(): void {
     this.deptSvc.getAllDepartments().subscribe({
@@ -85,19 +103,64 @@ export class UsersComponent implements OnInit {
     modal.show();
   }
 
-  onAddWorker(form: any) {
-    if(form.valid){
-      // call API to add worker
-      console.log('Worker data:', this.newWorker);
+  onAddWorker(form: NgForm) {
+    const workerPayload = {
+      ...this.newWorker,
+      phone: this.newWorker.phone?.toString()
     }
+      this.apiSvc.register(workerPayload).subscribe({
+      next: (res) => {
+        const auditObj = {
+          userId: res.userId,
+          action: 'Register',
+          ActionResult: `New Worker registered successfully`
+        };
+        this.authSvc.createAudit(auditObj).subscribe();
+        form.resetForm();
+        this.toastrSvc.success(`Worker Registration successful!`, "Success");
+
+      },
+      error: (err) => {
+        const auditObj = {
+          userId: '',
+          action: 'Register',
+          ActionResult: `Failed to register new Worker`
+        };
+        this.authSvc.createAudit(auditObj).subscribe();
+        this.toastrSvc.error(err.error, "Error");
+      }
+    });
   }
 
-  onAddOfficial(form: any) {
-    if(form.valid){
-      // call API to add official
-      console.log('Official data:', this.newOfficial);
+  onAddOfficial(form: NgForm) {
+    const officialPayload = {
+      ...this.newOfficial,
+      phone: this.newOfficial.phone?.toString()
     }
+    this.apiSvc.register(officialPayload).subscribe({
+      next: (res) => {
+        const auditObj = {
+          userId: res.userId,
+          action: 'Register',
+          ActionResult: `New Official registered successfully`
+        };
+        this.authSvc.createAudit(auditObj).subscribe();
+        form.resetForm();
+        this.toastrSvc.success(`Official Registration successful!`, "Success");
+      },
+      error: (err) => {
+        const auditObj = {
+          userId: '',
+          action: 'Register',
+          ActionResult: `Failed to register new Official`
+        };
+        this.authSvc.createAudit(auditObj).subscribe();
+        this.toastrSvc.error(err.error, "Error");
+      }
+    });
   }
+
+
 
 
 }
