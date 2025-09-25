@@ -58,7 +58,6 @@
         </div>
       </div>
 
-      <!-- Complaints List -->
       <div *ngIf="!isLoading && filteredComplaints.length > 0" class="row">
         <div *ngFor="let complaint of filteredComplaints" class="col-12 col-lg-6 col-xl-4 mb-4">
           <div class="card shadow-lg border-0 h-100 complaint-card" style="border-radius: 20px;">
@@ -79,15 +78,12 @@
             </div>
 
             <div class="card-body p-4 pt-0">
-              <!-- Progress Bar -->
               <div class="progress mb-3" style="height: 6px;">
                 <div class="progress-bar bg-primary" 
                      [style.width.%]="getProgressPercentage(complaint.currentStatus, complaint)">
                 </div>
               </div>
               
-
-              <!-- Department & Category -->
               <div class="mb-3">
                 <div class="d-flex align-items-center mb-2">
                   <i class="fas fa-building text-primary me-2"></i>
@@ -99,12 +95,10 @@
                 </div>
               </div>
 
-              <!-- Description -->
               <p class="text-muted mb-3" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
                 <strong>Description: </strong>{{ complaint.description }}
               </p>
 
-              <!-- Location -->
               <div *ngIf="complaint.addressText" class="mb-3">
                 <div class="d-flex align-items-center text-muted small">
                   <i class="fas fa-map-marker-alt text-danger me-2"></i>
@@ -112,7 +106,6 @@
                 </div>
               </div>
 
-              <!-- Assigned Worker -->
               <div *ngIf="complaint.assignedWorkerName" class="mb-3">
                 <div class="d-flex align-items-center text-success small">
                   <i class="fas fa-user-tie me-2"></i>
@@ -120,7 +113,6 @@
                 </div>
               </div>
 
-              <!-- SLA Due Date -->
               <div *ngIf="complaint.slaDueAt && complaint.currentStatus != ComplaintStatus.Closed" class="mb-3">
                 <div class="d-flex align-items-center text-warning small">
                   <i class="fas fa-hourglass-half me-2"></i>
@@ -128,7 +120,6 @@
                 </div>
               </div>
 
-              <!-- Feedback Display -->
               <div *ngIf="complaint.feedback" class="mb-3">
                 <strong>Feedback:</strong>
                 <div class="bg-light rounded p-3">
@@ -142,7 +133,6 @@
                 </div>
               </div>
 
-              <!--Citizen Attachments -->
               <div *ngIf="complaint.citizenAttachments?.length > 0" class="mb-3">
                 <small class="text-muted d-block mb-2">
                   <i class="fas fa-paperclip me-1"></i>

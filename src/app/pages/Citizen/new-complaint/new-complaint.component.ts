@@ -99,9 +99,8 @@ export class NewComplaintComponent implements OnInit{
   onFileSelected(event: any) {
     const files: File[] = Array.from(event.target.files);
     
-    // Validate file size and type
     for (let file of files) {
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      if (file.size > 5 * 1024 * 1024) { 
         this.toastr.warning(`File ${file.name} is too large. Maximum size is 5MB.`);
         continue;
       }

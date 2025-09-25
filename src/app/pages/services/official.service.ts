@@ -77,8 +77,8 @@ export class OfficialService {
 
 
   // Department Management
-  getDepartmentsOverview(): Observable<Department[]> {
-    return this.http.get<Department[]>(`${this.apiUrl}/departments-overview`);
+  getDepartmentsOverview(userId: string | null): Observable<Department[]> {
+    return this.http.get<Department[]>(`${this.apiUrl}/departments-overview/${userId}`);
   }
 
   getDashboardStats(): Observable<DashboardStats> {

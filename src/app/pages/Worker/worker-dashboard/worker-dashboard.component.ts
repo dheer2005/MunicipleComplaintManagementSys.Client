@@ -118,7 +118,13 @@ export class WorkerDashboardComponent implements OnInit {
 
   loadRecentTasks(){
     this.workerSvc.getRecentTasks(this.workerId!).subscribe((res:any)=>{
-      this.recentTasks = res; 
+      this.recentTasks = res.sort((a:any,b:any)=>{
+        if(a.status == 'Closed' && b.status != 'Closed') return 1;
+        if(a.status != 'Closed' && b.status == 'Closed') return -1;
+        if(a.status == 'Resolved' && b.status != 'Resolved') return 1;
+        if(a.status != 'Resolved' && b.status == 'Resolved') return -1;
+        return new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime();
+      }); 
       this.loadUpcomingDeadlines();
     });
   }

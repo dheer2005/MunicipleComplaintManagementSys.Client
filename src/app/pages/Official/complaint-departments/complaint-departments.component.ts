@@ -26,6 +26,7 @@ export interface ComplaintSummary {
   slaDueAt: Date;
   isOverdue: boolean;
   assignedWorkerName?: string;
+  priority?: 'High' | 'Medium' | 'Low' | 'N/A';
 }
 
 export interface Worker {
@@ -45,7 +46,7 @@ export interface Worker {
 })
 export class ComplaintDepartmentsComponent implements OnInit {
   
-  departments: Department[] = [];
+  departments!: Department;
   selectedDepartment: Department | null = null;
   departmentComplaints: ComplaintSummary[] = [];
   availableWorkers: Worker[] = [];
@@ -54,7 +55,7 @@ export class ComplaintDepartmentsComponent implements OnInit {
   selectedComplaintId: string | null = null;
   selectedWorkerId: number | null = null;
   showAssignModal = false;
-  depaertmentIdForLoad: number | null = null;
+  departmentIdForLoad: number | null = null;
   
   statusFilter = 'All';
   priorityFilter = 'All';
@@ -65,6 +66,8 @@ export class ComplaintDepartmentsComponent implements OnInit {
   currentPage = 1;
   itemsPerPage = 10;
   currentUserId: string | null = null;
+
+  departmentName: string = ''; 
   
   constructor(private router: Router, private authSvc:AuthService, private OfficialSvc: OfficialService, private toastrSvc: ToastrService) 
   { 
@@ -78,8 +81,10 @@ export class ComplaintDepartmentsComponent implements OnInit {
   async loadDepartments(): Promise<void> {
     this.loading = true;
     try {
-      this.OfficialSvc.getDepartmentsOverview().subscribe((data: Department[]) => {
-        this.departments = data;
+      this.OfficialSvc.getDepartmentsOverview(this.currentUserId!).subscribe((data: Department[]) => {
+        this.departments = data[0];
+        this.departmentName = this.departments.departmentName;
+        this.selectDepartment(this.departments);
       });
     } catch (error) {
       console.error('Error loading departments:', error);
@@ -88,10 +93,42 @@ export class ComplaintDepartmentsComponent implements OnInit {
     }
   }
 
+  calculateDaysSinceCreated(createdAt: Date): number {
+    const today = new Date();
+    const created = new Date(createdAt);
+    return Math.floor((today.getTime() - created.getTime()) / (1000 * 60 * 60 * 24));
+  }
+
+  calculatePriority(complaint: ComplaintSummary): 'High' | 'Medium' | 'Low' | 'N/A' {
+    const daysSinceCreated = this.calculateDaysSinceCreated(complaint.createdAt);
+    if(complaint.currentStatus == 'Resolved' || complaint.currentStatus == 'Closed'){
+      return 'N/A';
+    }
+    
+    if (complaint.isOverdue || daysSinceCreated > 7) {
+      return 'High';
+    } else if (daysSinceCreated > 3) {
+      return 'Medium';
+    }
+    return 'Low';
+  }
+
+  getPriorityClass(priority: string): string {
+    switch (priority) {
+      case 'High': return 'priority-high';
+      case 'Medium': return 'priority-medium';
+      case 'Low': return 'priority-low';
+      default: return 'priority-normal';
+    }
+  }
+
   loadComplaintsSummeryByDepartmentId(departmentId: number){
     try {
       this.OfficialSvc.getComplaintSummaryByDepartment(departmentId).subscribe((data: ComplaintSummary[]) => {
-        this.departmentComplaints = data;
+        this.departmentComplaints = data.map((complaint)=>({
+          ...complaint,
+          priority: this.calculatePriority(complaint)
+        }));
       }); 
       
       this.loadAvailableWorkers(departmentId);
@@ -105,7 +142,7 @@ export class ComplaintDepartmentsComponent implements OnInit {
 
   selectDepartment(department: Department){
     this.selectedDepartment = department;
-    this.depaertmentIdForLoad = department.departmentId;
+    this.departmentIdForLoad = department.departmentId;
     this.loading = true;
     
     this.loadComplaintsSummeryByDepartmentId(department.departmentId);
@@ -148,7 +185,7 @@ export class ComplaintDepartmentsComponent implements OnInit {
           ActionResult: `Complaint: ${this.selectedComplaintId} has been assignd to worker: ${this.selectedWorkerId} successfully`
         };
         this.authSvc.createAudit(auditObj).subscribe();
-        this.loadComplaintsSummeryByDepartmentId(this.depaertmentIdForLoad!);
+        this.loadComplaintsSummeryByDepartmentId(this.departmentIdForLoad!);
         this.loadDepartments();
       }); 
       
@@ -173,18 +210,14 @@ export class ComplaintDepartmentsComponent implements OnInit {
 
   getStatusClass(status: string): string {
     switch (status.toLowerCase()) {
-      case 'pending': return 'status-pending';
-      case 'assigned': return 'status-assigned';
-      case 'inprogress': return 'status-inprogress';
-      case 'resolved': return 'status-resolved';
-      case 'closed': return 'status-closed';
-      case 'reopened': return 'status-reopened';
+      case 'pending': return 'pending';
+      case 'assigned': return 'assigned';
+      case 'inprogress': return 'inProgress';
+      case 'resolved': return 'resolved';
+      case 'closed': return 'closed';
+      case 'reopened': return 'reopened';
       default: return 'status-default';
     }
-  }
-
-  getPriorityClass(isOverdue: boolean): string {
-    return isOverdue ? 'priority-high' : 'priority-normal';
   }
 
   viewComplaintDetails(complaintId: string): void {
@@ -210,8 +243,9 @@ export class ComplaintDepartmentsComponent implements OnInit {
           ActionResult: `Complaint: ${this.selectedComplaintId} deleted successfully`
         };
         this.authSvc.createAudit(auditObj).subscribe();
-      this.toastrSvc.success("complaint deleted successfully");
-      this.loadComplaintsSummeryByDepartmentId(this.depaertmentIdForLoad!);
+        this.showDeleteModal = false;
+        this.toastrSvc.success("complaint deleted successfully");
+        this.loadComplaintsSummeryByDepartmentId(this.departmentIdForLoad!);
       },
       error: (err)=>{
         const auditObj = {
@@ -220,6 +254,7 @@ export class ComplaintDepartmentsComponent implements OnInit {
           ActionResult: `Complaint: ${this.selectedComplaintId} deleted successfully`
         };
         this.authSvc.createAudit(auditObj).subscribe();
+        this.showDeleteModal = false;
         this.toastrSvc.error("Filed to delete complaint");
       }
     });
@@ -228,9 +263,7 @@ export class ComplaintDepartmentsComponent implements OnInit {
   get filteredComplaints(): ComplaintSummary[] {
     return this.departmentComplaints.filter(complaint => {
       const matchesStatus = this.statusFilter === 'All' || complaint.currentStatus === this.statusFilter;
-      const matchesPriority = this.priorityFilter === 'All' || 
-        (this.priorityFilter === 'High' && complaint.isOverdue) ||
-        (this.priorityFilter === 'Normal' && !complaint.isOverdue);
+      const matchesPriority = this.priorityFilter === 'All' || (complaint.priority === this.priorityFilter);
       const matchesSearch = this.searchTerm === '' || 
         complaint.ticketNo.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         complaint.citizenName.toLowerCase().includes(this.searchTerm.toLowerCase()) ||

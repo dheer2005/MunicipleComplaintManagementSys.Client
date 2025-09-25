@@ -66,11 +66,11 @@
         <h6 class="fw-semibold text-center mb-3">Complaints by Status</h6>
         <div style="width: 250px; text-align: center;" class="position-relative">
             <canvas baseChart 
-                    [data]="pieChartData"
-                    [type]="pieChartType"
-                    [options]="pieChartOptions">
+                [data]="pieChartData"
+                [type]="pieChartType"
+                [options]="pieChartOptions">
             </canvas>
-            <div class="d-flex flex-column justify-content-center align-items-center totalComplaints" style="position: absolute; top: 105px; left: 105px;">
+            <div *ngIf="overview.complaintStatus.length != 0" class="d-flex flex-column justify-content-center align-items-center totalComplaints" style="position: absolute; top: 120px; left: 108px;">
                 <p class="d-block fs-6 fw-semibold" style="font-size: 9px;">Total </p>
                 <div class="fw-bold">{{totalDepartmentComplaints}}</div>
             </div>
