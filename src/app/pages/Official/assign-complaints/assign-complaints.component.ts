@@ -29,7 +29,7 @@ interface WorkerWithLoad extends Worker {
 })
 export class AssignComplaintsComponent implements OnInit {
 
-  departments: Department[] = [];
+  departments!: Department;
   selectedDepartmentId: number | null = null;
   selectedDepartment: Department | null = null;
   unassignedComplaints: UnassignedComplaint[] = [];
@@ -89,8 +89,9 @@ export class AssignComplaintsComponent implements OnInit {
   loadDepartments(){
     this.loading = true;
     try {
-      this.officialService.getDepartmentsOverview(this.currentUserId!).subscribe((res)=> {
-        this.departments = res;
+      this.officialService.getDepartmentsOverview(this.currentUserId).subscribe((res)=> {
+        this.departments = res[0];
+        this.selectDepartment(this.departments.departmentId);
       })
     } catch (error) {
       console.error('Error loading departments:', error);
@@ -102,7 +103,7 @@ export class AssignComplaintsComponent implements OnInit {
 
   async selectDepartment(departmentId: number): Promise<void> {
     this.selectedDepartmentId = departmentId;
-    this.selectedDepartment = this.departments.find(d => d.departmentId === departmentId) || null;
+    this.selectedDepartment = this.departments;
     this.resetFiltersAndSelection();
     
     await Promise.all([
@@ -128,9 +129,8 @@ export class AssignComplaintsComponent implements OnInit {
           daysSinceCreated: this.calculateDaysSinceCreated(complaint.createdAt)
         }));
         this.totalUnassigned = this.unassignedComplaints.length;
-        this.overdueUnassigned = this.unassignedComplaints.filter(uc=>uc.isOverdue).length;
-        this.highPriorityUnassigned = this.unassignedComplaints.filter(uc=>uc.priority == 'High').length;
-
+        this.overdueUnassigned = this.unassignedComplaints.filter(c=>c.isOverdue).length ?? 0;
+        this.highPriorityUnassigned = this.unassignedComplaints.filter(c=>c.priority == 'High').length ?? 0;
       });
     } catch (error) {
       console.error('Error loading unassigned complaints:', error);

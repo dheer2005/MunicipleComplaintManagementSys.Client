@@ -25,3 +25,14 @@
 .carousel-control-next-icon:hover {
   filter: invert(34%) sepia(93%) saturate(6000%) hue-rotate(200deg); /* e.g., blue on hover */
 }
+
+.bg-sandybrown {
+  background-color: sandybrown !important;
+  color: #fff !important; 
+}
+
+.searchInput:focus{
+  outline: none;
+  box-shadow: none;
+  border-color: #cccc;
+}

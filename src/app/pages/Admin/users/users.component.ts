@@ -117,17 +117,19 @@ export class UsersComponent implements OnInit {
         };
         this.authSvc.createAudit(auditObj).subscribe();
         form.resetForm();
+        this.loadUsers();
         this.toastrSvc.success(`Worker Registration successful!`, "Success");
 
       },
       error: (err) => {
         const auditObj = {
-          userId: '',
+          userId: 'N/A',
           action: 'Register',
           ActionResult: `Failed to register new Worker`
         };
         this.authSvc.createAudit(auditObj).subscribe();
-        this.toastrSvc.error(err.error, "Error");
+        form.resetForm();
+        this.toastrSvc.error(err.error.message, "Error");
       }
     });
   }
@@ -146,16 +148,18 @@ export class UsersComponent implements OnInit {
         };
         this.authSvc.createAudit(auditObj).subscribe();
         form.resetForm();
+        this.loadUsers();
         this.toastrSvc.success(`Official Registration successful!`, "Success");
       },
       error: (err) => {
         const auditObj = {
-          userId: '',
+          userId: 'N/A',
           action: 'Register',
           ActionResult: `Failed to register new Official`
         };
         this.authSvc.createAudit(auditObj).subscribe();
-        this.toastrSvc.error(err.error, "Error");
+        form.resetForm();
+        this.toastrSvc.error(err.error.message, "Error");
       }
     });
   }

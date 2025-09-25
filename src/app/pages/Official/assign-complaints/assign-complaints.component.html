@@ -6,51 +6,13 @@
       <p class="subtitle">Efficiently manage and assign unassigned complaints to available workers</p>
     </div>
     <div class="header-actions">
-      <!-- <button class="btn btn-outline" (click)="exportAssignments()" [disabled]="!selectedDepartmentId">
-        <i class="fas fa-download"></i> Export
-      </button> -->
-    </div>
-  </div>
-
-  <!-- Department Selection -->
-  <div class="department-selection" *ngIf="!selectedDepartmentId">
-    <h3>Select Department</h3>
-    <div class="departments-grid">
-      <div class="department-card" 
-           *ngFor="let dept of departments" 
-           (click)="selectDepartment(dept.departmentId)">
-        <div class="department-header">
-          <h4>{{ dept.departmentName }}</h4>
-          <span class="pending-badge" *ngIf="dept.pendingComplaints > 0">
-            {{ dept.pendingComplaints }} Pending
-          </span>
-        </div>
-        <div class="department-stats">
-          <div class="stat-row">
-            <span class="stat-label">Total Complaints:</span>
-            <span class="stat-value">{{ dept.totalComplaints }}</span>
-          </div>
-          <div class="stat-row">
-            <span class="stat-label">Assigned:</span>
-            <span class="stat-value">{{ dept.assignedComplaints }}</span>
-          </div>
-          <div class="stat-row" *ngIf="dept.overdueComplaints > 0">
-            <span class="stat-label overdue">Overdue:</span>
-            <span class="stat-value overdue">{{ dept.overdueComplaints }}</span>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 
   <!-- Main Assignment Interface -->
   <div class="assignment-interface" *ngIf="selectedDepartmentId && !loading">
-    <!-- Department Header -->
     <div class="department-header-info">
       <div class="dept-info">
-        <button class="btn btn-secondary " (click)="selectedDepartmentId = null">
-          <i class="fas fa-arrow-left"></i> Back to Departments
-        </button>
         <h3>{{ selectedDepartment?.departmentName }}</h3>
       </div>
       <div class="quick-stats">
@@ -134,7 +96,6 @@
         <div class="section-header">
           <h4>Unassigned Complaints ({{ filteredComplaints.length }})</h4>
           
-          <!-- Filters -->
           <div class="filters">
             <select [(ngModel)]="priorityFilter" class="filter-select">
               <option value="All">All Priority</option>
@@ -151,7 +112,6 @@
         </div>
 
         
-        <!-- Complaints List -->
         <div class="complaints-list">
           <div class="complaint-item" 
           *ngFor="let complaint of paginatedComplaints"

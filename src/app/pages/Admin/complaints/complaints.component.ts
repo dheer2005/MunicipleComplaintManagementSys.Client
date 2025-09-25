@@ -10,7 +10,7 @@ import { ToastrService } from 'ngx-toastr';
 })
 export class ComplaintsComponent implements OnInit {
   complaints: any[] = [];
-  filteredComplaints: any[] = [];
+  filteredComplaints: any[] = []
   selectedGallery: { type: string, images: any[]} | null = null;
   showGalleryModal: boolean = false;
   searchTerm: string = '';
@@ -26,9 +26,10 @@ export class ComplaintsComponent implements OnInit {
       next: (res:any)=> {
         this.complaints = res;
         this.filteredComplaints = this.complaints;
-      },
+      }, 
       error: (err:any) => this.toastrSvc.error("Failed to load the complaints")
     });
+    
   }
 
   onSearchChange(){
@@ -77,9 +78,9 @@ export class ComplaintsComponent implements OnInit {
       }else{
         return aValue < bValue ? 1 : -1;
       }
-    });
+    })
   }
-
+  
   applyFilters(){
     this.filteredComplaints = this.complaints.filter(complaints =>{
       const matchesStatus = this.statusFilter === 'All' || complaints.currentStatus === this.statusFilter;
@@ -93,8 +94,6 @@ export class ComplaintsComponent implements OnInit {
       return matchesStatus && matchesFeedback && matchesSearchTerm;
     });
   }
-
-
 
   hasCitizenProof(attachments: any[]): boolean{
     return attachments?.some(a=>a.attachmentType == 'CitizenProof');

@@ -23,121 +23,61 @@
     </div>
 
     <div *ngIf="!loading">
-        <!-- <div class="row mb-4">
-            <div class="col-md-2 col-sm-6 mb-3">
+        <div class="row justify-content-center mb-4 gap-1">
+            <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
                 <div class="card dashboard-card stat-card">
                     <div class="card-body text-center">
-                        <i class="fas fa-tasks fa-3x mb-3"></i>
-                        <h3 class="mb-1">{{ stats.totalAssigned }}</h3>
-                        <p class="mb-0">Total Assigned</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-2 col-sm-6 mb-3">
-                <div class="card dashboard-card stat-card pending">
-                    <div class="card-body text-center">
-                        <i class="fas fa-clock fa-3x mb-3"></i>
-                        <h3 class="mb-1">{{ stats.pending }}</h3>
-                        <p class="mb-0">Pending</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-2 col-sm-6 mb-3">
-                <div class="card dashboard-card stat-card inProgress">
-                    <div class="card-body text-center">
-                        <i class="fas fa-spinner fa-3x mb-3"></i>
-                        <h3 class="mb-1">{{ stats.inProgress }}</h3>
-                        <p class="mb-0">InProgress</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-2 col-sm-6 mb-3">
-                <div class="card dashboard-card stat-card resolved">
-                    <div class="card-body text-center">
-                        <i class="fas fa-check-circle fa-3x mb-3"></i>
-                        <h3 class="mb-1">{{ stats.resolved }}</h3>
-                        <p class="mb-0">Resolved</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-2 col-sm-6 mb-3">
-                <div class="card dashboard-card stat-card overdue">
-                    <div class="card-body text-center">
-                        <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
-                        <h3 class="mb-1">{{ stats.overdue }}</h3>
-                        <p class="mb-0">Overdue</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-2 col-sm-6 mb-3">
-                <div class="card dashboard-card stat-card">
-                    <div class="card-body text-center">
-                        <i class="fas fa-percentage fa-3x mb-3"></i>
-                        <h3 class="mb-1">{{ ((stats.resolved / stats.totalAssigned) * 100).toFixed(0) }}%</h3>
-                        <p class="mb-0">Completion Rate</p>
-                    </div>
-                </div>
-            </div>
-        </div> -->
-        <div class="row justify-content-center mb-4">
-            <div class="col-lg-3 col-md-4 col-sm-6 mb-3">
-                <div class="card dashboard-card stat-card">
-                    <div class="card-body text-center">
-                        <i class="fas fa-tasks fa-3x mb-3"></i>
+                        <i class="fas fa-tasks fa-x mb-2"></i>
                         <h3 class="mb-1">{{ stats.totalAssigned }}</h3>
                         <p class="mb-0">Total Assigned</p>
                     </div>
                 </div>
             </div>
 
-            <div class="col-md-4 col-lg-3 col-sm-6 mb-3">
+            <div class="col-md-4 col-lg-2 col-sm-6 mb-3">
                 <div class="card dashboard-card stat-card pending">
                     <div class="card-body text-center">
-                        <i class="fas fa-clock fa-3x mb-3"></i>
+                        <i class="fas fa-clock fa-x mb-2"></i>
                         <h3 class="mb-1">{{ stats.pending }}</h3>
                         <p class="mb-0">Pending</p>
                     </div>
                 </div>
             </div>
 
-            <div class="col-md-4 col-lg-3 col-sm-6 mb-3">
+            <div class="col-md-4 col-lg-2 col-sm-6 mb-3">
                 <div class="card dashboard-card stat-card assigned">
                     <div class="card-body text-center">
-                        <i class="fas fa-user-check fa-3x mb-3"></i>
+                        <i class="fas fa-user-check fa-x mb-2"></i>
                         <h3 class="mb-1">{{ stats.assigned }}</h3>
                         <p class="mb-0">Assigned</p>
                     </div>
                 </div>
             </div>
 
-            <div class="col-md-4 col-lg-3 col-sm-6 mb-3">
+            <div class="col-md-4 col-lg-2 col-sm-6 mb-3">
                 <div class="card dashboard-card stat-card inProgress">
                     <div class="card-body text-center">
-                        <i class="fas fa-spinner fa-3x mb-3"></i>
+                        <i class="fas fa-spinner fa-x mb-2"></i>
                         <h3 class="mb-1">{{ stats.inProgress }}</h3>
                         <p class="mb-0">InProgress</p>
                     </div>
                 </div>
             </div>
 
-            <div class="col-md-4 col-lg-3 col-sm-6 mb-3">
+            <div class="col-md-4 col-lg-2 col-sm-6 mb-3">
                 <div class="card dashboard-card stat-card resolved">
                     <div class="card-body text-center">
-                        <i class="fas fa-check-circle fa-3x mb-3"></i>
+                        <i class="fas fa-check-circle fa-x mb-2"></i>
                         <h3 class="mb-1">{{ stats.resolved }}</h3>
                         <p class="mb-0">Resolved</p>
                     </div>
                 </div>
             </div>
 
-            <div class="col-md-4 col-lg-3 col-sm-6 mb-3">
+            <div class="col-md-4 col-lg-2 col-sm-6 mb-3">
                 <div class="card dashboard-card stat-card overdue">
                     <div class="card-body text-center">
-                        <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+                        <i class="fas fa-exclamation-triangle fa-x mb-2"></i>
                         <h3 class="mb-1">{{ stats.overdue }}</h3>
                         <p class="mb-0">Overdue</p>
                     </div>
@@ -145,10 +85,10 @@
             </div>
 
 
-            <div class="col-md-4 col-lg-3 col-sm-6 mb-3">
+            <div class="col-md-4 col-lg-2 col-sm-6 mb-3">
                 <div class="card dashboard-card stat-card">
                     <div class="card-body text-center">
-                        <i class="fas fa-percentage fa-3x mb-3"></i>
+                        <i class="fas fa-percentage fa-x mb-2"></i>
                         <h3 class="mb-1">{{ ((stats.resolved / stats.totalAssigned) * 100).toFixed(0) }}%</h3>
                         <p class="mb-0">Completion Rate</p>
                     </div>

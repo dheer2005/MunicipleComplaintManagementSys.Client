@@ -4,10 +4,8 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { 
   Chart, 
-  ChartConfiguration, 
   ChartData, 
   ChartType, 
-  registerables 
 } from 'chart.js';
 
 export enum ComplaintStatus {
@@ -21,9 +19,6 @@ export enum ComplaintStatus {
   Reopened = 7
 }
 
-
-// Register Chart.js components
-Chart.register(...registerables);
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -199,7 +194,6 @@ export class AdminDashboardComponent implements OnInit, OnDestroy, AfterViewInit
     return Math.round((this.dashboardStats.overDueComplaints / this.dashboardStats.totalComplaints) * 100);
   }
 
-  // Chart legend data for display
   getChartLegendData(): any[] {
     if (!this.dashboardStats?.complaintByStatus) return [];
     
@@ -212,19 +206,5 @@ export class AdminDashboardComponent implements OnInit, OnDestroy, AfterViewInit
     }));
   }
 
-  navigateToComplaints(): void {
-    // Navigation logic for complaints page
-  }
 
-  navigateToDepartments(): void {
-    // Navigation logic for departments page
-  }
-
-  navigateToUsers(): void {
-    // Navigation logic for users page
-  }
-
-  navigateToReports(): void {
-    // Navigation logic for reports page
-  }
 }

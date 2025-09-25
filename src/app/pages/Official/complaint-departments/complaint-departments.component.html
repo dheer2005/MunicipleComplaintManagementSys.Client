@@ -1,70 +1,86 @@
-<div class="complaint-departments-container">
-  <!-- Header -->
-  <div class="header">
-    <h2>Department Complaint Management</h2>
-    <div class="header-actions">
-      <button class="btn btn-outline-secondary" (click)="refreshData()">
-        <i class="fas fa-refresh"></i> Refresh
-      </button>
-      <!-- <button class="btn btn-primary" (click)="exportToCSV()">
-        <i class="fas fa-download"></i> Export
-      </button> -->
+<div class="complaint-management-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <div class="department-info">
+        <h1><i class="fas fa-building me-2"></i>{{ departmentName || 'Department' }}</h1>
+        <p class="department-subtitle">Complaint Management Dashboard</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-outline-light" (click)="refreshData()">
+          <i class="fas fa-sync-alt"></i> Refresh
+        </button>
+        <button class="btn btn-outline-light" (click)="exportToCSV()">
+          <i class="fas fa-download"></i> Export
+        </button>
+      </div>
     </div>
   </div>
 
   <!-- Loading Spinner -->
   <div class="loading-spinner" *ngIf="loading">
     <i class="fas fa-spinner fa-spin"></i>
-    <span>Loading...</span>
+    <span>Loading dashboard...</span>
   </div>
 
-  <!-- Departments Overview -->
-  <div class="departments-section" *ngIf="!loading">
-    <h3>Departments Overview</h3>
-    <div class="departments-grid">
-      <div class="department-card" 
-           *ngFor="let dept of departments" 
-           [class.selected]="selectedDepartment?.departmentId === dept.departmentId"
-           (click)="selectDepartment(dept)">
-        <div class="department-header">
-          <h4>{{ dept.departmentName }}</h4>
-          <span class="total-complaints">{{ dept.totalComplaints }} Total</span>
-        </div>
-        <div class="department-stats">
-          <div class="stat-item pending">
-            <span class="count">{{ dept.pendingComplaints }}</span>
-            <span class="label">Pending</span>
-          </div>
-          <div class="stat-item assigned">
-            <span class="count">{{ dept.assignedComplaints }}</span>
-            <span class="label">Assigned</span>
-          </div>
-          <div class="stat-item resolved">
-            <span class="count">{{ dept.resolvedComplaints }}</span>
-            <span class="label">Resolved</span>
-          </div>
-          <div class="stat-item overdue" *ngIf="dept.overdueComplaints > 0">
-            <span class="count">{{ dept.overdueComplaints }}</span>
-            <span class="label">Overdue</span>
-          </div>
+  <!-- Stats Dashboard -->
+  <div class="stats-dashboard" *ngIf="departments && !loading">
+    <div class="stat-card">
+      <div class="stat-header">
+        <div class="stat-icon total">
+          <i class="fas fa-clipboard-list"></i>
         </div>
       </div>
+      <div class="stat-number">{{ departments.totalComplaints || 0 }}</div>
+      <div class="stat-label">Total Complaints</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-header">
+        <div class="stat-icon pending">
+          <i class="fas fa-clock"></i>
+        </div>
+      </div>
+      <div class="stat-number">{{ departments.pendingComplaints || 0 }}</div>
+      <div class="stat-label">Pending</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-header">
+        <div class="stat-icon assigned">
+          <i class="fas fa-user-check"></i>
+        </div>
+      </div>
+      <div class="stat-number">{{ departments.assignedComplaints || 0 }}</div>
+      <div class="stat-label">Assigned</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-header">
+        <div class="stat-icon resolved">
+          <i class="fas fa-check-circle"></i>
+        </div>
+      </div>
+      <div class="stat-number">{{ departments.resolvedComplaints || 0 }}</div>
+      <div class="stat-label">Resolved</div>
+    </div>
+
+    <div class="stat-card" *ngIf="departments.overdueComplaints > 0">
+      <div class="stat-header">
+        <div class="stat-icon overdue">
+          <i class="fas fa-exclamation-triangle"></i>
+        </div>
+      </div>
+      <div class="stat-number">{{ departments.overdueComplaints || 0 }}</div>
+      <div class="stat-label">Overdue</div>
     </div>
   </div>
 
-  <!-- Department Complaints Details -->
-  <div class="complaints-section" *ngIf="selectedDepartment && !loading">
-    <div class="complaints-header">
-      <h3>{{ selectedDepartment.departmentName }} - Complaints</h3>
-      <button class="btn btn-outline" (click)="selectedDepartment = null">
-        <i class="fas fa-arrow-left"></i> Back to Overview
-      </button>
-    </div>
-
-    <!-- Filters -->
-    <div class="filters-section">
+  <!-- Filters Section -->
+  <div class="filters-section" *ngIf="!loading">
+    <div class="filters-grid">
       <div class="filter-group">
-        <label for="statusFilter">Status:</label>
+        <label for="statusFilter">Status</label>
         <select id="statusFilter" [(ngModel)]="statusFilter" class="filter-select">
           <option value="All">All Status</option>
           <option value="Pending">Pending</option>
@@ -76,82 +92,89 @@
       </div>
       
       <div class="filter-group">
-        <label for="priorityFilter">Priority:</label>
+        <label for="priorityFilter">Priority</label>
         <select id="priorityFilter" [(ngModel)]="priorityFilter" class="filter-select">
           <option value="All">All Priority</option>
           <option value="High">High (Overdue)</option>
-          <option value="Normal">Normal</option>
+          <option value="Medium">Medium</option>
+          <option value="Low">Low</option>
         </select>
       </div>
       
       <div class="filter-group search-group">
-        <label for="searchTerm">Search:</label>
+        <label for="searchTerm">Search</label>
         <input 
           id="searchTerm" 
           type="text" 
           [(ngModel)]="searchTerm" 
-          placeholder="Search by ticket, citizen, or description..."
+          placeholder="Search by ticket number, citizen name, or description..."
           class="search-input">
       </div>
     </div>
+  </div>
 
-    <!-- Complaints Table -->
+  <!-- Complaints Table -->
+  <div class="table-section" *ngIf="!loading">
+    <div class="table-header">
+      <h3>Complaints Overview</h3>
+    </div>
+    
     <div class="table-container">
       <table class="complaints-table">
         <thead>
           <tr>
-            <th>Ticket No</th>
-            <th>Citizen</th>
-            <th>Category</th>
-            <th>Description</th>
-            <th>Priority</th>
-            <th>Status</th>
-            <th>Created</th>
-            <th>SLA Due</th>
-            <th>Assigned Worker</th>
-            <th>Actions</th>
+            <th class="text-center">Ticket No</th>
+            <th class="text-center">Citizen</th>
+            <th class="text-center">Category</th>
+            <th class="text-center">Description</th>
+            <th class="text-center">Priority</th>
+            <th class="text-center">Status</th>
+            <th class="text-center">Created</th>
+            <th class="text-center">SLA Due</th>
+            <th class="text-center">Assigned Worker</th>
+            <th class="text-center">Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let complaint of paginatedComplaints">
-            <td>
+            <td class="text-center">
               <span class="ticket-no">{{ complaint.ticketNo }}</span>
               <span class="priority-indicator" 
-                    [class]="getPriorityClass(complaint.currentStatus)"
-                    *ngIf="complaint.isOverdue">
+                    [class]="getPriorityClass(complaint.priority!)"
+                    *ngIf="complaint.isOverdue && complaint.currentStatus != 'Resolved' && complaint.currentStatus != 'Closed'">
                 <i class="fas fa-exclamation-triangle"></i>
               </span>
             </td>
-            <td>{{ complaint.citizenName }}</td>
-            <td>
+            <td class="text-center">{{ complaint.citizenName }}</td>
+            <td class="text-center">
               <div class="category-info">
                 <div class="category">{{ complaint.categoryName }}</div>
                 <div class="subcategory">{{ complaint.subCategoryName }}</div>
               </div>
             </td>
-            <td class="description-cell">
+            <td class="text-center description-cell">
               <span class="description-text" [title]="complaint.description">
                 {{ complaint.description.length > 50 ? complaint.description.substring(0, 50) + '...' : complaint.description }}
               </span>
             </td>
             <td class="text-center">
-              <span class="fw-bold" *ngIf="complaint.currentStatus == 'Resolved' || complaint.currentStatus == 'Closed'">
+              <span class="fw-bold fs-6" *ngIf="complaint.currentStatus == 'Resolved' || complaint.currentStatus == 'Closed'">
                 N/A
               </span>
               <span *ngIf="complaint.currentStatus != 'Resolved' && complaint.currentStatus != 'Closed'" class="priority-badge" [class]="getPriorityClass(complaint.priority!)">
                 {{ complaint.priority }}
               </span>
             </td>
-            <td>
+            <td class="text-center">
               <span class="status-badge" [class]="getStatusClass(complaint.currentStatus)">
                 {{ complaint.currentStatus }}
               </span>
             </td>
-            <td>{{ complaint.createdAt | date:'short' }}</td>
-            <td [class.overdue]="complaint.isOverdue">
+            <td class="text-center">{{ complaint.createdAt | date:'short' }}</td>
+            <td class="text-center" [class.overdue]="complaint.isOverdue">
               {{ complaint.slaDueAt | date:'short' }}
             </td>
-            <td>
+            <td class="text-center">
               <span *ngIf="complaint.assignedWorkerName; else notAssigned">
                 {{ complaint.assignedWorkerName }}
               </span>
@@ -159,16 +182,18 @@
                 <span class="not-assigned">Not Assigned</span>
               </ng-template>
             </td>
-            <td>
+            <td class="text-center">
               <div class="action-buttons">
-                <button class="btn btn-sm btn-danger" 
-                        (click)="opendeleteComplaintModal(complaint.complaintId)">
-                  <i class="fas fa-trash"></i>
-                </button>
                 <button class="btn btn-sm btn-success" 
                         (click)="openAssignModal(complaint.complaintId)"
-                        *ngIf="complaint.currentStatus === 'Pending'">
+                        *ngIf="complaint.currentStatus === 'Pending'"
+                        title="Assign Worker">
                   <i class="fas fa-user-plus"></i>
+                </button>
+                <button class="btn btn-sm btn-danger" 
+                        (click)="opendeleteComplaintModal(complaint.complaintId)"
+                        title="Delete Complaint">
+                  <i class="fas fa-trash"></i>
                 </button>
               </div>
             </td>
@@ -248,7 +273,7 @@
     </div>
   </div>
 
-  <!--confirm delete modal-->
+  <!--Confirm delete modal-->
   <div class="modal fade" [class.show]="showDeleteModal" [style.display]="showDeleteModal ? 'block' : 'none'"
      tabindex="-1" *ngIf="showDeleteModal">
     <div class="modal-dialog modal-dialog-centered">
@@ -269,7 +294,7 @@
           <h5 class="fw-bold text-danger mb-2">Are you sure?</h5>
           <p class="text-muted mb-0">
             This action <strong>cannot be undone</strong>.  
-            Do you really want to delete this item?
+            Do you really want to delete this complaint?
           </p>
         </div>
         
@@ -288,4 +313,3 @@
   </div>
 
 </div>
-

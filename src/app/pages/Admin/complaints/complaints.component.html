@@ -54,6 +54,7 @@
       </thead>
       <tbody>
         <tr *ngFor="let complaint of filteredComplaints">
+        <tr *ngFor="let complaint of filteredComplaints">
           <td>
             <span class="fw-semibold text-dark">{{ complaint.ticketNo }}</span>
           </td>
@@ -74,11 +75,11 @@
             <span
               class="badge"
               [ngClass]="{
-                'bg-warning': complaint.currentStatus === 'Pending',
+                'bg-warning text-dark': complaint.currentStatus === 'Pending',
                 'bg-primary text-dark': complaint.currentStatus === 'InProgress',
                 'bg-info text-light': complaint.currentStatus === 'Assigned',
                 'bg-success': complaint.currentStatus === 'Resolved',
-                'bg-warning text-dark': complaint.currentStatus === 'Reopened',
+                'bg-sandybrown': complaint.currentStatus === 'Reopened',
                 'bg-dark': complaint.currentStatus === 'Closed',
                 'bg-danger': complaint.cuurentStatus === 'Rejected'
               }"

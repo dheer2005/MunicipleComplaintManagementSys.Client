@@ -94,7 +94,6 @@
             </div>
         </div>
 
-        <!-- Filters -->
         <div class="card filter-card mb-4">
             <div class="card-body">
                 <div class="row align-items-center">
@@ -109,8 +108,11 @@
                         <select class="form-select" [(ngModel)]="statusFilter" (ngModelChange)="onFilterChange()">
                             <option value="All">All Status</option>
                             <option value="Pending">Pending</option>
+                            <option value="Assigned">Assigned</option>
                             <option value="InProgress">In Progress</option>
+                            <option value="Reopened">Reopened</option>
                             <option value="Resolved">Resolved</option>
+                            <option value="Closed">Closed</option>
                         </select>
                     </div>
                     <div class="col-md-2 mb-3 mb-md-0">
@@ -141,7 +143,6 @@
             </div>
         </div>
 
-        <!-- Tasks Display -->
         <div class="row mb-3">
             <div class="col-6">
                 <h5>Showing {{ filteredTasks.length }} of {{ taskStats.totalAssigned }} tasks</h5>
@@ -192,7 +193,7 @@
                                 <small class="text-muted">{{ task.categoryName }}</small>
                             </td>
                             <td class="text-center">{{ task.citizenName }}</td>
-                            <td>
+                            <td class="text-center">
                                 <span class="badge text-black" [ngClass]="getPriorityClass(task.priority)">
                                     <i [ngClass]="getPriorityIcon(task.priority)"></i>
                                     {{ task.priority }}

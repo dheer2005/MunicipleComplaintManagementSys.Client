@@ -127,7 +127,6 @@ export class WorkerDashboardComponent implements OnInit {
         if(a.status != 'Resolved' && b.status == 'Resolved') return -1;
         return new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime();
       }); 
-      console.log("worker recent data:", this.recentTasks); 
       this.loadUpcomingDeadlines();
     });
   }
