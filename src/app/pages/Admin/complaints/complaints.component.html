@@ -1,5 +1,40 @@
 <div class="complaints-container p-3">
   <h3 class="fw-bold text-primary mb-4">📋 All Complaints</h3>
+  <div class="row align-items-center">
+    <div class="col-md-3 mb-3 mb-md-0">
+      <div class="input-group">
+        <span class="input-group-text"><i class="fas fa-search"></i></span>
+        <input type="text" class="form-control searchInput" placeholder="Search by ticket, Citizen, Description..." [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange()">
+      </div>
+    </div>
+    <div class="col-md-3 mb-3 mb-md-0">
+      <select class="form-select searchInput" [(ngModel)]="statusFilter" (ngModelChange)="onStatusFilter()">
+        <option value="All">All status</option>
+        <option value="Pending">Pending</option>
+        <option value="Assigned">Assigned</option>
+        <option value="InProgress">In Progress</option>
+        <option value="Reopened">Reopened</option>
+        <option value="Resolved">Resolved</option>
+        <option value="Closed">Closed</option>
+      </select>
+    </div>
+    <div class="col-md-3 mb-3 mb-md-0">
+      <select class="form-select searchInput" [(ngModel)]="feedbackFilter" (ngModelChange)="onFeedbackFilter()">
+        <option value="All">All feedback</option>
+        <option value="true">Satisfied</option>
+        <option value="false">Not satisfied</option>
+      </select>
+    </div>
+    <div class="col-md-3 mb-3 mb-md-0">
+      <div class="btn-group">
+        <button class="btn btn-sm btn-outline-secondary" (click)="onSortChange('createdAt')">
+            createdAt <i class="fas" [ngClass]="sortBy === 'createdAt' && sortOrder === 'asc' ? 'fa-sort-up' : 'fa-sort-down'"></i>
+        </button>
+        <button class="btn btn-sm btn-outline-secondary" (click)="onSortChange('updatedAt')">
+            updatedAt <i class="fas" [ngClass]="sortBy === 'updatedAt' && sortOrder === 'asc' ? 'fa-sort-up' : 'fa-sort-down'"></i>
+        </button>
+    </div>
+    </div>
 
   <div class="table-responsive shadow-sm rounded bg-white p-3">
     <table class="table table-hover align-middle">
@@ -18,7 +53,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let complaint of complaints">
+        <tr *ngFor="let complaint of filteredComplaints">
           <td>
             <span class="fw-semibold text-dark">{{ complaint.ticketNo }}</span>
           </td>

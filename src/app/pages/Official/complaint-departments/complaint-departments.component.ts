@@ -26,6 +26,7 @@ export interface ComplaintSummary {
   slaDueAt: Date;
   isOverdue: boolean;
   assignedWorkerName?: string;
+  priority?: 'High'|'Medium'|'Low'|'N/A';
 }
 
 export interface Worker {
@@ -78,7 +79,7 @@ export class ComplaintDepartmentsComponent implements OnInit {
   async loadDepartments(): Promise<void> {
     this.loading = true;
     try {
-      this.OfficialSvc.getDepartmentsOverview().subscribe((data: Department[]) => {
+      this.OfficialSvc.getDepartmentsOverview(this.currentUserId!).subscribe((data: Department[]) => {
         this.departments = data;
       });
     } catch (error) {
@@ -91,7 +92,10 @@ export class ComplaintDepartmentsComponent implements OnInit {
   loadComplaintsSummeryByDepartmentId(departmentId: number){
     try {
       this.OfficialSvc.getComplaintSummaryByDepartment(departmentId).subscribe((data: ComplaintSummary[]) => {
-        this.departmentComplaints = data;
+        this.departmentComplaints = data.map((complaint)=>({
+          ...complaint,
+          priority: this.calculatePriority(complaint)
+        }));
       }); 
       
       this.loadAvailableWorkers(departmentId);
@@ -100,6 +104,36 @@ export class ComplaintDepartmentsComponent implements OnInit {
       console.error('Error loading department complaints:', error);
     } finally {
       this.loading = false;
+    }
+  }
+
+
+  calculateDaysSinceCreated(createdAt: Date): number {
+    const today = new Date();
+    const created = new Date(createdAt);
+    return Math.floor((today.getTime() - created.getTime()) / (1000 * 60 * 60 * 24));
+  }
+
+  calculatePriority(complaint: ComplaintSummary): 'High' | 'Medium' | 'Low' | 'N/A' {
+    const daysSinceCreated = this.calculateDaysSinceCreated(complaint.createdAt);
+    if(complaint.currentStatus == 'Resolved' || complaint.currentStatus == 'Closed'){
+      return 'N/A';
+    }
+    
+    if (complaint.isOverdue || daysSinceCreated > 7) {
+      return 'High';
+    } else if (daysSinceCreated > 3) {
+      return 'Medium';
+    }
+    return 'Low';
+  }
+
+  getPriorityClass(priority: string): string {
+    switch (priority) {
+      case 'High': return 'priority-high';
+      case 'Medium': return 'priority-medium';
+      case 'Low': return 'priority-low';
+      default: return 'priority-na';
     }
   }
 
@@ -181,10 +215,6 @@ export class ComplaintDepartmentsComponent implements OnInit {
       case 'reopened': return 'status-reopened';
       default: return 'status-default';
     }
-  }
-
-  getPriorityClass(isOverdue: boolean): string {
-    return isOverdue ? 'priority-high' : 'priority-normal';
   }
 
   viewComplaintDetails(complaintId: string): void {

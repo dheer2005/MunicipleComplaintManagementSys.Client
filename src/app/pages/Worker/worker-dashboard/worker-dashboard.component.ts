@@ -109,8 +109,10 @@ export class WorkerDashboardComponent implements OnInit {
   loadWorkerStats(){
     this.workerSvc.getWorkerStats(this.workerId!).subscribe((res:any)=>{
       this.stats = res;
+      console.log("dashboard stats:", this.stats)
       this.workerSvc.getTaskPriority(this.workerId!).subscribe((res:any)=>{
         this.taskPriority = res;
+        console.log("worker task priority:", this.taskPriority);
       });
     });
     
@@ -118,7 +120,14 @@ export class WorkerDashboardComponent implements OnInit {
 
   loadRecentTasks(){
     this.workerSvc.getRecentTasks(this.workerId!).subscribe((res:any)=>{
-      this.recentTasks = res; 
+      this.recentTasks = res.sort((a:any,b:any)=>{
+        if(a.status == 'Closed' && b.status != 'Closed') return 1;
+        if(a.status != 'Closed' && b.status == 'Closed') return -1;
+        if(a.status == 'Resolved' && b.status != 'Resolved') return 1;
+        if(a.status != 'Resolved' && b.status == 'Resolved') return -1;
+        return new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime();
+      }); 
+      console.log("worker recent data:", this.recentTasks); 
       this.loadUpcomingDeadlines();
     });
   }
@@ -126,6 +135,7 @@ export class WorkerDashboardComponent implements OnInit {
   loadUpcomingDeadlines(){
     this.workerSvc.getUpcomingDeadlines(this.workerId!).subscribe((res:any)=>{
       this.upcomingDeadlines = res;
+      console.log("worker upcomingdeadlines data:", this.upcomingDeadlines);
     });
   }
 

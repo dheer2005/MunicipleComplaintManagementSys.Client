@@ -104,6 +104,7 @@
             <th>Citizen</th>
             <th>Category</th>
             <th>Description</th>
+            <th>Priority</th>
             <th>Status</th>
             <th>Created</th>
             <th>SLA Due</th>
@@ -116,7 +117,7 @@
             <td>
               <span class="ticket-no">{{ complaint.ticketNo }}</span>
               <span class="priority-indicator" 
-                    [class]="getPriorityClass(complaint.isOverdue)"
+                    [class]="getPriorityClass(complaint.currentStatus)"
                     *ngIf="complaint.isOverdue">
                 <i class="fas fa-exclamation-triangle"></i>
               </span>
@@ -131,6 +132,14 @@
             <td class="description-cell">
               <span class="description-text" [title]="complaint.description">
                 {{ complaint.description.length > 50 ? complaint.description.substring(0, 50) + '...' : complaint.description }}
+              </span>
+            </td>
+            <td class="text-center">
+              <span class="fw-bold" *ngIf="complaint.currentStatus == 'Resolved' || complaint.currentStatus == 'Closed'">
+                N/A
+              </span>
+              <span *ngIf="complaint.currentStatus != 'Resolved' && complaint.currentStatus != 'Closed'" class="priority-badge" [class]="getPriorityClass(complaint.priority!)">
+                {{ complaint.priority }}
               </span>
             </td>
             <td>
@@ -208,7 +217,7 @@
         <div class="form-group">
           <label for="workerSelect">Select Worker:</label>
           <select id="workerSelect" [(ngModel)]="selectedWorkerId" class="form-select">
-            <option value="">-- Select a Worker --</option>
+            <option selected disabled class="text-muted" value="">-- Select a Worker --</option>
             <option *ngFor="let worker of availableWorkers" 
                     [value]="worker.workerId">
               {{ worker.fullName }} ({{ worker.currentAssignments }} assignments)

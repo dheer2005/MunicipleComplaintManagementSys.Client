@@ -28,6 +28,7 @@ import { DepartmentsComponent } from './pages/Admin/departments/departments.comp
 import { UsersComponent } from './pages/Admin/users/users.component';
 import { ComplaintsComponent } from './pages/Admin/complaints/complaints.component';
 import { AuditLogsComponent } from './pages/Admin/audit-logs/audit-logs.component';
+import { AddDepartmentsComponent } from './pages/Admin/add-departments/add-departments.component';
 
 export function tokenGetter() {
   return localStorage.getItem('token'); 
@@ -53,6 +54,7 @@ export function tokenGetter() {
     UsersComponent,
     ComplaintsComponent,
     AuditLogsComponent,
+    AddDepartmentsComponent,
     
   ],
   imports: [

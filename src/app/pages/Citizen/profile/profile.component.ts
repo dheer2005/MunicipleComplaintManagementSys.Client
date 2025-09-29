@@ -56,6 +56,7 @@ export class ProfileComponent implements OnInit {
     this.apiService.userProfile(this.currentUserId!).subscribe({
       next: (data) => {
         this.userProfile = data;
+        console.log("userProffile:", this.userProfile);
         this.populateEditForm();
         this.isLoading = false;
       },

@@ -112,5 +112,11 @@ export class AdminService {
     return this.http.get(`${this.auditUrl}/GetAllAuditlogs`);
   }
 
+  assignOfficial(officialId: string, departmentId: number){
+    return this.http.get(`${this.baseUrl}/assignOfficialToDepartment/${officialId}/${departmentId}`);
+  }
 
+  unAssignOfficial(officialId: string, departmentId: number){
+    return this.http.get(`${this.baseUrl}/unAssignOfficialFromDepartment/${officialId}/${departmentId}`)
+  }
 }

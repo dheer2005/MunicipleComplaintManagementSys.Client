@@ -61,13 +61,16 @@ export class AssignComplaintsComponent implements OnInit {
   totalUnassigned = 0;
   overdueUnassigned = 0;
   highPriorityUnassigned = 0;
+  currentUserId: string | null = null;
 
   constructor(
     private officialService: OfficialService,
     private authService: AuthService,
     private toastrService: ToastrService,
     private router: Router
-  ) { }
+  ) {
+    this.currentUserId = this.authService.getUserId();
+   }
 
   ngOnInit(): void {
     this.checkUserPermissions();
@@ -86,7 +89,7 @@ export class AssignComplaintsComponent implements OnInit {
   loadDepartments(){
     this.loading = true;
     try {
-      this.officialService.getDepartmentsOverview().subscribe((res)=> {
+      this.officialService.getDepartmentsOverview(this.currentUserId!).subscribe((res)=> {
         this.departments = res;
       })
     } catch (error) {
@@ -124,6 +127,10 @@ export class AssignComplaintsComponent implements OnInit {
           priority: this.calculatePriority(complaint),
           daysSinceCreated: this.calculateDaysSinceCreated(complaint.createdAt)
         }));
+        this.totalUnassigned = this.unassignedComplaints.length;
+        this.overdueUnassigned = this.unassignedComplaints.filter(uc=>uc.isOverdue).length;
+        this.highPriorityUnassigned = this.unassignedComplaints.filter(uc=>uc.priority == 'High').length;
+
       });
     } catch (error) {
       console.error('Error loading unassigned complaints:', error);

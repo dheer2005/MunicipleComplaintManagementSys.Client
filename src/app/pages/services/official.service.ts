@@ -77,8 +77,8 @@ export class OfficialService {
 
 
   // Department Management
-  getDepartmentsOverview(): Observable<Department[]> {
-    return this.http.get<Department[]>(`${this.apiUrl}/departments-overview`);
+  getDepartmentsOverview(userId: string): Observable<Department[]> {
+    return this.http.get<Department[]>(`${this.apiUrl}/departments-overview/${userId}`);
   }
 
   getDashboardStats(): Observable<DashboardStats> {
@@ -138,6 +138,14 @@ export class OfficialService {
 
   getWorkerPerformanceStats(workerId: number): Observable<any> {
     return this.http.get(`${this.apiUrl}/worker-performance/${workerId}`);
+  }
+
+  getAssignedOfficialForAllDepartments(departmentId: number){
+    return this.http.get(`${this.apiUrl}/assignedOfficialsByDepartmentId/${departmentId}`);
+  }
+
+  getAllOfficials(departmentId: number){
+    return this.http.get(`${this.apiUrl}/GetAllUnassignedOfficialsForDepartment/${departmentId}`);
   }
 
 }

@@ -154,15 +154,17 @@
                   </div>
                 </div>
 
-                <div class="info-item" *ngIf="isOfficial() && userProfile.officialDepartmentName">
-                  <label class="fw-semibold text-muted">Official Department</label>
-                  <div class="info-value">
-                    <i class="fas fa-user-tie me-2 text-primary"></i>
-                    {{ userProfile.officialDepartmentName }}
+                <div *ngIf="isOfficial() && userProfile.officialDepartments">
+                  <div class="info-item" *ngFor="let user of userProfile.officialDepartments">
+                    <label class="fw-semibold text-muted">Official Department</label>
+                    <div class="info-value">
+                      <i class="fas fa-user-tie me-2 text-primary"></i>
+                      {{ user.departmentName }}
+                    </div>
                   </div>
                 </div>
 
-                <div class="info-item" *ngIf="!userProfile.workerDepartmentName && !userProfile.officialDepartmentName">
+                <div class="info-item" *ngIf="!userProfile.workerDepartmentName && !userProfile.officialDepartments">
                   <div class="alert alert-warning">
                     <i class="fas fa-exclamation-triangle me-2"></i>
                     No department assigned

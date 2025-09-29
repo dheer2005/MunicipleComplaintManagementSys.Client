@@ -20,6 +20,7 @@ import { DepartmentsComponent } from './pages/Admin/departments/departments.comp
 import { ComplaintsComponent } from './pages/Admin/complaints/complaints.component';
 import { UsersComponent } from './pages/Admin/users/users.component';
 import { AuditLogsComponent } from './pages/Admin/audit-logs/audit-logs.component';
+import { AddDepartmentsComponent } from './pages/Admin/add-departments/add-departments.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -38,6 +39,7 @@ const routes: Routes = [
   { path: 'admin/departments', component: DepartmentsComponent, canActivate: [AuthGuard]},
   { path: 'admin/auditLogs', component: AuditLogsComponent, canActivate: [AuthGuard]},
   { path: 'admin/complaints', component: ComplaintsComponent, canActivate: [AuthGuard]},
+  { path: 'admin/add-departments', component: AddDepartmentsComponent, canActivate: [AuthGuard]},
   { path: 'page-not-found', component: PageNotFoundComponent},
   { path: '**', redirectTo: 'page-not-found' }
 ];

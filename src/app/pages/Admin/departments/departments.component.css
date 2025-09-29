@@ -1,0 +1,42 @@
+.text-gradient {
+  background: linear-gradient(45deg, #007bff, #6610f2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.btn-gradient {
+  background: linear-gradient(45deg, #28a745, #20c997);
+  color: #fff;
+  border: none;
+  padding: 6px 16px;
+  border-radius: 8px;
+  transition: 0.3s;
+}
+.btn-gradient:hover {
+  opacity: 0.9;
+}
+
+.btn-remove {
+  background: #f8d7da;
+  color: #dc3545;
+  border: none;
+  border-radius: 6px;
+  transition: 0.3s;
+}
+.btn-remove:hover {
+  background: #dc3545;
+  color: #fff;
+}
+
+.stat-card {
+  transition: transform 0.2s ease-in-out;
+}
+.stat-card:hover {
+  transform: translateY(-5px);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 20px;
+  color: #6c757d;
+}
