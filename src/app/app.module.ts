@@ -58,8 +58,8 @@ export function tokenGetter() {
     
   ],
   imports: [
-    NgChartsModule,
     BrowserModule,
+    NgChartsModule,
     RouterModule,
     HttpClientModule,
     BrowserAnimationsModule,
@@ -71,10 +71,10 @@ export function tokenGetter() {
         tokenGetter: tokenGetter,
         allowedDomains: ['localhost:7082'],
         disallowedRoutes: [
-          'http://localhost:7082/api/Authentication/login',
-          'http://localhost:7082/api/Authentication/register',
-          // 'https://SmartLms.bsite.net/api/auth/login',
-          // 'https://SmartLms.bsite.net/api/auth/register'
+          // 'http://localhost:7082/api/Authentication/login',
+          // 'http://localhost:7082/api/Authentication/register',
+          'https://nogoxo.bsite.net/api/Authentication/login',
+          'https://nogoxo.bsite.net/api/Authentication/register'
         ]
       }
     }),
