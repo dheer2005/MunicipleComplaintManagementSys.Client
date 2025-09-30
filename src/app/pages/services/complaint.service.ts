@@ -5,7 +5,8 @@ import { Injectable } from '@angular/core';
   providedIn: 'root'
 })
 export class ComplaintService {
-  private apiUrl = 'https://localhost:7082/api/Complaint';
+  // private apiUrl = 'https://localhost:7082/api/Complaint';
+  private apiUrl = 'https://nogoxo.bsite.net/api/Complaint';
 
   constructor(private http: HttpClient) { }
 

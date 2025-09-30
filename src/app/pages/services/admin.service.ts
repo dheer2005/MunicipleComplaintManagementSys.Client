@@ -75,8 +75,10 @@ export interface DepartmentOverview {
   providedIn: 'root'
 })
 export class AdminService {
-  private baseUrl = `https://localhost:7082/api/Admin`;
-  private auditUrl = `https://localhost:7082/api/Audit`;
+  // private baseUrl = `https://localhost:7082/api/Admin`;
+  // private auditUrl = `https://localhost:7082/api/Audit`;
+  private baseUrl = `https://nogoxo.bsite.net/api/Admin`;
+  private auditUrl = `https://nogoxo.bsite.net/api/Audit`;
 
   constructor(private http: HttpClient) { }
  

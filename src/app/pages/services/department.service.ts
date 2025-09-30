@@ -6,7 +6,8 @@ import { Injectable } from '@angular/core';
 })
 export class DepartmentService {
 
-  private apiUrl = 'https://localhost:7082/api/Department';
+  // private apiUrl = 'https://localhost:7082/api/Department';
+  private apiUrl = 'https://nogoxo.bsite.net/api/Department';
 
   constructor(private http: HttpClient) { }
 

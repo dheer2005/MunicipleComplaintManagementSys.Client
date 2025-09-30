@@ -9,8 +9,10 @@ import { ToastrService } from 'ngx-toastr';
 })
 export class AuthService {
   private tokenKey = "token";
-  private apiUrl:any = `https://localhost:7082/api/Authentication`;
-  private auditUrl: any = `https://localhost:7082/api/Audit`;
+  // private apiUrl:any = `https://localhost:7082/api/Authentication`;
+  // private auditUrl: any = `https://localhost:7082/api/Audit`;
+  private apiUrl:any = `https://nogoxo.bsite.net/api/Authentication`;
+  private auditUrl: any = `https://nogoxo.bsite.net/api/Audit`;
   
     constructor(private jwtHelper: JwtHelperService, private toastrSvc: ToastrService, private router: Router, private http: HttpClient ) { }
     

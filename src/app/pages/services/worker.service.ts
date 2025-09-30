@@ -5,7 +5,8 @@ import { Injectable } from '@angular/core';
   providedIn: 'root'
 })
 export class WorkerService {
-  private baseUrl = `https://localhost:7082/api/Worker`;
+  // private baseUrl = `https://localhost:7082/api/Worker`;
+  private baseUrl = `https://nogoxo.bsite.net/api/Worker`;
 
   constructor(private http: HttpClient) { }
 

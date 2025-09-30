@@ -173,42 +173,42 @@
 
     <div class="modal fade show d-block" tabindex="-1" *ngIf="showGalleryModal" style="background: rgba(0,0,0,0.6);">
         <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content rounded-4 shadow-lg">
+          <div class="modal-content rounded-4 shadow-lg">
             <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title">
-                {{ selectedGallery?.type }} Attachments
-                </h5>
-                <button type="button" class="btn-close btn-close-white" (click)="closeGallery()"></button>
+              <h5 class="modal-title">
+              {{ selectedGallery?.type }} Attachments
+              </h5>
+              <button type="button" class="btn-close btn-close-white" (click)="closeGallery()"></button>
             </div>
-            
+          
             <div class="modal-body">
                 <div id="galleryCarousel" class="carousel slide" data-bs-ride="carousel">
                 <div class="carousel-inner">
-                    <div 
-                    *ngFor="let img of selectedGallery?.images; let i = index" 
-                    class="carousel-item" 
-                    [class.active]="i === 0">
+                  <div 
+                  *ngFor="let img of selectedGallery?.images; let i = index" 
+                  class="carousel-item" 
+                  [class.active]="i === 0">
                     <img [src]="img.imageUrl" class="d-block w-100 rounded" style="max-height: 500px; object-fit: contain;" alt="Attachment">
                     <div class="carousel-caption d-none d-md-block">
-                        <small class="bg-dark px-2 py-1 rounded">
-                        {{ img.attachmentType }} • {{ img.uploadedAt | date:'short' }}
-                        </small>
+                      <small class="bg-dark px-2 py-1 rounded">
+                      {{ img.attachmentType }} • {{ img.uploadedAt | date:'short' }}
+                      </small>
                     </div>
-                    </div>
+                  </div>
                 </div>
                 <button class="carousel-control-prev" type="button" data-bs-target="#galleryCarousel" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon text-dark"></span>
+                  <span class="carousel-control-prev-icon text-dark"></span>
                 </button>
                 <button class="carousel-control-next" type="button" data-bs-target="#galleryCarousel" data-bs-slide="next">
-                    <span class="carousel-control-next-icon"></span>
+                  <span class="carousel-control-next-icon"></span>
                 </button>
                 </div>
             </div>
-            
+          
             <div class="modal-footer">
-                <button class="btn btn-secondary" (click)="closeGallery()">Close</button>
+              <button class="btn btn-outline-secondary" (click)="closeGallery()">Close</button>
             </div>
-            </div>
+          </div>
         </div>
     </div>
 

@@ -6,6 +6,22 @@
     margin-bottom: 2rem;
 }
 
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.warning { background: #fff3cd; color: #856404; }
+.info { background: #cce5ff; color: #004085; }
+.success { background: #d4edda; color: #155724; }
+.danger { background: #e2e3e5; color: #383d41; }
+/* .reopened { background: #f8d7da; color: #721c24; } */
+
+
 .task-card {
     border-radius: 15px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);

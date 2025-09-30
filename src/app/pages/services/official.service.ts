@@ -63,7 +63,8 @@ export interface ReassignComplaintRequest {
 })
 export class OfficialService {
 
-  private apiUrl = 'https://localhost:7082/api/Official';
+  // private apiUrl = 'https://localhost:7082/api/Official';
+  private apiUrl = 'https://nogoxo.bsite.net/api/Official';
 
   constructor(private http: HttpClient) { }
 

@@ -6,7 +6,8 @@ import { Injectable } from '@angular/core';
 })
 export class ApiService {
   
-  private apiUrl = 'https://localhost:7082/api/Authentication';
+  // private apiUrl = 'https://localhost:7082/api/Authentication';
+  private apiUrl = 'https://nogoxo.bsite.net/api/Authentication';
 
   constructor(private http: HttpClient) { }
 
