@@ -119,4 +119,16 @@ export class AdminService {
   unAssignOfficial(officialId: string, departmentId: number){
     return this.http.get(`${this.baseUrl}/unAssignOfficialFromDepartment/${officialId}/${departmentId}`)
   }
+
+  deleteUsers(userId: string){
+    return this.http.delete(`${this.baseUrl}/deleteUsers/${userId}`);
+  }
+
+  deleteCategory(categoryId: number){
+    return this.http.delete(`${this.baseUrl}/categories/delete/${categoryId}`);
+  }
+
+  deleteSubCategory(subCategoryId: number){
+    return this.http.delete(`${this.baseUrl}/category/sub-categories/delete/${subCategoryId}`);
+  }
 }

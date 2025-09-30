@@ -41,6 +41,7 @@
                 <th class="text-center">Role</th>
                 <th class="text-center">Created At</th>
                 <th class="text-center">Active</th>
+                <th class="text-center">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -57,6 +58,14 @@
                   <span class="badge" [ngClass]="official.isActive ? 'bg-success' : 'bg-secondary'">
                     {{ official.isActive ? 'Yes' : 'No' }}
                   </span>
+                </td>
+                <td class="text-center">
+                  <button
+                        class="btn btn-sm btn-outline-danger"
+                        (click)="deleteUsers(official.userId)"
+                      >
+                        <i class="fas fa-trash-alt"></i>
+                      </button>
                 </td>
               </tr>
             </tbody>
@@ -83,6 +92,7 @@
                 <th class="text-center">Assigned Complaints</th>
                 <th class="text-center">Resolved Complaints</th>
                 <th class="text-center">Pending Complaints</th>
+                <th class="text-center">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -94,6 +104,14 @@
                 <td class="text-center">{{ worker.totalAssignedComplaints }}</td>
                 <td class="text-center">{{ worker.totalResolvedComplaints }}</td>
                 <td class="text-center">{{ worker.totalPendingComplaints }}</td>
+                <td class="text-center">
+                  <button
+                        class="btn btn-sm btn-outline-danger"
+                        (click)="deleteUsers(worker.userId)"
+                      >
+                        <i class="fas fa-trash-alt"></i>
+                      </button>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -114,6 +132,7 @@
                 <th class="text-center">Phone</th>
                 <th class="text-center">Raised Complaints</th>
                 <th class="text-center">Resolved Complaints</th>
+                <th class="text-center">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -124,6 +143,14 @@
                 <td class="text-center">{{ user.phone }}</td>
                 <td class="text-center">{{ user.totalComplaints }}</td>
                 <td class="text-center">{{ user.totalResolvedComplaints }}</td>
+                <td class="text-center">
+                  <button
+                        class="btn btn-sm btn-outline-danger"
+                        (click)="deleteUsers(user.userId)"
+                      >
+                        <i class="fas fa-trash-alt"></i>
+                      </button>
+                </td>
               </tr>
             </tbody>
           </table>

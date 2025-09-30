@@ -14,7 +14,6 @@ import { DepartmentService } from '../../services/department.service';
 export class AddDepartmentsComponent implements OnInit {
   departments: { departmentId: number, departmentName: string }[] = [];
 
-  // New properties
   newDepartment = { departmentName: ''};
   selectedCategoryDepartmentId: number = -1;
   newCategory = {
@@ -31,11 +30,13 @@ export class AddDepartmentsComponent implements OnInit {
     this.loadDepartments();
   }
 
-  // New methods
   createDepartment() {
     this.deptSvc.createNewDepartment(this.newDepartment).subscribe({
       next: (res:any)=>{
         this.toastrSvc.success(`${res.message}`);
+        this.loadDepartments();
+        this.newDepartment = {departmentName: ''};
+        this.onCategoryDepartmentChange();
       },
       error: (err:any)=>{
         this.toastrSvc.error(`${err.error.message}`);
@@ -60,6 +61,8 @@ export class AddDepartmentsComponent implements OnInit {
     this.deptSvc.createNewCategory(newCategoryObj).subscribe({
       next: (res:any)=>{
         this.toastrSvc.success(`${res.message}`);
+        this.newCategory.categoryName = '';
+        this.onCategoryDepartmentChange();
       },
       error: (err:any)=>{
         this.toastrSvc.error(`${err.error.message}`);
@@ -70,14 +73,37 @@ export class AddDepartmentsComponent implements OnInit {
     this.deptSvc.createNewSubCategory(this.newSubCategory).subscribe({
       next: (res:any)=>{
         this.toastrSvc.success(`${res.message}`);
+        this.newSubCategory.subCategoryName = '';
+        this.onCategoryDepartmentChange();
       },
       error: (err:any)=>{
         this.toastrSvc.error(`${err.error.message}`);
       }
     });
   }
-  deleteCategory(categoryId: number) { }
-  deleteSubCategory(subCategoryId: number) { }
+  deleteCategory(categoryId: number) {
+    this.adminSvc.deleteCategory(categoryId).subscribe({
+      next: (res:any)=>{
+        this.toastrSvc.success(`${res.message}`);
+        this.onCategoryDepartmentChange();
+      },
+      error: (err:any)=>{
+        this.toastrSvc.error(`${err.error.message}`);
+      }
+    })
+  }
+  deleteSubCategory(subCategoryId: number) {
+    this.adminSvc.deleteSubCategory(subCategoryId).subscribe({
+      next: (res:any)=>{
+        this.toastrSvc.success(`${res.message}`);
+        this.loadDepartments();
+        this.onCategoryDepartmentChange();
+      },
+      error: (err:any)=>{
+        this.toastrSvc.error(`${err.error.message}`);
+      }
+    })
+  }
 
   loadDepartments(){
     this.deptSvc.getAllDepartments().subscribe({

@@ -25,7 +25,7 @@ export class DepartmentsComponent implements OnInit {
   pieChartType: ChartType = 'doughnut';
   pieChartData!: ChartData<'doughnut', number[], string>;
   totalDepartmentComplaints: number = 0;
-  selectedOfficialId: string | null = null;
+  selectedOfficialId: string | null = '';
   allOfficials: any[] = [];
   assignedOfficials: any[] = [];
   

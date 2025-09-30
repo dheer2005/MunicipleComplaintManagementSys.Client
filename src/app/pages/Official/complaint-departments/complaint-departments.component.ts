@@ -46,7 +46,7 @@ export interface Worker {
 })
 export class ComplaintDepartmentsComponent implements OnInit {
   
-  departments!: Department;
+  departments: Department[] = [];
   selectedDepartment: Department | null = null;
   departmentComplaints: ComplaintSummary[] = [];
   availableWorkers: Worker[] = [];
@@ -55,7 +55,7 @@ export class ComplaintDepartmentsComponent implements OnInit {
   selectedComplaintId: string | null = null;
   selectedWorkerId: number | null = null;
   showAssignModal = false;
-  departmentIdForLoad: number | null = null;
+  depaertmentIdForLoad: number | null = null;
   
   statusFilter = 'All';
   priorityFilter = 'All';
@@ -66,8 +66,6 @@ export class ComplaintDepartmentsComponent implements OnInit {
   currentPage = 1;
   itemsPerPage = 10;
   currentUserId: string | null = null;
-
-  departmentName: string = ''; 
   
   constructor(private router: Router, private authSvc:AuthService, private OfficialSvc: OfficialService, private toastrSvc: ToastrService) 
   { 
@@ -81,7 +79,7 @@ export class ComplaintDepartmentsComponent implements OnInit {
   async loadDepartments(): Promise<void> {
     this.loading = true;
     try {
-      this.OfficialSvc.getDepartmentsOverview(this.currentUserId!).subscribe((data: any) => {
+      this.OfficialSvc.getDepartmentsOverview(this.currentUserId!).subscribe((data: Department[]) => {
         this.departments = data;
       });
     } catch (error) {
@@ -90,6 +88,25 @@ export class ComplaintDepartmentsComponent implements OnInit {
       this.loading = false;
     }
   }
+
+  loadComplaintsSummeryByDepartmentId(departmentId: number){
+    try {
+      this.OfficialSvc.getComplaintSummaryByDepartment(departmentId).subscribe((data: ComplaintSummary[]) => {
+        this.departmentComplaints = data.map((complaint)=>({
+          ...complaint,
+          priority: this.calculatePriority(complaint)
+        }));
+      }); 
+      
+      this.loadAvailableWorkers(departmentId);
+      
+    } catch (error) {
+      console.error('Error loading department complaints:', error);
+    } finally {
+      this.loading = false;
+    }
+  }
+
 
   calculateDaysSinceCreated(createdAt: Date): number {
     const today = new Date();
@@ -116,36 +133,13 @@ export class ComplaintDepartmentsComponent implements OnInit {
       case 'High': return 'priority-high';
       case 'Medium': return 'priority-medium';
       case 'Low': return 'priority-low';
-      default: return 'priority-normal';
+      default: return 'priority-na';
     }
   }
-
-  loadComplaintsSummeryByDepartmentId(departmentId: number){
-    try {
-      this.OfficialSvc.getComplaintSummaryByDepartment(departmentId).subscribe((data: ComplaintSummary[]) => {
-        this.departmentComplaints = data.map((complaint)=>({
-          ...complaint,
-          priority: this.calculatePriority(complaint)
-        }));
-        this.departmentComplaints = data.map((complaint)=>({
-          ...complaint,
-          priority: this.calculatePriority(complaint)
-        }));
-      }); 
-      
-      this.loadAvailableWorkers(departmentId);
-      
-    } catch (error) {
-      console.error('Error loading department complaints:', error);
-    } finally {
-      this.loading = false;
-    }
-  }
-
 
   selectDepartment(department: Department){
     this.selectedDepartment = department;
-    this.departmentIdForLoad = department.departmentId;
+    this.depaertmentIdForLoad = department.departmentId;
     this.loading = true;
     
     this.loadComplaintsSummeryByDepartmentId(department.departmentId);
@@ -188,7 +182,7 @@ export class ComplaintDepartmentsComponent implements OnInit {
           ActionResult: `Complaint: ${this.selectedComplaintId} has been assignd to worker: ${this.selectedWorkerId} successfully`
         };
         this.authSvc.createAudit(auditObj).subscribe();
-        this.loadComplaintsSummeryByDepartmentId(this.departmentIdForLoad!);
+        this.loadComplaintsSummeryByDepartmentId(this.depaertmentIdForLoad!);
         this.loadDepartments();
       }); 
       
@@ -213,12 +207,12 @@ export class ComplaintDepartmentsComponent implements OnInit {
 
   getStatusClass(status: string): string {
     switch (status.toLowerCase()) {
-      case 'pending': return 'pending';
-      case 'assigned': return 'assigned';
-      case 'inprogress': return 'inProgress';
-      case 'resolved': return 'resolved';
-      case 'closed': return 'closed';
-      case 'reopened': return 'reopened';
+      case 'pending': return 'status-pending';
+      case 'assigned': return 'status-assigned';
+      case 'inprogress': return 'status-inprogress';
+      case 'resolved': return 'status-resolved';
+      case 'closed': return 'status-closed';
+      case 'reopened': return 'status-reopened';
       default: return 'status-default';
     }
   }
@@ -246,9 +240,9 @@ export class ComplaintDepartmentsComponent implements OnInit {
           ActionResult: `Complaint: ${this.selectedComplaintId} deleted successfully`
         };
         this.authSvc.createAudit(auditObj).subscribe();
-        this.showDeleteModal = false;
         this.toastrSvc.success("complaint deleted successfully");
-        this.loadComplaintsSummeryByDepartmentId(this.departmentIdForLoad!);
+        this.loadComplaintsSummeryByDepartmentId(this.depaertmentIdForLoad!);
+        this.showDeleteModal = false;
       },
       error: (err)=>{
         const auditObj = {
@@ -257,8 +251,8 @@ export class ComplaintDepartmentsComponent implements OnInit {
           ActionResult: `Complaint: ${this.selectedComplaintId} deleted successfully`
         };
         this.authSvc.createAudit(auditObj).subscribe();
-        this.showDeleteModal = false;
         this.toastrSvc.error("Filed to delete complaint");
+        this.showDeleteModal = false;
       }
     });
   }
@@ -266,7 +260,9 @@ export class ComplaintDepartmentsComponent implements OnInit {
   get filteredComplaints(): ComplaintSummary[] {
     return this.departmentComplaints.filter(complaint => {
       const matchesStatus = this.statusFilter === 'All' || complaint.currentStatus === this.statusFilter;
-      const matchesPriority = this.priorityFilter === 'All' || (complaint.priority === this.priorityFilter);
+      const matchesPriority = this.priorityFilter === 'All' || 
+        (this.priorityFilter === 'High' && complaint.isOverdue) ||
+        (this.priorityFilter === 'Normal' && !complaint.isOverdue);
       const matchesSearch = this.searchTerm === '' || 
         complaint.ticketNo.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         complaint.citizenName.toLowerCase().includes(this.searchTerm.toLowerCase()) ||

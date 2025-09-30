@@ -71,26 +71,43 @@ export class UsersComponent implements OnInit {
     this.error = null;
 
     this.adminSvc.getOfficialsInfo().subscribe({
-      next: (res:any) => this.officials = res,
+      next: (res:any) => {
+        this.officials = res; 
+      },
       error: (err:any) => this.toastrSvc.error("Failed to load the officials info")
     });
 
     this.adminSvc.getWorkersInfo().subscribe({
-      next: (res:any) => this.workers = res.sort((a:any,b:any)=>{
+      next: (res:any) => {
+        this.workers = res.sort((a:any,b:any)=>{
         return b.totalAssignedComplaints - a.totalAssignedComplaints
-      }),
+      });
+    },
       error: (err:any) => this.toastrSvc.error("Failed to load workers info")
     });
 
     this.adminSvc.getCitizensInfo().subscribe({
-      next: (res:any) => this.generalUsers = res,
+      next: (res:any) => {
+        this.generalUsers = res;
+      },
       error: (err:any) => this.toastrSvc.error("Failed to load citizens info")
     });
 
     this.isLoading = false;
   }
 
-
+  deleteUsers(userId: string){
+    this.adminSvc.deleteUsers(userId).subscribe({
+      next: (res:any)=>{
+        this.toastrSvc.success(`${res.message}`);
+        this.loadUsers();
+      },
+      error: (err:any)=>{
+        this.toastrSvc.error(`${err.error.message}`);
+        this.loadUsers();
+      }
+    })
+  }
 
 
   openWorkerModal() {
